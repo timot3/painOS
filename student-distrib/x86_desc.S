@@ -52,7 +52,7 @@ _gdt:
     # CS and DS both are 0-4GB r/w segments
     #
     # The layout is (from Intel IA-32 reference manual):
-    #  31        24 23  22  21  20  19   16 15  14 13 12  11   8 7          0
+    #  31         24 23  22  21  20  19   16 15  14 13 12  11   8 7          0
     # |----------------------------------------------------------------------|
     # |            |   | D |   | A |  Seg  |   |  D  |   |      |            |
     # | Base 31:24 | G | / | 0 | V | Limit | P |  P  | S | Type | Base 23:16 |
