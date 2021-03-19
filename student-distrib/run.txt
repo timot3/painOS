@@ -1,9 +1,0 @@
-open devel
-cd into mp3
-cd into student_distrib
-make dep
-sudo make
-gdb testimg
-open test_debug
-target remote 10.0.2.2:1234
-run
