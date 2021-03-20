@@ -22,15 +22,12 @@ void initialize_idt() {
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
         idt[i].present = 0;
-
-        // // Set present for devices that always exist
-        if(i < 32)
-            idt[i].present = 1;
     }
 
-    for(i = 0; i < 32; i++) {
+    for(i = 0; i < NUM_SYSTEM_INTERRUPTS; i++) {
         // Need to have different functions for each interrupt to print
         // different messages, but for now a single function works
+        idt[i].present = 1;
         SET_IDT_ENTRY(idt[i], idt_error);
     }
 
