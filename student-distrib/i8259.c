@@ -6,8 +6,8 @@
 #include "lib.h"
 
 /* Interrupt masks to determine which interrupts are enabled and disabled */
-uint8_t master_mask; /* IRQs 0-7  */
-uint8_t slave_mask;  /* IRQs 8-15 */
+uint8_t master_mask = 0xFF; /* IRQs 0-7  */
+uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
@@ -29,9 +29,8 @@ void i8259_init(void) {
     outb(ICW4, MASTER_8259_PORT);
     outb(ICW4, SLAVE_8259_PORT);
 
-    // Set master and slave masks with initial values
-    master_mask = inb(MASTER_8259_PORT);
-    slave_mask = inb(SLAVE_8259_PORT);
+    // Enable slave interrupts
+    enable_irq(SLAVE_8259_PORT);
 }
 
 /* Enable (unmask) the specified IRQ */
