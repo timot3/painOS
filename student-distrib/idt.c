@@ -122,13 +122,16 @@ void initialize_idt() {
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
         idt[i].present = 0;
+        if (i >= 32) {
+            idt[i].dpl = 3;
+        }
     }
 
     for(i = 0; i < NUM_SYSTEM_INTERRUPTS; i++) {
         // Need to have different functions for each interrupt to print
         // different messages, but for now a single function works
         idt[i].present = 1;
-        if (i > 19){
+        if (i > 19) {
             SET_IDT_ENTRY(idt[i], idt_error);
         }
     }
