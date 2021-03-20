@@ -12,8 +12,8 @@ void DIV_BY_ZERO(){
     while(1);
 }
 
-void RESERVED(){
-    printf("-----------RESERVED--------------\n");
+void RESERVED_INT(){
+    printf("-----------RESERVED_INT--------------\n");
     while(1);
 }
 
@@ -140,7 +140,7 @@ void initialize_idt() {
     lidt(idt_desc_ptr);
 
     SET_IDT_ENTRY(idt[0],DIV_BY_ZERO);
-    SET_IDT_ENTRY(idt[1],RESERVED);
+    SET_IDT_ENTRY(idt[1],RESERVED_INT);
     SET_IDT_ENTRY(idt[2],NMI_INTERRUPT);
     SET_IDT_ENTRY(idt[3],BREAKPOINT);
     SET_IDT_ENTRY(idt[4],OVERFLOW);
