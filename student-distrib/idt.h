@@ -1,32 +1,32 @@
 #ifndef IDT_H
 #define IDT_H
 
-void idt_error();
+#define NUM_SYSTEM_INTERRUPTS 32
+
+typedef void (*func_ptr)();
 
 void initialize_idt();
 
-enum INTERRUPT_NAMES{
-    DIV_BY_ZERO,
-    RESERVED,
-    NMI_INTERRUPT,
-    BREAKPOINT,
-    OVERFLOW,
-    BOUND_RANGE_EXCEEDED,
-    INVALID_OPCODE,
-    DEVICE_NOT_AVAILABLE,
-    DOUBLE_FAULT,
-    COPROCESSOR_SEGMENT_OVERRUN,
-    INVALID_TSS,
-    SEGMENT_NOT_PRESENT,
-    STACK_SEGMENT_FAULT,
-    GENERAL_PROTECTION,
-    PAGE_FAULT,
-    INTEL_RESERVED,
-    MATH_FAULT,
-    ALIGNMENT_CHECK,
-    MACHINE_CKECK,
-    SIMD_FLOATING_POINT_EXCEPTION
-};
-#define NUM_SYSTEM_INTERRUPTS 32
+// Interrupt functions
+void divByZeroInterrupt();
+void reservedInterrupt();
+void nmiInterrupt();
+void breakpointInterrupt();
+void overflowInterrupt();
+void boundRangeExceededInterrupt();
+void invalidOpcodeInterrupt();
+void deviceNotAvailableInterrupt();
+void doubleFaultInterrupt();
+void coprocessorSegmentOverrunInterrupt();
+void invalidTssInterrupt();
+void segmentNotPresentInterrupt();
+void stackSegmentFaultInterrupt();
+void generalProtectionInterrupt();
+void pageFaultInterrupt();
+void intelReservedInterrupt();
+void mathFaultInterrupt();
+void alignmentCheckInterrupt();
+void machineCheckInterrupt();
+void simdFloatingPointExceptionInterrupt();
 
 #endif /* IDT_H */

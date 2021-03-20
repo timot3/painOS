@@ -2,10 +2,129 @@
 #include "lib.h"
 #include "x86_desc.h"
 
-void idt_error() {
-    printf("-----------interrupt has occurred--------------\n");
+func_ptr allFunctionPointers[20] = {divByZeroInterrupt,
+                                    reservedInterrupt,
+                                    nmiInterrupt,
+                                    breakpointInterrupt,
+                                    overflowInterrupt,
+                                    boundRangeExceededInterrupt,
+                                    invalidOpcodeInterrupt,
+                                    deviceNotAvailableInterrupt,
+                                    doubleFaultInterrupt,
+                                    coprocessorSegmentOverrunInterrupt,
+                                    invalidTssInterrupt,
+                                    segmentNotPresentInterrupt,
+                                    stackSegmentFaultInterrupt,
+                                    generalProtectionInterrupt,
+                                    pageFaultInterrupt,
+                                    intelReservedInterrupt,
+                                    mathFaultInterrupt,
+                                    alignmentCheckInterrupt,
+                                    machineCheckInterrupt,
+                                    simdFloatingPointExceptionInterrupt
+};
+
+void divByZeroInterrupt() {
+    printf("-----------division by zero has occurred--------------\n");
     while(1);
 }
+
+void reservedInterrupt() {
+    printf("-----------reserved interrupt has occurred--------------\n");
+    while(1);
+}
+
+void nmiInterrupt() {
+    printf("-----------NMI interrupt has occurred--------------\n");
+    while(1);
+}
+
+void breakpointInterrupt() {
+    printf("-----------breakpoint interrupt has occurred--------------\n");
+    while(1);
+}
+
+void overflowInterrupt() {
+    printf("-----------overflow interrupt has occurred--------------\n");
+    while(1);
+}
+
+void boundRangeExceededInterrupt() {
+    printf("-----------bound range exceeded error--------------\n");
+    while(1);
+}
+
+void invalidOpcodeInterrupt() {
+    printf("-----------invalid opcode error--------------\n");
+    while(1);
+}
+
+void deviceNotAvailableInterrupt() {
+    printf("-----------device not available error--------------\n");
+    while(1);
+}
+
+void doubleFaultInterrupt() {
+    printf("-----------double fault error--------------\n");
+    while(1);
+}
+
+void coprocessorSegmentOverrunInterrupt() {
+    printf("-------coprocessor segment overrun error----------\n");
+    while(1);
+}
+
+void invalidTssInterrupt() {
+    printf("-----------invalid TSS error--------------\n");
+    while(1);
+}
+
+void segmentNotPresentInterrupt() {
+    printf("-----------segment not present error--------------\n");
+    while(1);
+}
+
+void stackSegmentFaultInterrupt() {
+    printf("-----------stack segment fault error--------------\n");
+    while(1);
+}
+
+void generalProtectionInterrupt() {
+    printf("-----------general profection error--------------\n");
+    while(1);
+}
+
+void pageFaultInterrupt() {
+    printf("-----------page fault error--------------\n");
+    while(1);
+}
+
+void intelReservedInterrupt() {
+    printf("-----------Intel reserved error--------------\n");
+    while(1);
+}
+
+void mathFaultInterrupt() {
+    printf("-----------math fault error--------------\n");
+    while(1);
+}
+
+void alignmentCheckInterrupt() {
+    printf("-----------alignment check error--------------\n");
+    while(1);
+}
+
+void machineCheckInterrupt() {
+    printf("-----------machine check error--------------\n");
+    while(1);
+}
+
+void simdFloatingPointExceptionInterrupt() {
+    printf("-----------SIMD floating point exception error--------------\n");
+    while(1);
+}
+
+
 void initialize_idt() {
     int i;
 
@@ -20,38 +139,21 @@ void initialize_idt() {
         idt[i].reserved1 = 1;
         idt[i].size = 1;
         idt[i].reserved0 = 0;
-        idt[i].dpl = 0;
+        idt[i].dpl = 0; // Some devices might need 3 here instead of 0
         idt[i].present = 0;
     }
 
+    // Set interrupt methods for first 32 values in IDT
     for(i = 0; i < NUM_SYSTEM_INTERRUPTS; i++) {
-        // Need to have different functions for each interrupt to print
-        // different messages, but for now a single function works
         idt[i].present = 1;
-        SET_IDT_ENTRY(idt[i], idt_error);
+
+        // 20-31 needs to be Intel exception
+        if(i < 20)
+            SET_IDT_ENTRY(idt[i], allFunctionPointers[i]);
+        else
+            SET_IDT_ENTRY(idt[i], allFunctionPointers[15]);
     }
 
     // Load IDT after initialization
     lidt(idt_desc_ptr);
-
-    // SET_IDT_ENTRY(idt[i],DIV_BY_ZERO);
-    // SET_IDT_ENTRY(idt[i],RESERVED);
-    // SET_IDT_ENTRY(idt[i],NMI_INTERRUPT);
-    // SET_IDT_ENTRY(idt[i],BREAKPOINT);
-    // SET_IDT_ENTRY(idt[i],OVERFLOW);
-    // SET_IDT_ENTRY(idt[i],BOUND_RANGE_EXCEEDED);
-    // SET_IDT_ENTRY(idt[i],INVALID_OPCODE);
-    // SET_IDT_ENTRY(idt[i],DEVICE_NOT_AVAILABLE);
-    // SET_IDT_ENTRY(idt[i],DOUBLE_FAULT);
-    // SET_IDT_ENTRY(idt[i],COPROCESSOR_SEGMENT_OVERRUN);
-    // SET_IDT_ENTRY(idt[i],INVALID_TSS);
-    // SET_IDT_ENTRY(idt[i],SEGMENT_NOT_PRESENT);
-    // SET_IDT_ENTRY(idt[i],STACK_SEGMENT_FAULT);
-    // SET_IDT_ENTRY(idt[i],GENERAL_PROTECTION);
-    // SET_IDT_ENTRY(idt[i],PAGE_FAULT);
-    // SET_IDT_ENTRY(idt[i],INTEL_RESERVED);
-    // SET_IDT_ENTRY(idt[i],MATH_FAULT);
-    // SET_IDT_ENTRY(idt[i],ALIGNMENT_CHECK);
-    // SET_IDT_ENTRY(idt[i],MACHINE_CKECK);
-    // SET_IDT_ENTRY(idt[i],SIMD_FLOATING_POINT_EXCEPTION);
 }
