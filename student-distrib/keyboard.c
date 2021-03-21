@@ -3,6 +3,7 @@
 #include "i8259.h"
 
 //0's in order stand in for nothing, escape, enter, left shift, right shift, left alt
+//https://wiki.osdev.org/PS/2_Keyboard
 char scan_code_1[256] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
