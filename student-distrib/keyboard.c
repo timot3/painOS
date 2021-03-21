@@ -18,7 +18,6 @@ void keyboard_init(){
 void keyboard_handler(){
     char byte = inb(KB_PORT);
     char character = scan_code_1[byte];
-    printf(character);
+    putc(character);
     send_eoi(KB_IRQ);
 }
-
