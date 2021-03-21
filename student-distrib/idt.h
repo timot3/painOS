@@ -27,6 +27,8 @@ void initialize_idt();
 
 void initialize_idt();
 
+#define RTC_INT 0x28
+#define KB_INT 0x21
 #define NUM_SYSTEM_INTERRUPTS 32
 
 #endif /* IDT_H */
