@@ -63,8 +63,8 @@ int divByZero() {
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
-	// launch your tests here
-
-	divByZero();
+	// TEST_OUTPUT("idt_test", idt_test());
+	// // launch your tests here
+	//
+	// divByZero();
 }

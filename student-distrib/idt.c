@@ -148,6 +148,7 @@ void SIMD_FLOATING_POINT_EXCEPTION()
     while (1)
         ;
 }
+
 void initialize_idt()
 {
     int i;
@@ -166,7 +167,7 @@ void initialize_idt()
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
         idt[i].present = 0;
-        if (i >= 32)
+        if (i == 32)
         {
             idt[i].dpl = 3;
         }
@@ -182,9 +183,6 @@ void initialize_idt()
             SET_IDT_ENTRY(idt[i], idt_error);
         }
     }
-
-    // Load IDT after initialization
-    lidt(idt_desc_ptr);
 
     SET_IDT_ENTRY(idt[0], DIV_BY_ZERO);
     SET_IDT_ENTRY(idt[1], RESERVED_INT);
@@ -206,4 +204,8 @@ void initialize_idt()
     SET_IDT_ENTRY(idt[17], ALIGNMENT_CHECK);
     SET_IDT_ENTRY(idt[18], MACHINE_CKECK);
     SET_IDT_ENTRY(idt[19], SIMD_FLOATING_POINT_EXCEPTION);
+    SET_IDT_ENTRY(idt[0x28], test_interrupts);
+
+    // Load IDT after initialization
+    lidt(idt_desc_ptr);
 }
