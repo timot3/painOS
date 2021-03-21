@@ -140,7 +140,7 @@ void initialize_idt() {
 
     // Load IDT after initialization
     lidt(idt_desc_ptr);
-
+    //https://courses.engr.illinois.edu/ece391/sp2021/secure/references/IA32-ref-manual-vol-3.pdf see page 145 for vector numbers
     SET_IDT_ENTRY(idt[0],DIV_BY_ZERO);
     SET_IDT_ENTRY(idt[1],RESERVED_INT);
     SET_IDT_ENTRY(idt[2],NMI_INTERRUPT);
