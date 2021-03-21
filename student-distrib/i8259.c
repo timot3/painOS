@@ -9,25 +9,28 @@
 uint8_t master_mask = 0xFF; /* IRQs 0-7  */
 uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
 
+// uint8_t mask = ;
+
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
     // Using https://wiki.osdev.org/8259_PIC as reference
+
 
     // Start initialization sequence
     outb(ICW1, MASTER_8259_PORT);
     outb(ICW1, SLAVE_8259_PORT);
 
     // Send high bits of vector number
-    outb(ICW2_MASTER, MASTER_8259_PORT);
-    outb(ICW2_SLAVE, SLAVE_8259_PORT);
+    outb(ICW2_MASTER, MASTER_8259_PORT + 1);
+    outb(ICW2_SLAVE, SLAVE_8259_PORT + 1);
 
     // Tell slave master exists, give slave address
-    outb(ICW3_MASTER, MASTER_8259_PORT);
-    outb(ICW3_SLAVE, SLAVE_8259_PORT);
+    outb(ICW3_MASTER, MASTER_8259_PORT + 1);
+    outb(ICW3_SLAVE, SLAVE_8259_PORT + 1);
 
     // Send normal/auto EOI
-    outb(ICW4, MASTER_8259_PORT);
-    outb(ICW4, SLAVE_8259_PORT);
+    outb(ICW4, MASTER_8259_PORT + 1);
+    outb(ICW4, SLAVE_8259_PORT + 1);
 
     // Enable slave interrupts
     enable_irq(SLAVE_8259_PORT);
@@ -46,7 +49,7 @@ void enable_irq(uint32_t irq_num) {
         port = SLAVE_8259_PORT;
         irq_num -= 8;
     }
-    value = inb(port) | (1 << irq_num);
+    value = inb(port) & ~(1 << irq_num);
     outb(value, port); 
 }
 
@@ -63,7 +66,7 @@ void disable_irq(uint32_t irq_num) {
         port = SLAVE_8259_PORT;
         irq_num -= 8;
     }
-    value = inb(port) & ~(1 << irq_num);
+    value = inb(port) | (1 << irq_num);
     outb(value, port); 
 }
 

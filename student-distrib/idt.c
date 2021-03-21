@@ -14,7 +14,7 @@ void idt_error()
 void DIV_BY_ZERO()
 {
     printf("-----------DIV_BY_ZERO--------------\n");
-    while(1);
+    // while(1);
 }
 
 void RESERVED_INT(){
@@ -130,7 +130,7 @@ void initialize_idt()
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
         idt[i].present = 0;
-        if (i == 32)
+        if (i >= 32)
         {
             idt[i].dpl = 3;
         }
@@ -139,11 +139,14 @@ void initialize_idt()
     for(i = 0; i < NUM_SYSTEM_INTERRUPTS; i++) {
         // Need to have different functions for each interrupt to print
         // different messages, but for now a single function works
+        idt[i].reserved3 = 1; // enable for first 32, use trap gate
         idt[i].present = 1;
         if (i > 19) {
             SET_IDT_ENTRY(idt[i], idt_error);
         }
     }
+
+
 
     SET_IDT_ENTRY(idt[0], DIV_BY_ZERO);
     SET_IDT_ENTRY(idt[1], RESERVED_INT);
@@ -168,6 +171,10 @@ void initialize_idt()
 
     SET_IDT_ENTRY(idt[RTC_NUM], test_interrupts);
     SET_IDT_ENTRY(idt[KB_NUM],keyboard_handler);
+
+    
+    idt[RTC_NUM].present = 1;
+    idt[KB_NUM].present = 1;
 
 
     // Load IDT after initialization

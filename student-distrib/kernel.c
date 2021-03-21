@@ -158,6 +158,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
+    // test_interrupts();
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
