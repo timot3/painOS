@@ -74,10 +74,10 @@ int div_by_zero()
  * Coverage: IDT Exception, assert
  * Files: idt.c
  */
-int div_by_zero()
+int assertion_fail_test()
 {
 	asm volatile(
-			"int $15")
+			"int $15");
 }
 
 /* Interrupt Test 
@@ -88,10 +88,10 @@ int div_by_zero()
  * Coverage: IDT Exception, interrupt
  * Files: idt.c
  */
-int div_by_zero()
+int interrupt_test()
 {
 	asm volatile(
-			"int $80")
+			"int $80");
 }
 
 /* RTC Interrupt 
@@ -133,7 +133,7 @@ int keyb_scancode()
  * Coverage: Paging structs
  * Files: paging.c
  */
-int paging_struct()
+int paging_struct_test()
 {
 	TEST_HEADER;
 	// TODO check paging struct
@@ -148,7 +148,7 @@ int paging_struct()
  * Coverage: Paging structs
  * Files: paging.c
  */
-int paging_struct()
+int paging_struct_dref()
 {
 	TEST_HEADER;
 	// TODO ensure paging is active
