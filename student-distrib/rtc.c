@@ -5,12 +5,23 @@
 void initialize_rtc() {
     // Using https://wiki.osdev.org/RTC as reference
 
+
+    cli();        // important that no interrupts happen (perform a CLI)
+    outb(0x8A, RTC_PORT);    // select Status Register A, and disable NMI (by setting the 0x80 bit)
+    outb(0x20, CMOS_PORT);    // write to CMOS/RTC RAM
+    sti();        // (perform an STI) and reenable NMI if you wish
+
     cli();
     outb(RTC_B, RTC_PORT);        // Disable NMI
     char prev = inb(CMOS_PORT);   // Read current value
     outb(RTC_B, RTC_PORT);        // Set index again (read resets index to register D)
     outb(prev | 0x40, CMOS_PORT); // Turn off bit 6 of register B
+    printf("before irq -- prev = %d\n", (int)prev);
+    //enable_irq(RTC_IRQ);
+    sti();
     enable_irq(RTC_IRQ);
+    printf("after irq.\n");
+
 
     // Changes frequency
     // int rate = 1;

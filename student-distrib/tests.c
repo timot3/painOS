@@ -165,6 +165,15 @@ int paging_struct_dref()
 	return PASS;
 }
 
+int dereference_null()
+{
+    TEST_HEADER;
+    int x;
+    int *ptr;
+    ptr = NULL;
+    x = *ptr;
+}
+
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -178,4 +187,6 @@ void launch_tests(){
 	// // launch your tests here
 	//
 	// divByZero();
+	// dereference_null();
+
 }
