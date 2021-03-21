@@ -37,32 +37,34 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
+    uint16_t port;
+    uint8_t value;
+ 
     if(irq_num < 8) {
-        // Set master mask
-        master_mask |= (1 << irq_num);
-        outb(master_mask, MASTER_8259_PORT);
+        port = MASTER_8259_PORT;
     } else {
-        // Set slave mask
+        port = SLAVE_8259_PORT;
         irq_num -= 8;
-        slave_mask |= (1 << irq_num);
-        outb(slave_mask,SLAVE_8259_PORT);
     }
+    value = inb(port) | (1 << irq_num);
+    outb(value, port); 
 }
 
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
+    uint16_t port;
+    uint8_t value;
+ 
     if(irq_num < 8) {
-        // Set master mask
-        master_mask &= ~(1 << irq_num);
-        outb(master_mask, MASTER_8259_PORT);
+        port = MASTER_8259_PORT;
     } else {
-        // Set slave mask
+        port = SLAVE_8259_PORT;
         irq_num -= 8;
-        slave_mask &= ~(1 << irq_num);
-        outb(slave_mask, SLAVE_8259_PORT);
     }
+    value = inb(port) & ~(1 << irq_num);
+    outb(value, port); 
 }
 
 /* Send end-of-interrupt signal for the specified IRQ */
