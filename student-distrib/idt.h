@@ -25,8 +25,9 @@ void MACHINE_CKECK();
 void SIMD_FLOATING_POINT_EXCEPTION();
 void initialize_idt();
 
-void initialize_idt();
 
+#define RTC_NUM 0x28
+#define KB_NUM 0x21
 #define NUM_SYSTEM_INTERRUPTS 32
 
 #endif /* IDT_H */
