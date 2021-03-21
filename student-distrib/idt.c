@@ -1,6 +1,8 @@
 #include "idt.h"
 #include "lib.h"
 #include "x86_desc.h"
+#include "keyboard.h"
+#include "rtc.h"
 
 void idt_error() {
     printf("-----------interrupt has occurred--------------\n");
@@ -159,4 +161,7 @@ void initialize_idt() {
     SET_IDT_ENTRY(idt[17],ALIGNMENT_CHECK);
     SET_IDT_ENTRY(idt[18],MACHINE_CKECK);
     SET_IDT_ENTRY(idt[19],SIMD_FLOATING_POINT_EXCEPTION);
+
+    SET_IDT_ENTRY(idt[RTC_INT], initialize_rtc);
+    SET_IDT_ENTRY(idt[KB_INT],keyboard_handler);
 }
