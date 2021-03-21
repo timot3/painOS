@@ -69,7 +69,13 @@ void disable_irq(uint32_t irq_num) {
 void send_eoi(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
-    if(irq_num >= 8)
-        outb(EOI, SLAVE_8259_PORT);
-    outb(EOI, MASTER_8259_PORT);
+    if(irq_num < 8) {
+        // Send master EOI
+        outb(EOI | irq_num, MASTER_8259_PORT);
+    } else {
+        // Send slave (and master) EOI
+        irq_num -= 8;
+        outb(EOI | irq_num, SLAVE_8259_PORT);
+        outb(EOI | ICW3_SLAVE, MASTER_8259_PORT);
+    }
 }
