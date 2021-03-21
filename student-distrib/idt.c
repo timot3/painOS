@@ -162,6 +162,6 @@ void initialize_idt() {
     SET_IDT_ENTRY(idt[18],MACHINE_CKECK);
     SET_IDT_ENTRY(idt[19],SIMD_FLOATING_POINT_EXCEPTION);
 
-    SET_IDT_ENTRY(idt[RTC_INT], initialize_rtc);
-    SET_IDT_ENTRY(idt[KB_INT],keyboard_handler);
+    SET_IDT_ENTRY(idt[RTC_NUM], test_interrupts);
+    SET_IDT_ENTRY(idt[KB_NUM],keyboard_handler);
 }
