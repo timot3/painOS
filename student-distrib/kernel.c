@@ -9,6 +9,8 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt.h"
+#include "rtc.h"
+#include "keyboard.h"
 
 #define RUN_TESTS
 
@@ -139,6 +141,12 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the PIC */
     i8259_init();
+
+    // Initialize RTC
+    initialize_rtc();
+
+    // Initalize Keyboard
+    keyboard_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
