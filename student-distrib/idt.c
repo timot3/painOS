@@ -4,7 +4,6 @@
 #include "keyboard.h"
 #include "rtc.h"
 
-<<<<<<< HEAD
 void idt_error()
 {
     printf("-----------interrupt has occurred--------------\n");
@@ -14,14 +13,6 @@ void idt_error()
 
 void DIV_BY_ZERO()
 {
-=======
-void idt_error() {
-    printf("-----------interrupt has occurred--------------\n");
-    while(1);
-}
-
-void DIV_BY_ZERO(){
->>>>>>> origin/master
     printf("-----------DIV_BY_ZERO--------------\n");
     while(1);
 }
@@ -120,7 +111,6 @@ void SIMD_FLOATING_POINT_EXCEPTION(){
     printf("-----------SIMD_FLOATING_POINT_EXCEPTION--------------\n");
     while(1);
 }
-<<<<<<< HEAD
 
 void initialize_idt()
 {
@@ -129,13 +119,6 @@ void initialize_idt()
     // Set values for all elements in IDT
     for (i = 0; i < NUM_VEC; i++)
     {
-=======
-void initialize_idt() {
-    int i;
-
-    // Set values for all elements in IDT
-    for (i = 0; i < NUM_VEC; i++) {
->>>>>>> origin/master
         // Set based on values found at http://www.jamesmolloy.co.uk/tutorial_html/4.-The%20GDT%20and%20IDT.html
         // and https://courses.engr.illinois.edu/ece391/sp2021/secure/references/IA32-ref-manual-vol-3.pdf pg 156
         idt[i].seg_selector = KERNEL_CS;
@@ -147,12 +130,8 @@ void initialize_idt() {
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
         idt[i].present = 0;
-<<<<<<< HEAD
         if (i == 32)
         {
-=======
-        if (i >= 32) {
->>>>>>> origin/master
             idt[i].dpl = 3;
         }
     }
@@ -166,7 +145,6 @@ void initialize_idt() {
         }
     }
 
-<<<<<<< HEAD
     SET_IDT_ENTRY(idt[0], DIV_BY_ZERO);
     SET_IDT_ENTRY(idt[1], RESERVED_INT);
     SET_IDT_ENTRY(idt[2], NMI_INTERRUPT);
@@ -187,36 +165,11 @@ void initialize_idt() {
     SET_IDT_ENTRY(idt[17], ALIGNMENT_CHECK);
     SET_IDT_ENTRY(idt[18], MACHINE_CKECK);
     SET_IDT_ENTRY(idt[19], SIMD_FLOATING_POINT_EXCEPTION);
-    SET_IDT_ENTRY(idt[0x28], test_interrupts);
-
-    // Load IDT after initialization
-    lidt(idt_desc_ptr);
-=======
-    // Load IDT after initialization
-    lidt(idt_desc_ptr);
-
-    SET_IDT_ENTRY(idt[0],DIV_BY_ZERO);
-    SET_IDT_ENTRY(idt[1],RESERVED_INT);
-    SET_IDT_ENTRY(idt[2],NMI_INTERRUPT);
-    SET_IDT_ENTRY(idt[3],BREAKPOINT);
-    SET_IDT_ENTRY(idt[4],OVERFLOW);
-    SET_IDT_ENTRY(idt[5],BOUND_RANGE_EXCEEDED);
-    SET_IDT_ENTRY(idt[6],INVALID_OPCODE);
-    SET_IDT_ENTRY(idt[7],DEVICE_NOT_AVAILABLE);
-    SET_IDT_ENTRY(idt[8],DOUBLE_FAULT);
-    SET_IDT_ENTRY(idt[9],COPROCESSOR_SEGMENT_OVERRUN);
-    SET_IDT_ENTRY(idt[10],INVALID_TSS);
-    SET_IDT_ENTRY(idt[11],SEGMENT_NOT_PRESENT);
-    SET_IDT_ENTRY(idt[12],STACK_SEGMENT_FAULT);
-    SET_IDT_ENTRY(idt[13],GENERAL_PROTECTION);
-    SET_IDT_ENTRY(idt[14],PAGE_FAULT);
-    SET_IDT_ENTRY(idt[15],INTEL_RESERVED);
-    SET_IDT_ENTRY(idt[16],MATH_FAULT);
-    SET_IDT_ENTRY(idt[17],ALIGNMENT_CHECK);
-    SET_IDT_ENTRY(idt[18],MACHINE_CKECK);
-    SET_IDT_ENTRY(idt[19],SIMD_FLOATING_POINT_EXCEPTION);
 
     SET_IDT_ENTRY(idt[RTC_NUM], test_interrupts);
     SET_IDT_ENTRY(idt[KB_NUM],keyboard_handler);
->>>>>>> origin/master
+
+
+    // Load IDT after initialization
+    lidt(idt_desc_ptr);
 }
