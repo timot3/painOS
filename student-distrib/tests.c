@@ -34,10 +34,10 @@ static inline void assertion_failure()
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
-int idt_test()
+int test_idt()
 {
 	TEST_HEADER;
-	printf("\n\n\n\n\n\nn\n\n\n");
+	// printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
 	for (i = 0; i < 10; ++i)
@@ -61,7 +61,7 @@ int idt_test()
  * Coverage: IDT Exception, div 0
  * Files: idt.c
  */
-int div_by_zero()
+int test_div_by_zero()
 {
 	TEST_HEADER;
 	int zero = 0;
@@ -70,9 +70,9 @@ int div_by_zero()
 	printf("I am about to divide by 0. ");
 	printf("%d", one / zero);
 	return 0;
-	
+
 }
-/* Assertion Fail Test 
+/* Assertion Fail Test
  * Asserts that asserting will assert that the program goes into a while loop
  * Inputs: None
  * Outputs: None
@@ -80,14 +80,14 @@ int div_by_zero()
  * Coverage: IDT Exception, assert
  * Files: idt.c
  */
-int assertion_fail_test()
+int test_assertion_fail()
 {
 	asm volatile(
 			"int $15");
 	return 0;
 }
 
-/* Interrupt Test 
+/* Interrupt Test
  * Asserts that interrupts are handled
  * Inputs: None
  * Outputs: None
@@ -95,7 +95,7 @@ int assertion_fail_test()
  * Coverage: IDT Exception, interrupt
  * Files: idt.c
  */
-int interrupt_test()
+int test_sys_interrupt()
 {
 	asm volatile(
 			"int $80");
@@ -103,7 +103,7 @@ int interrupt_test()
 
 }
 
-/* RTC Interrupt 
+/* RTC Interrupt
  * Asserts that a RTC Interrupt will be caught.
  * Inputs: None
  * Outputs: None
@@ -111,13 +111,14 @@ int interrupt_test()
  * Coverage: IDT Exception
  * Files: idt.c
  */
-int rtc_test()
+int test_rtc()
 {
 	TEST_HEADER;
+	test_interrupts();
 
 	// TODO Put RTC intterupt test here from rtc.h
 	// waiting for RTC to be done
-	return 0;
+	return PASS;
 
 }
 
@@ -129,12 +130,17 @@ int rtc_test()
  * Coverage: IDT Exception
  * Files: idt.c
  */
-int keyb_scancode()
+int test_keyb_scancode()
 {
+	uint32_t i;
 	TEST_HEADER;
 	// TODO handle keypress
 	// waiting on keyboards
-	return 0;
+
+	printf("Go ahead, press some keys :)\n");
+	printf("This for loop goes for 5000m iterations. Have fun!");
+	for (i = 0; i < 500000000; ++i);
+	return PASS;
 
 }
 
@@ -146,12 +152,13 @@ int keyb_scancode()
  * Coverage: Paging structs
  * Files: paging.c
  */
-int paging_struct_test()
+int test_paging_struct_test()
 {
+	int test_status = FAIL;
 	TEST_HEADER;
 	// TODO check paging struct
 	// waiting on paging
-	return 0;
+	return test_status;
 }
 
 /* Paging deref test
@@ -162,7 +169,7 @@ int paging_struct_test()
  * Coverage: Paging structs
  * Files: paging.c
  */
-int paging_struct_dref()
+int test_paging_struct_dref()
 {
 	TEST_HEADER;
 	// TODO ensure paging is active
@@ -179,14 +186,24 @@ int paging_struct_dref()
 	return PASS;
 }
 
-int dereference_null()
+int test_dereference_null()
 {
-    TEST_HEADER;
-    int x;
     int *ptr;
+    int x = 5;
+	int test_status = FAIL;
+
+
+    TEST_HEADER;
+	printf("initializing variable x = 5\n");
+	printf("initializing a pointer p = NULL\n");
     ptr = NULL;
+	printf("setting x = *ptr\n");
     x = *ptr;
-	return 0;
+
+	printf("x = %d\n", x);
+
+	test_status = PASS;
+	return test_status;
 }
 
 // add more tests here
@@ -202,7 +219,9 @@ void launch_tests() {
 	// // launch your tests here
 	//
 	clear();
-	TEST_OUTPUT("Div by 0: ", div_by_zero());
-	// dereference_null();
+	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test the keyboard", test_keyb_scancode());
+	// TEST_OUTPUT("Test RTC", test_rtc());
 
 }
