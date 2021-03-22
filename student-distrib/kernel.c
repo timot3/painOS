@@ -10,6 +10,7 @@
 #include "tests.h"
 #include "idt.h"
 #include "rtc.h"
+#include "keyboard.h"
 
 #define RUN_TESTS
 
@@ -156,6 +157,7 @@ void entry(unsigned long magic, unsigned long addr) {
     i8259_init();
     // Initialize RTC
     initialize_rtc();
+    keyboard_init();
     sti();
 
 #ifdef RUN_TESTS
