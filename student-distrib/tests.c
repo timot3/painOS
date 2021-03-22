@@ -14,14 +14,6 @@
 	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
 #define TEST_OUTPUT(name, result) \
 	printf("[TEST %s] Result = %s\n", name, (result) ? "PASS" : "FAIL");
-
-static inline void assertion_failure()
-{
-	/* Use exception #15 for assertions, otherwise
-	   reserved by Intel */
-	asm volatile("int $15");
-}
-
 #define PRINT_WHERE \
 	printf("In %s at %s:%d\n", __FUNCTION__, __FILE__, __LINE__)
 
@@ -39,7 +31,6 @@ static inline void assertion_failure()
 int test_idt()
 {
 	TEST_HEADER;
-	// printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
 	for (i = 0; i < 10; ++i)
@@ -84,8 +75,7 @@ int test_div_by_zero()
  */
 int test_assertion_fail()
 {
-	asm volatile(
-			"int $15");
+	asm volatile("int $15");
 	return 0;
 }
 
@@ -99,8 +89,7 @@ int test_assertion_fail()
  */
 int test_sys_interrupt()
 {
-	asm volatile(
-			"int $80");
+	asm volatile("int $80");
 	return 0;
 
 }
@@ -121,28 +110,6 @@ int test_rtc()
 	printf("This test has been moved to a compiler macro in tests.h.\n");
 	printf(" Comment it out to not test.\n");
 
-	return PASS;
-
-}
-
-/* Scancode keyboard test
- * Tests some keyboard scancodes
- * Inputs: None
- * Outputs: None
- * Side Effects: Goes to while loop
- * Coverage: IDT Exception
- * Files: idt.c
- */
-int test_keyb_scancode()
-{
-	uint32_t i;
-	TEST_HEADER;
-	// TODO handle keypress
-	// waiting on keyboards
-
-	printf("Go ahead, press some keys :)\n");
-	printf("This for loop goes for 5000m iterations. Have fun!");
-	for (i = 0; i < 500000000; ++i);
 	return PASS;
 
 }
@@ -267,5 +234,6 @@ void launch_tests() {
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test RTC", test_rtc());
-
+	// TEST_OUTPUT("Test Assertion Fail", test_assertion_fail());
+	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 }
