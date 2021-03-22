@@ -5,7 +5,7 @@
 #include "rtc.h"
 
 #define PAIN_HEADER \
-    printf("             _         \n");\
+    printf("\n             _         \n");\
     printf(" _ __   __ _(_)_ __    \n");\
     printf("| '_ \\ / _` | | '_ \\   \n");\
     printf("| |_) | (_| | | | | |_ \n");\
@@ -138,6 +138,12 @@ void SIMD_FLOATING_POINT_EXCEPTION() {
     while(1);
 }
 
+void SYSTEM_CALL() {
+    PAIN_HEADER;
+    printf("-----------SYSTEM_CALL_OCCURED--------------\n");
+    while(1);
+}
+
 void initialize_idt() {
     int i;
 
@@ -176,6 +182,7 @@ void initialize_idt() {
     }
 
     // init the idt
+    //https://courses.engr.illinois.edu/ece391/sp2021/secure/references/IA32-ref-manual-vol-3.pdf see page 145 for vector numbers
     SET_IDT_ENTRY(idt[0],       DIV_BY_ZERO);
     SET_IDT_ENTRY(idt[1],       RESERVED_INT);
     SET_IDT_ENTRY(idt[2],       NMI_INTERRUPT);
@@ -198,13 +205,15 @@ void initialize_idt() {
     SET_IDT_ENTRY(idt[19],      SIMD_FLOATING_POINT_EXCEPTION);
 
 
-    // Enable keyboard and RTC by marking them present
+    // Enable keyboard, RTC, and system call by marking them present
     idt[RTC_NUM].present = 1;
     idt[KB_NUM].present  = 1;
+    idt[SYSCALL_NUM].present = 1;
 
-    // Add rtc handler and keyboard to the idt 
+    // Add rtc handler,  keyboard, and system call to the idt
     SET_IDT_ENTRY(idt[RTC_NUM], rtc_handler);
     SET_IDT_ENTRY(idt[KB_NUM],  keyboard_handler);
+    SET_IDT_ENTRY(idt[SYSCALL_NUM],  SYSTEM_CALL);
 
 
     // Load IDT after initialization
