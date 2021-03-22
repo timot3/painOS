@@ -236,7 +236,7 @@ int test_dereference_null()
 void launch_tests() {
 	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
-	//clear();
+	// clear();
 	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
 	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
