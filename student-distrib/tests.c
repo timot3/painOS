@@ -98,7 +98,7 @@ int test_assertion_fail()
 int test_sys_interrupt()
 {
 	asm volatile(
-			"int $80");
+			"int $128"); // directly call system interrupt.
 	return 0;
 
 }
@@ -188,22 +188,17 @@ int test_paging_struct_dref()
 
 int test_dereference_null()
 {
-    int *ptr;
-    int x = 5;
-	int test_status = FAIL;
-
-
     TEST_HEADER;
+	int test_result = FAIL;
 	printf("initializing variable x = 5\n");
 	printf("initializing a pointer p = NULL\n");
+    int *ptr;
     ptr = NULL;
-	printf("setting x = *ptr\n");
+    int x;
     x = *ptr;
 
-	printf("x = %d\n", x);
-
-	test_status = PASS;
-	return test_status;
+	test_result = PASS;
+	return test_result;
 }
 
 // add more tests here
@@ -220,8 +215,9 @@ void launch_tests() {
 	//
 	clear();
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
-	TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test the keyboard", test_keyb_scancode());
 	// TEST_OUTPUT("Test RTC", test_rtc());
+	TEST_OUTPUT("Test a sample system interrupt", test_sys_interrupt());
 
 }
