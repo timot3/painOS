@@ -13,7 +13,7 @@
 #include "paging.h"
 #include "keyboard.h"
 
-// #define RUN_TESTS
+#define RUN_TESTS
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -175,7 +175,10 @@ void entry(unsigned long magic, unsigned long addr)
 #ifdef RUN_TESTS
     /* Run tests */
     // test_interrupts();
+    clear(); // clear screen before running tests
+    printf("Running tests:\n");
     launch_tests();
+    printf("Finished running tests.\n");
 #endif
     /* Execute the first program ("shell") ... */
 

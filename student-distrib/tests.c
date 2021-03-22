@@ -39,12 +39,12 @@ static inline void assertion_failure()
 int test_idt()
 {
 	TEST_HEADER;
-	// printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
+	// check that the first 10 entries of the idt exist and aren't 0
 	for (i = 0; i < 10; ++i)
 	{
-		PRINT_WHERE;
+		// PRINT_WHERE;
 		if ((idt[i].offset_15_00 == NULL) &&
 				(idt[i].offset_31_16 == NULL))
 		{
@@ -66,26 +66,15 @@ int test_idt()
 int test_div_by_zero()
 {
 	TEST_HEADER;
+	// get rid of compiler warnings
 	int zero = 0;
 	int one = 1;
 
 	printf("I am about to divide by 0. ");
+	// div by zero exception
 	printf("%d", one / zero);
-	return 0;
+	return FAIL;
 
-}
-/* Assertion Fail Test
- * Asserts that asserting will assert that the program goes into a while loop
- * Inputs: None
- * Outputs: None
- * Side Effects: Goes to while loop
- * Coverage: IDT Exception, assert
- * Files: idt.c
- */
-int test_assertion_fail()
-{
-	asm volatile("int $15");
-	return 0;
 }
 
 /* Interrupt Test
@@ -98,7 +87,7 @@ int test_assertion_fail()
  */
 int test_sys_interrupt()
 {
-	asm volatile("int $80");
+	asm volatile("int $128"); // directly call system interrupt
 	return 0;
 
 }
@@ -117,7 +106,7 @@ int test_rtc()
 	// test_interrupts();
 
 	printf("This test has been moved to a compiler macro in tests.h.\n");
-	printf(" Comment it out to not test.\n");
+	printf("Uncomment it to test RTC.\n");
 
 	return PASS;
 }
@@ -132,7 +121,6 @@ int test_rtc()
  */
 int test_paging_struct()
 {
-	int test_status = FAIL;
 	TEST_HEADER;
 	int tmp, i;
 	page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH];
@@ -191,13 +179,15 @@ int test_paging_struct_dref()
 	TEST_HEADER;
 	int data, i;
 	int *ptr;
-
+	// test that we can access memory we should be able to access
 	ptr = (int *)VIDEO;
 	*ptr = 42;
+	// repeat 5 times
 	for (i = 0; i < 5; i++)
 	{
 		data = *ptr;
 		ptr = &data;
+		// if access failed, then test failed
 		if (*ptr != data || &data != ptr){
 			return FAIL;
 		}
@@ -205,8 +195,17 @@ int test_paging_struct_dref()
 	return PASS;
 }
 
+/* dereference null test
+ * Tests the dereferencing of null ptr
+ * Inputs: None
+ * Outputs: what is currently happening in the code
+ * Side Effects: crashes if failure
+ * Coverage: Paging structs
+ * Files: paging.c
+ */
 int test_dereference_null()
 {
+	// init variables
     int *ptr;
     int x = 5;
 	int test_status = FAIL;
@@ -217,8 +216,10 @@ int test_dereference_null()
 	printf("initializing a pointer p = NULL\n");
     ptr = NULL;
 	printf("setting x = *ptr\n");
+	// should cause page fault
     x = *ptr;
 
+	// should never reach here
 	printf("x = %d\n", x);
 
 	test_status = PASS;
@@ -234,14 +235,13 @@ int test_dereference_null()
 
 /* Test suite entry point */
 void launch_tests() {
-	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 	// clear();
-	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
-	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	// TEST_OUTPUT("Test idt", test_idt());
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
-	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test RTC", test_rtc());
-	// TEST_OUTPUT("Test Assertion Fail", test_assertion_fail());
+	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
+	TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 }
