@@ -1,6 +1,7 @@
 #include "rtc.h"
 #include "lib.h"
 #include "i8259.h"
+#include "x86_desc.h"
 
 void initialize_rtc() {
     // Using https://wiki.osdev.org/RTC as reference
@@ -12,12 +13,11 @@ void initialize_rtc() {
     sti();        // (perform an STI) and reenable NMI if you wish
 
     cli();
-    outb(RTC_B, RTC_PORT);        // Disable NMI
-    char prev = inb(CMOS_PORT);   // Read current value
-    outb(RTC_B, RTC_PORT);        // Set index again (read resets index to register D)
-    outb(prev | 0x40, CMOS_PORT); // Turn off bit 6 of register B
-    printf("before irq -- prev = %d\n", (int)prev);
-    //enable_irq(RTC_IRQ);
+    outb(RTC_B, RTC_PORT);
+    char prev = inb(CMOS_PORT);
+
+    outb(RTC_B, RTC_PORT);
+    outb(prev | 0x40, CMOS_PORT);
     sti();
     enable_irq(RTC_IRQ);
     printf("after irq.\n");
@@ -32,4 +32,15 @@ void initialize_rtc() {
     outb(0x8A, 0x70);		// reset index to A
     outb(0x2C, 0x71); //write only our rate to A. Note, rate is the bottom 4 bits.
     enable_irq(RTC_IRQ);
+}
+
+void rtc_handler() {
+    //cli();
+    outb(0x0C, RTC_PORT);
+    inb(CMOS_PORT);
+    // printf("rtc_handler\n");
+    // test_interrupts();
+    sti();
+    send_eoi(RTC_IRQ);
+
 }
