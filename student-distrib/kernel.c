@@ -11,6 +11,7 @@
 #include "idt.h"
 #include "rtc.h"
 #include "paging.h"
+#include "keyboard.h"
 
 // #define RUN_TESTS
 
@@ -162,7 +163,11 @@ void entry(unsigned long magic, unsigned long addr)
     i8259_init();
     // Initialize RTC
     initialize_rtc();
+<<<<<<< student-distrib/kernel.c
     paging_init();
+=======
+    keyboard_init();
+>>>>>>> student-distrib/kernel.c
     sti();
 
 #ifdef RUN_TESTS
