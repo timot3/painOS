@@ -1,52 +1,94 @@
-
-#include "types.h"
 #include "paging.h"
+extern void edit_paging_flags(int page_dir_addr);
 
-// we need a page directory and table, user page table, and video memory paage table
-// Addresses are 4 bytes, so use unsigned ints of width 32 bits
+// align with 4KB Chunks
+page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH] __attribute__((aligned(PAGE_DIRECTORY_LENGTH * 4)));
+page_table_entry_t page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
 
-// the page table is 1024 entries
-uint32_t page_directory[ONE_KB] __attribute__((aligned (4 * ONE_KB/*wtf do i align to?*/)));
-
-// the page table is 1024 entries
-uint32_t page_table[ONE_KB] __attribute__((aligned (4 * ONE_KB/*wtf do i align to?*/)));
-
-
-
-// https://wiki.osdev.org/Paging#Manipulation
-void * get_physaddr(void * virtualaddr)
+/*
+ * paging_init
+ *   DESCRIPTION: Initializes the paging
+ *   INPUTS: none
+ *   OUTPUTS: None
+ *   RETURN VALUE: None
+ *   Side Effects:
+ * * Changes Control Registers
+ * * Creates Page Directory
+ * * Creates Page Table(s)
+ * * Implements paging for kernel space
+ * * Implements paging for Video memory 
+ */
+void paging_init()
 {
-    unsigned long pdindex = (unsigned long)virtualaddr >> 22;
-    unsigned long ptindex = (unsigned long)virtualaddr >> 12 & 0x03FF;
- 
-    unsigned long * pd = (unsigned long *)0xFFFFF000;
-    // Here you need to check whether the PD entry is present.
- 
-    unsigned long * pt = ((unsigned long *)0xFFC00000) + (0x400 * pdindex);
-    // Here you need to check whether the PT entry is present.
- 
-    return (void *)((pt[ptindex] & ~0xFFF) + ((unsigned long)virtualaddr & 0xFFF));
+  int i;
+
+  for (i = 0; i < PAGE_DIRECTORY_LENGTH; i++)
+  {
+    page_dir[i].val = 0; // clear contents
+    // set to rw
+    page_dir[i].rw = 1;
+    page_dir[i].us = 1;
+  }
+
+  for (i = 0; i < PAGE_TABLE_LENGTH; i++)
+  {
+    page_table[i].val = 0; // clear contents
+    // set to rw
+    page_table[i].rw = 1;
+    page_table[i].us = 1;
+    // set address
+    page_table[i].aligned_address = i;
+  }
+
+  // connect PDT to page table
+  page_dir[0].aligned_address = ((int) &page_table) >> ADDRESS_SHIFT;
+  page_dir[0].present = 1;
+  page_dir[0].cache_disable = 1;
+
+
+  // connect 4-8 MB memory
+  page_dir[1].aligned_address = KERNEL_LOCATION >> ADDRESS_SHIFT;
+  page_dir[1].present = 1;
+  page_dir[1].rw = 1;
+  page_dir[1].size = 1; // 4 MB
+
+  // connect video memory 
+  page_table[VID_MEM].aligned_address = 0xB8;
+  page_table[VID_MEM].present = 1;
+  page_table[VID_MEM].cache_disable = 1;
+
+
+  // WHY DOES THIS AND ONLY THIS WORK?
+  edit_paging_flags((int)page_dir);
 }
 
-// https://wiki.osdev.org/Paging#Manipulation
-void map_page(void * physaddr, void * virtualaddr, unsigned int flags)
-{
-    // Make sure that both addresses are page-aligned.
- 
-    unsigned long pdindex = (unsigned long)virtualaddr >> 22;
-    unsigned long ptindex = (unsigned long)virtualaddr >> 12 & 0x03FF;
- 
-    unsigned long * pd = (unsigned long *)0xFFFFF000;
-    // Here you need to check whether the PD entry is present.
-    // When it is not present, you need to create a new empty PT and
-    // adjust the PDE accordingly.
- 
-    unsigned long * pt = ((unsigned long *)0xFFC00000) + (0x400 * pdindex);
-    // Here you need to check whether the PT entry is present.
-    // When it is, then there is already a mapping present. What do you do now?
- 
-    pt[ptindex] = ((unsigned long)physaddr) | (flags & 0xFFF) | 0x01; // Present
- 
-    // Now you need to flush the entry in the TLB
-    // or you might not notice the change.
+/*
+ * get_paging_directory
+ *   DESCRIPTION: Copies page_dir for testing
+ *   INPUTS: none
+ *   OUTPUTS: copies data of page_dir
+ *   RETURN VALUE: none
+ */
+extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len){
+  int i;
+  for(i = 0; i<len; i++)
+   {
+      page_dir_alt[i]=page_dir[i];
+   }
+}
+
+/*
+ * get_paging_table
+ *   DESCRIPTION: Copies page_table for testing
+ *   INPUTS: none
+ *   OUTPUTS: copies data of page_table
+ *   RETURN VALUE: none
+ */
+
+extern void get_paging_table(page_table_entry_t *page_table_alt, int len){
+  int i;
+  for(i = 0; i<len; i++)
+   {
+      page_table_alt[i]=page_table[i];
+   }
 }
