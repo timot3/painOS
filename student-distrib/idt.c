@@ -107,8 +107,7 @@ void BOUND_RANGE_EXCEEDED() {
 
 /*
  * INVALID_OPCODE
- *   DESCRIPTION: interrupt output for invalid opcode (undefined opcode)
- *                  (vector #6)
+ *   DESCRIPTION: interrupt output for invalid opcode (undefined opcode) (vector #6)
  *   INPUTS: none
  *   OUTPUTS: text to screen
  *   RETURN VALUE: none
@@ -240,8 +239,7 @@ void INTEL_RESERVED() {
 
 /*
  * MATH_FAULT
- *   DESCRIPTION: interrupt output for x87 FPU floating-point error (math fault)
- *                  (vector #16)
+ *   DESCRIPTION: interrupt output for x87 FPU floating-point error (math fault) (vector #16)
  *   INPUTS: none
  *   OUTPUTS: text to screen
  *   RETURN VALUE: none
@@ -280,7 +278,7 @@ void MACHINE_CHECK() {
 
 /*
  * SIMD_FLOATING_POINT_EXCEPTION
- *   DESCRIPTION: interrupt output for SIMD floating point exception (vector #18)
+ *   DESCRIPTION: interrupt output for SIMD floating point exception (vector #19)
  *   INPUTS: none
  *   OUTPUTS: text to screen
  *   RETURN VALUE: none
