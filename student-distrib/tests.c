@@ -37,7 +37,6 @@ static inline void assertion_failure()
 int idt_test()
 {
 	TEST_HEADER;
-	printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
 	for (i = 0; i < 10; ++i)
@@ -53,7 +52,7 @@ int idt_test()
 
 	return result;
 }
-/* div0 Test - Example
+/* div0 Test
  * Asserts that dividing by zero will return an exception.
  * Inputs: None
  * Outputs: None
@@ -66,6 +65,26 @@ int div_by_zero()
 	TEST_HEADER;
 	int val = 1 / 0;
 }
+
+
+/* Dereference Null
+ * Asserts dereference null will return an exception
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: Goes to while loop
+ * Coverage: IDT Exception, PAGE_FAULT(dereference Null)
+ * Files: idt.c
+ */
+int dereference_null()
+{
+	TEST_HEADER;
+	int x;
+	int *ptr;
+	ptr = NULL;
+	x = *ptr;
+}
+
+
 /* Assertion Fail Test 
  * Asserts that asserting will assert that the program goes into a while loop
  * Inputs: None
@@ -175,8 +194,8 @@ int paging_struct_dref()
 /* Test suite entry point */
 void launch_tests()
 {
-	TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
-	if (TEST_DIV_BY_0)
-		div_by_zero();
+	//dereference_null();
+	//div_by_zero();
 }
