@@ -261,16 +261,13 @@ void launch_tests() {
 	// // launch your tests here
 	//
 	clear();
-<<<<<<< student-distrib/tests.c
-	TEST_OUTPUT("Paging Structs Members+Values", paging_struct_test());
-	TEST_OUTPUT("Paging Dereferencing", paging_struct_dref());
+	TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct_test());
+	TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
 	//TEST_OUTPUT("Div by 0: ", div_by_zero());
 	// dereference_null();
-=======
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test the keyboard", test_keyb_scancode());
 	// TEST_OUTPUT("Test RTC", test_rtc());
->>>>>>> student-distrib/tests.c
 
 }
