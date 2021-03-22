@@ -64,7 +64,13 @@ int idt_test()
 int div_by_zero()
 {
 	TEST_HEADER;
-	int val = 1 / 0;
+	int zero = 0;
+	int one = 1;
+
+	printf("I am about to divide by 0. ");
+	printf("%d", one / zero);
+	return 0;
+	
 }
 /* Assertion Fail Test 
  * Asserts that asserting will assert that the program goes into a while loop
@@ -78,6 +84,7 @@ int assertion_fail_test()
 {
 	asm volatile(
 			"int $15");
+	return 0;
 }
 
 /* Interrupt Test 
@@ -92,6 +99,8 @@ int interrupt_test()
 {
 	asm volatile(
 			"int $80");
+	return 0;
+
 }
 
 /* RTC Interrupt 
@@ -108,6 +117,8 @@ int rtc_test()
 
 	// TODO Put RTC intterupt test here from rtc.h
 	// waiting for RTC to be done
+	return 0;
+
 }
 
 /* Scancode keyboard test
@@ -123,6 +134,8 @@ int keyb_scancode()
 	TEST_HEADER;
 	// TODO handle keypress
 	// waiting on keyboards
+	return 0;
+
 }
 
 /* Paging struct test
@@ -138,6 +151,7 @@ int paging_struct_test()
 	TEST_HEADER;
 	// TODO check paging struct
 	// waiting on paging
+	return 0;
 }
 
 /* Paging deref test
@@ -172,6 +186,7 @@ int dereference_null()
     int *ptr;
     ptr = NULL;
     x = *ptr;
+	return 0;
 }
 
 // add more tests here
@@ -182,11 +197,12 @@ int dereference_null()
 /* Checkpoint 5 tests */
 
 /* Test suite entry point */
-void launch_tests(){
+void launch_tests() {
 	// TEST_OUTPUT("idt_test", idt_test());
 	// // launch your tests here
 	//
-	// divByZero();
+	clear();
+	TEST_OUTPUT("Div by 0: ", div_by_zero());
 	// dereference_null();
 
 }

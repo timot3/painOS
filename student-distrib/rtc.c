@@ -16,23 +16,12 @@ void initialize_rtc() {
     enable_irq(RTC_IRQ);
 }
 
-void runThing() {
-    // if(idt[0x28].present == 0) {
-    //     printf("PAIN\n");
-    //     return;
-    // }
-    // send_eoi(RTC_IRQ);
-    // test_interrupts();
-    //
-    //
-    // outb(RTC_C, RTC_PORT);	// select register C
-    // inb(CMOS_PORT);		// just throw away contents
-
+void rtc_handler() {
     //cli();
     outb(0x0C, RTC_PORT);
     inb(CMOS_PORT);
-    //printf("RUNTHING\n");
-    test_interrupts();
+    // printf("rtc_handler\n");
+    // test_interrupts();
     sti();
     send_eoi(RTC_IRQ);
 
