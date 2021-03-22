@@ -155,7 +155,7 @@ int test_keyb_scancode()
  * Coverage: Paging structs
  * Files: paging.c
  */
-int test_paging_struct_test()
+int test_paging_struct()
 {
 	int test_status = FAIL;
 	TEST_HEADER;
@@ -260,16 +260,12 @@ int test_dereference_null()
 /* Test suite entry point */
 void launch_tests() {
 	// TEST_OUTPUT("idt_test", idt_test());
-	// // launch your tests here
-	//
-	clear();
-	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct_test());
+	// launch your tests here
+	//clear();
+	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
 	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
-	// TEST_OUTPUT("Div by 0: ", div_by_zero());
-	// dereference_null();
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
-	// TEST_OUTPUT("Test the keyboard", test_keyb_scancode());
-	TEST_OUTPUT("Test RTC", test_rtc());
+	// TEST_OUTPUT("Test RTC", test_rtc());
 
 }
