@@ -204,8 +204,8 @@ void launch_tests() {
 	//
 	clear();
 
-	TEST_OUTPUT("Div by 0: ", div_by_zero());
+	// TEST_OUTPUT("Div by 0: ", div_by_zero());
 	// dereference_null();
-	TEST_OUTPUT("")
+	// TEST_OUTPUT("")
 
 }
