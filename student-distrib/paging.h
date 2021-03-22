@@ -26,7 +26,7 @@ typedef struct page_dir_entry
       char size : 1;          // 0 = 4kB, 1 = 4mB
       char ignored : 1;
       char available : 3;
-      char aligned_address : 20;
+      uint32_t aligned_address : 20;
     } __attribute__((packed));
   };
 } page_dir_entry_t;
@@ -48,7 +48,7 @@ typedef struct page_table_entry
       char zero : 1;          // all hail our wiki lord and savior
       char global : 1;        // prevents tlb from updang cached address if cr3
       char available : 3;
-      char aligned_address : 20;
+      uint32_t aligned_address : 20;
     } __attribute__((packed));
   };
 } page_table_entry_t;
