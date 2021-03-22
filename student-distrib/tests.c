@@ -188,20 +188,20 @@ int test_paging_struct_dref()
 
 int test_dereference_null()
 {
-    int x;
     int *ptr;
+    int x = 5;
 	int test_status = FAIL;
+
+
     TEST_HEADER;
-	printf("initializing variable x\n");
+	printf("initializing variable x = 5\n");
 	printf("initializing a pointer p = NULL\n");
     ptr = NULL;
-	printf("Setting x = *ptr\n");
-    x = *ptr;
-	printf("setting *ptr = NULL\n");
-	*ptr = NULL;
 	printf("setting x = *ptr\n");
-	x = *ptr;
-	printf("the value of x is: %d\n", x);
+    x = *ptr;
+
+	printf("x = %d\n", x);
+
 	test_status = PASS;
 	return test_status;
 }
