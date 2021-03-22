@@ -7,7 +7,8 @@
 #define PAGE_DIRECTORY_LENGTH 1024
 #define ADDRESS_SHIFT 12
 #define KERNEL_LOCATION 0x400000
-// 4kB
+#define VID_MEM 0xB8
+
 
 typedef struct page_dir_entry
 {
@@ -54,5 +55,9 @@ typedef struct page_table_entry
 } page_table_entry_t;
 
 extern void paging_init();
+
+
+extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len);
+extern void get_paging_table(page_table_entry_t *page_table_alt, int len);
 
 #endif /* PAGING_H */

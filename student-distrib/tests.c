@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "paging.h"
 
 #define PASS 1
 #define FAIL 0
@@ -139,19 +140,59 @@ int keyb_scancode()
 }
 
 /* Paging struct test
- * Tests the paging structs
+ * Tests the paging structs for members
  * Inputs: None
- * Outputs: FAIL/PASS
- * Side Effects: None
+ * Outputs: PASS 
+ * Side Effects: Crashes on failure
  * Coverage: Paging structs
  * Files: paging.c
  */
 int paging_struct_test()
 {
 	TEST_HEADER;
-	// TODO check paging struct
-	// waiting on paging
-	return 0;
+	int tmp, i;
+	page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH];
+	get_paging_directory(page_dir, PAGE_DIRECTORY_LENGTH);
+
+	page_table_entry_t page_table[PAGE_TABLE_LENGTH];
+	get_paging_table(page_table, PAGE_TABLE_LENGTH);
+	
+	
+	// These will error out if a member doesn't exist
+	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
+		tmp = page_dir[i].val;
+		tmp = page_dir[i].present;
+		tmp = page_dir[i].rw;
+		tmp = page_dir[i].us;
+		tmp = page_dir[i].write_through;
+		tmp = page_dir[i].cache_disable;
+		tmp = page_dir[i].accessed;
+		tmp = page_dir[i].zero;
+		tmp = page_dir[i].size;
+		tmp = page_dir[i].ignored;
+		tmp = page_dir[i].available;
+		tmp = page_dir[i].aligned_address;
+	}
+	
+
+	// check the members for table_entry
+	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
+		tmp = page_table[i].val;
+		tmp = page_table[i].present;
+		tmp = page_table[i].rw;
+		tmp = page_table[i].us;
+		tmp = page_table[i].write_through;
+		tmp = page_table[i].cache_disable;
+		tmp = page_table[i].accessed;
+		tmp = page_table[i].dirty;
+		tmp = page_table[i].zero;
+		tmp = page_table[i].global;
+		tmp = page_table[i].available;
+		tmp = page_table[i].aligned_address;
+	}
+
+	return PASS;
+
 }
 
 /* Paging deref test
@@ -165,16 +206,18 @@ int paging_struct_test()
 int paging_struct_dref()
 {
 	TEST_HEADER;
-	// TODO ensure paging is active
 	int data, i;
 	int *ptr;
 
 	ptr = (int *)VIDEO;
-	data = *ptr;
+	*ptr = 25;
 	for (i = 0; i < 5; i++)
 	{
-		ptr = (int *)data;
 		data = *ptr;
+		ptr = &data;
+		if (*ptr != data || &data != ptr){
+			return FAIL;
+		}
 	}
 	return PASS;
 }
@@ -202,7 +245,9 @@ void launch_tests() {
 	// // launch your tests here
 	//
 	clear();
-	TEST_OUTPUT("Div by 0: ", div_by_zero());
+	TEST_OUTPUT("Paging Structs Members+Values", paging_struct_test());
+	TEST_OUTPUT("Paging Dereferencing", paging_struct_dref());
+	//TEST_OUTPUT("Div by 0: ", div_by_zero());
 	// dereference_null();
 
 }
