@@ -5,10 +5,6 @@
 #include "i8259.h"
 #include "lib.h"
 
-/* Interrupt masks to determine which interrupts are enabled and disabled */
-uint8_t master_mask = 0xFF; /* IRQs 0-7  */
-uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
-
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
     // Using https://wiki.osdev.org/8259_PIC as reference
@@ -18,19 +14,23 @@ void i8259_init(void) {
     outb(ICW1, SLAVE_8259_PORT);
 
     // Send high bits of vector number
-    outb(ICW2_MASTER, MASTER_8259_PORT);
-    outb(ICW2_SLAVE, SLAVE_8259_PORT);
+    outb(ICW2_MASTER, MASTER_DATA_PORT);
+    outb(ICW2_SLAVE, SLAVE_DATA_PORT);
 
     // Tell slave master exists, give slave address
-    outb(ICW3_MASTER, MASTER_8259_PORT);
-    outb(ICW3_SLAVE, SLAVE_8259_PORT);
+    outb(ICW3_MASTER, MASTER_DATA_PORT);
+    outb(ICW3_SLAVE, SLAVE_DATA_PORT);
 
     // Send normal/auto EOI
-    outb(ICW4, MASTER_8259_PORT);
-    outb(ICW4, SLAVE_8259_PORT);
+    outb(ICW4, MASTER_DATA_PORT);
+    outb(ICW4, SLAVE_DATA_PORT);
+
+    // Mask data sent to PIC
+    outb(PORT_MASK, MASTER_8259_PORT+1);
+    outb(PORT_MASK, SLAVE_DATA_PORT);
 
     // Enable slave interrupts
-    enable_irq(SLAVE_8259_PORT);
+    enable_irq(ICW3_SLAVE);
 }
 
 /* Enable (unmask) the specified IRQ */
@@ -39,15 +39,15 @@ void enable_irq(uint32_t irq_num) {
 
     uint16_t port;
     uint8_t value;
- 
+
     if(irq_num < 8) {
-        port = MASTER_8259_PORT;
+        port = MASTER_DATA_PORT;
     } else {
-        port = SLAVE_8259_PORT;
+        port = SLAVE_DATA_PORT;
         irq_num -= 8;
     }
-    value = inb(port) | (1 << irq_num);
-    outb(value, port); 
+    value = inb(port) & ~(1 << irq_num);
+    outb(value, port);
 }
 
 /* Disable (mask) the specified IRQ */
@@ -56,15 +56,15 @@ void disable_irq(uint32_t irq_num) {
 
     uint16_t port;
     uint8_t value;
- 
+
     if(irq_num < 8) {
-        port = MASTER_8259_PORT;
+        port = MASTER_DATA_PORT;
     } else {
-        port = SLAVE_8259_PORT;
+        port = SLAVE_DATA_PORT;
         irq_num -= 8;
     }
-    value = inb(port) & ~(1 << irq_num);
-    outb(value, port); 
+    value = inb(port) | (1 << irq_num);
+    outb(value, port);
 }
 
 /* Send end-of-interrupt signal for the specified IRQ */
@@ -80,4 +80,5 @@ void send_eoi(uint32_t irq_num) {
         outb(EOI | irq_num, SLAVE_8259_PORT);
         outb(EOI | ICW3_SLAVE, MASTER_8259_PORT);
     }
+
 }

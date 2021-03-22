@@ -37,6 +37,7 @@ static inline void assertion_failure()
 int idt_test()
 {
 	TEST_HEADER;
+	printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
 	for (i = 0; i < 10; ++i)
@@ -52,7 +53,7 @@ int idt_test()
 
 	return result;
 }
-/* div0 Test
+/* div0 Test - Example
  * Asserts that dividing by zero will return an exception.
  * Inputs: None
  * Outputs: None
@@ -63,28 +64,14 @@ int idt_test()
 int div_by_zero()
 {
 	TEST_HEADER;
-	int val = 1 / 0;
+	int zero = 0;
+	int one = 1;
+
+	printf("I am about to divide by 0. ");
+	printf("%d", one / zero);
+	return 0;
+	
 }
-
-
-/* Dereference Null
- * Asserts dereference null will return an exception
- * Inputs: None
- * Outputs: None
- * Side Effects: Goes to while loop
- * Coverage: IDT Exception, PAGE_FAULT(dereference Null)
- * Files: idt.c
- */
-int dereference_null()
-{
-	TEST_HEADER;
-	int x;
-	int *ptr;
-	ptr = NULL;
-	x = *ptr;
-}
-
-
 /* Assertion Fail Test 
  * Asserts that asserting will assert that the program goes into a while loop
  * Inputs: None
@@ -97,6 +84,7 @@ int assertion_fail_test()
 {
 	asm volatile(
 			"int $15");
+	return 0;
 }
 
 /* Interrupt Test 
@@ -111,6 +99,8 @@ int interrupt_test()
 {
 	asm volatile(
 			"int $80");
+	return 0;
+
 }
 
 /* RTC Interrupt 
@@ -127,6 +117,8 @@ int rtc_test()
 
 	// TODO Put RTC intterupt test here from rtc.h
 	// waiting for RTC to be done
+	return 0;
+
 }
 
 /* Scancode keyboard test
@@ -142,6 +134,8 @@ int keyb_scancode()
 	TEST_HEADER;
 	// TODO handle keypress
 	// waiting on keyboards
+	return 0;
+
 }
 
 /* Paging struct test
@@ -157,6 +151,7 @@ int paging_struct_test()
 	TEST_HEADER;
 	// TODO check paging struct
 	// waiting on paging
+	return 0;
 }
 
 /* Paging deref test
@@ -184,6 +179,16 @@ int paging_struct_dref()
 	return PASS;
 }
 
+int dereference_null()
+{
+    TEST_HEADER;
+    int x;
+    int *ptr;
+    ptr = NULL;
+    x = *ptr;
+	return 0;
+}
+
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -192,10 +197,12 @@ int paging_struct_dref()
 /* Checkpoint 5 tests */
 
 /* Test suite entry point */
-void launch_tests()
-{
-	//TEST_OUTPUT("idt_test", idt_test());
-	// launch your tests here
-	//dereference_null();
-	//div_by_zero();
+void launch_tests() {
+	// TEST_OUTPUT("idt_test", idt_test());
+	// // launch your tests here
+	//
+	clear();
+	TEST_OUTPUT("Div by 0: ", div_by_zero());
+	// dereference_null();
+
 }
