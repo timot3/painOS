@@ -10,7 +10,16 @@ char scan_code_1[256] = {
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', 0, 0, 'a',
     's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'',
     '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm',
-    ',', '.', '/', 0, '*', 0, ' '};
+    ',', '.', '/', 0, '*', 0, ' ',
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
 
 //initalize keyboard
 void keyboard_init(){
@@ -21,8 +30,11 @@ void keyboard_init(){
 void keyboard_handler(){
     cli();
     char byte = inb(KB_PORT);
-    char character = scan_code_1[(int) byte];
-    putc(character);
+    //only look for keypresses if value is defined (0x39 is last defined value in table above)
+    if (byte <= 0x39){
+        char character = scan_code_1[byte];
+        putc(character);
+    }
     send_eoi(KB_IRQ);
     sti();
 }
