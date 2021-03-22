@@ -9,17 +9,17 @@
     name: ;\
         pushl %ebp ;\
         pushl %eax ;\
-        pushl %ebx ;\
         pushl %ecx ;\
-        pushl %edx ;\
         pushl %edi ;\
+        pushl %edx ;\
+        pushl %ebx ;\
         pushl %esi ;\
         call functionCalled ;\
         popl %esi ;\
-        popl %edi ;\
-        popl %edx ;\
-        popl %ecx ;\
         popl %ebx ;\
+        popl %edx ;\
+        popl %edi ;\
+        popl %ecx ;\
         popl %eax ;\
         popl %ebp ;\
         iret ;\

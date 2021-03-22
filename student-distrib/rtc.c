@@ -38,6 +38,8 @@ void initialize_rtc() {
  *   RETURN VALUE: none
  */
 void rtc_handler() {
+    cli();
+    
     // Clear register C otherwise interrupt won't happen again
     // - currently don't care about its value
     #ifdef RTC_TEST
