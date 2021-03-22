@@ -10,7 +10,6 @@
 #include "tests.h"
 #include "idt.h"
 #include "rtc.h"
-#include "keyboard.h"
 
 #define RUN_TESTS
 
@@ -139,14 +138,7 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
 
-    /* Init the PIC */
-    i8259_init();
 
-    // Initialize RTC
-    initialize_rtc();
-
-    // Initalize Keyboard
-    keyboard_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
@@ -158,10 +150,17 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     initialize_idt();
     printf("Finished enabling Interrupts\n");
-    //sti();
+    
+
+    /* Init the PIC */
+    i8259_init();
+    // Initialize RTC
+    initialize_rtc();
+    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
+    // test_interrupts();
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
