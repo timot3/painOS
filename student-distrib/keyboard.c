@@ -21,8 +21,6 @@ char scan_code_1[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-char last;
-
 /*
  * keyboard_init
  *   DESCRIPTION: Initialize the keyboard
@@ -45,14 +43,9 @@ void keyboard_init() {
 void keyboard_handler() {
     cli();
     unsigned int byte = inb(KB_PORT);
-
-    // Bad way of getting rid of spaces -> just compare with last value
-    if(byte != last + 0x80) {
-        char c = scan_code_1[byte];
-        last = byte;
+    char c = scan_code_1[byte];
+    if(c != 0)
         putc(c);
-    }
-
     send_eoi(KB_IRQ);
     sti();
 }
