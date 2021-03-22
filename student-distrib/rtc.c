@@ -1,6 +1,7 @@
 #include "rtc.h"
 #include "lib.h"
 #include "i8259.h"
+#include "x86_desc.h"
 
 void initialize_rtc() {
     // Using https://wiki.osdev.org/RTC as reference
@@ -39,6 +40,11 @@ void initialize_rtc() {
 }
 
 void runThing() {
+    // if(idt[0x28].present == 0) {
+    //     printf("PAIN\n");
+    //     return;
+    // }
+    send_eoi(RTC_IRQ);
     test_interrupts();
 
 

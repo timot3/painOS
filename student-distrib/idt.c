@@ -165,11 +165,13 @@ void initialize_idt() {
     SET_IDT_ENTRY(idt[18],      MACHINE_CKECK);
     SET_IDT_ENTRY(idt[19],      SIMD_FLOATING_POINT_EXCEPTION);
 
-    SET_IDT_ENTRY(idt[RTC_NUM], runThing);
-    SET_IDT_ENTRY(idt[KB_NUM],  keyboard_handler);
 
     idt[RTC_NUM].present = 1;
     idt[KB_NUM].present  = 1;
+
+    SET_IDT_ENTRY(idt[RTC_NUM], runThing);
+    SET_IDT_ENTRY(idt[KB_NUM],  keyboard_handler);
+
 
     // Load IDT after initialization
     lidt(idt_desc_ptr);
