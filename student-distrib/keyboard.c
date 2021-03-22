@@ -17,8 +17,10 @@ void keyboard_init(){
 }
 
 void keyboard_handler(){
+    cli();
     char byte = inb(KB_PORT);
     char character = scan_code_1[byte];
     putc(character);
     send_eoi(KB_IRQ);
+    sti();
 }
