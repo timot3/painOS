@@ -21,6 +21,7 @@ void keyboard_init(){
 void keyboard_handler(){
     cli();
     char byte = inb(KB_PORT);
+    //only look for keypresses if value is defined (0x39 is last defined value in table above)
     if (byte <= 0x39){
         char character = scan_code_1[byte];
         putc(character);
