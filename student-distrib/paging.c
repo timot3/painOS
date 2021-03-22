@@ -5,6 +5,19 @@ extern void edit_paging_flags(int page_dir_addr);
 page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH] __attribute__((aligned(PAGE_DIRECTORY_LENGTH * 4)));
 page_table_entry_t page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
 
+/*
+ * paging_init
+ *   DESCRIPTION: Initializes the paging
+ *   INPUTS: none
+ *   OUTPUTS: None
+ *   RETURN VALUE: None
+ *   Side Effects:
+ * * Changes Control Registers
+ * * Creates Page Directory
+ * * Creates Page Table(s)
+ * * Implements paging for kernel space
+ * * Implements paging for Video memory 
+ */
 void paging_init()
 {
   int i;
@@ -31,32 +44,31 @@ void paging_init()
   page_dir[0].aligned_address = ((int) &page_table) >> ADDRESS_SHIFT;
   page_dir[0].present = 1;
   page_dir[0].cache_disable = 1;
-  page_dir[0].val = (int)&page_table | 0x17;
-
-  // rw should probably be 0
-  // set us?
-  // set write_through?
 
 
   // connect 4-8 MB memory
-
   page_dir[1].aligned_address = KERNEL_LOCATION >> ADDRESS_SHIFT;
   page_dir[1].present = 1;
   page_dir[1].rw = 1;
   page_dir[1].size = 1; // 4 MB
-  page_dir[1].val = 0x400083;
 
   // connect video memory 
   page_table[VID_MEM].aligned_address = 0xB8;
   page_table[VID_MEM].present = 1;
   page_table[VID_MEM].cache_disable = 1;
-  page_table[184].val = 0xB8117;
+
 
   // WHY DOES THIS AND ONLY THIS WORK?
   edit_paging_flags((int)page_dir);
 }
 
-
+/*
+ * get_paging_directory
+ *   DESCRIPTION: Copies page_dir for testing
+ *   INPUTS: none
+ *   OUTPUTS: copies data of page_dir
+ *   RETURN VALUE: none
+ */
 extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len){
   int i;
   for(i = 0; i<len; i++)
@@ -64,6 +76,15 @@ extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len){
       page_dir_alt[i]=page_dir[i];
    }
 }
+
+/*
+ * get_paging_table
+ *   DESCRIPTION: Copies page_table for testing
+ *   INPUTS: none
+ *   OUTPUTS: copies data of page_table
+ *   RETURN VALUE: none
+ */
+
 extern void get_paging_table(page_table_entry_t *page_table_alt, int len){
   int i;
   for(i = 0; i<len; i++)

@@ -3,13 +3,13 @@
 
 #include "types.h"
 
-#define PAGE_TABLE_LENGTH 1024
+#define PAGE_TABLE_LENGTH 1024 
 #define PAGE_DIRECTORY_LENGTH 1024
-#define ADDRESS_SHIFT 12
-#define KERNEL_LOCATION 0x400000
-#define VID_MEM 0xB8
+#define ADDRESS_SHIFT 12 // to shift to fit into aligned_address
+#define KERNEL_LOCATION 0x400000 // for the kernel block
+#define VID_MEM 0xB8 // for vid mem block
 
-
+// PDE struct
 typedef struct page_dir_entry
 {
   // 4B, needs to accomodate mapped or unmapped
@@ -32,6 +32,7 @@ typedef struct page_dir_entry
   };
 } page_dir_entry_t;
 
+// PTE struct
 typedef struct page_table_entry
 {
   // 4B, needs to accomodate mapped or unmapped
@@ -54,10 +55,13 @@ typedef struct page_table_entry
   };
 } page_table_entry_t;
 
+// Initializes the paging function, including creating the struct array and 
+// setting the Control Registers
 extern void paging_init();
 
-
+// For test functions, copies paging directory
 extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len);
+// For test functions, copies a paging table
 extern void get_paging_table(page_table_entry_t *page_table_alt, int len);
 
 #endif /* PAGING_H */
