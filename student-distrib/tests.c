@@ -70,9 +70,9 @@ int test_div_by_zero()
 	printf("I am about to divide by 0. ");
 	printf("%d", one / zero);
 	return 0;
-	
+
 }
-/* Assertion Fail Test 
+/* Assertion Fail Test
  * Asserts that asserting will assert that the program goes into a while loop
  * Inputs: None
  * Outputs: None
@@ -87,7 +87,7 @@ int test_assertion_fail()
 	return 0;
 }
 
-/* Interrupt Test 
+/* Interrupt Test
  * Asserts that interrupts are handled
  * Inputs: None
  * Outputs: None
@@ -103,7 +103,7 @@ int test_sys_interrupt()
 
 }
 
-/* RTC Interrupt 
+/* RTC Interrupt
  * Asserts that a RTC Interrupt will be caught.
  * Inputs: None
  * Outputs: None
