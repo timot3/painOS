@@ -1,11 +1,13 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "paging.h"
 
 #define PASS 1
 #define FAIL 0
 #define TEST_DIV_BY_0 1
 #define VIDEO 0xB8000
+
 
 /* format these macros as you see fit */
 #define TEST_HEADER \
@@ -37,12 +39,12 @@ static inline void assertion_failure()
 int test_idt()
 {
 	TEST_HEADER;
-	// printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
+	// check that the first 10 entries of the idt exist and aren't 0
 	for (i = 0; i < 10; ++i)
 	{
-		PRINT_WHERE;
+		// PRINT_WHERE;
 		if ((idt[i].offset_15_00 == NULL) &&
 				(idt[i].offset_31_16 == NULL))
 		{
@@ -64,27 +66,15 @@ int test_idt()
 int test_div_by_zero()
 {
 	TEST_HEADER;
+	// get rid of compiler warnings
 	int zero = 0;
 	int one = 1;
 
 	printf("I am about to divide by 0. ");
+	// div by zero exception
 	printf("%d", one / zero);
-	return 0;
+	return FAIL;
 
-}
-/* Assertion Fail Test
- * Asserts that asserting will assert that the program goes into a while loop
- * Inputs: None
- * Outputs: None
- * Side Effects: Goes to while loop
- * Coverage: IDT Exception, assert
- * Files: idt.c
- */
-int test_assertion_fail()
-{
-	asm volatile(
-			"int $15");
-	return 0;
 }
 
 /* Interrupt Test
@@ -97,8 +87,7 @@ int test_assertion_fail()
  */
 int test_sys_interrupt()
 {
-	asm volatile(
-			"int $128"); // directly call system interrupt.
+	asm volatile("int $128"); // directly call system interrupt
 	return 0;
 
 }
@@ -114,51 +103,67 @@ int test_sys_interrupt()
 int test_rtc()
 {
 	TEST_HEADER;
-	test_interrupts();
+	// test_interrupts();
 
-	// TODO Put RTC intterupt test here from rtc.h
-	// waiting for RTC to be done
+	printf("This test has been moved to a compiler macro in tests.h.\n");
+	printf("Uncomment it to test RTC.\n");
+
 	return PASS;
-
-}
-
-/* Scancode keyboard test
- * Tests some keyboard scancodes
- * Inputs: None
- * Outputs: None
- * Side Effects: Goes to while loop
- * Coverage: IDT Exception
- * Files: idt.c
- */
-int test_keyb_scancode()
-{
-	uint32_t i;
-	TEST_HEADER;
-	// TODO handle keypress
-	// waiting on keyboards
-
-	printf("Go ahead, press some keys :)\n");
-	printf("This for loop goes for 5000m iterations. Have fun!");
-	for (i = 0; i < 500000000; ++i);
-	return PASS;
-
 }
 
 /* Paging struct test
- * Tests the paging structs
+ * Tests the paging structs for members
  * Inputs: None
- * Outputs: FAIL/PASS
- * Side Effects: None
+ * Outputs: PASS 
+ * Side Effects: Crashes on failure
  * Coverage: Paging structs
  * Files: paging.c
  */
-int test_paging_struct_test()
+int test_paging_struct()
 {
-	int test_status = FAIL;
 	TEST_HEADER;
-	// TODO check paging struct
-	// waiting on paging
-	return test_status;
+	int tmp, i;
+	page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH];
+	get_paging_directory(page_dir, PAGE_DIRECTORY_LENGTH);
+
+	page_table_entry_t page_table[PAGE_TABLE_LENGTH];
+	get_paging_table(page_table, PAGE_TABLE_LENGTH);
+	
+	
+	// These will error out if a member doesn't exist
+	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
+		tmp = page_dir[i].val;
+		tmp = page_dir[i].present;
+		tmp = page_dir[i].rw;
+		tmp = page_dir[i].us;
+		tmp = page_dir[i].write_through;
+		tmp = page_dir[i].cache_disable;
+		tmp = page_dir[i].accessed;
+		tmp = page_dir[i].zero;
+		tmp = page_dir[i].size;
+		tmp = page_dir[i].ignored;
+		tmp = page_dir[i].available;
+		tmp = page_dir[i].aligned_address;
+	}
+	
+
+	// check the members for table_entry
+	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
+		tmp = page_table[i].val;
+		tmp = page_table[i].present;
+		tmp = page_table[i].rw;
+		tmp = page_table[i].us;
+		tmp = page_table[i].write_through;
+		tmp = page_table[i].cache_disable;
+		tmp = page_table[i].accessed;
+		tmp = page_table[i].dirty;
+		tmp = page_table[i].zero;
+		tmp = page_table[i].global;
+		tmp = page_table[i].available;
+		tmp = page_table[i].aligned_address;
+	}
+
+	return PASS;
 }
 
 /* Paging deref test
@@ -172,33 +177,53 @@ int test_paging_struct_test()
 int test_paging_struct_dref()
 {
 	TEST_HEADER;
-	// TODO ensure paging is active
 	int data, i;
 	int *ptr;
-
+	// test that we can access memory we should be able to access
 	ptr = (int *)VIDEO;
-	data = *ptr;
+	*ptr = 42;
+	// repeat 5 times
 	for (i = 0; i < 5; i++)
 	{
-		ptr = (int *)data;
 		data = *ptr;
+		ptr = &data;
+		// if access failed, then test failed
+		if (*ptr != data || &data != ptr){
+			return FAIL;
+		}
 	}
 	return PASS;
 }
 
+/* dereference null test
+ * Tests the dereferencing of null ptr
+ * Inputs: None
+ * Outputs: what is currently happening in the code
+ * Side Effects: crashes if failure
+ * Coverage: Paging structs
+ * Files: paging.c
+ */
 int test_dereference_null()
 {
+	// init variables
+    int *ptr;
+    int x = 5;
+	int test_status = FAIL;
+
+
     TEST_HEADER;
-	int test_result = FAIL;
 	printf("initializing variable x = 5\n");
 	printf("initializing a pointer p = NULL\n");
-    int *ptr;
     ptr = NULL;
-    int x;
+	printf("setting x = *ptr\n");
+	// should cause page fault
     x = *ptr;
 
-	test_result = PASS;
-	return test_result;
+	// should never reach here
+	printf("x = %d\n", x);
+
+	test_status = PASS;
+	return test_status;
 }
 
 // add more tests here
@@ -210,14 +235,13 @@ int test_dereference_null()
 
 /* Test suite entry point */
 void launch_tests() {
-	// TEST_OUTPUT("idt_test", idt_test());
-	// // launch your tests here
-	//
-	clear();
+	// launch your tests here
+	// clear();
+	// TEST_OUTPUT("Test idt", test_idt());
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
-	// TEST_OUTPUT("Test dereference null", test_dereference_null());
-	// TEST_OUTPUT("Test the keyboard", test_keyb_scancode());
 	// TEST_OUTPUT("Test RTC", test_rtc());
-	TEST_OUTPUT("Test a sample system interrupt", test_sys_interrupt());
-
+	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
+	TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 }

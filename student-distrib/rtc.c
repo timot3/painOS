@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "i8259.h"
 #include "x86_desc.h"
+#include "tests.h"
 
 /*
  * initialize_rtc
@@ -39,6 +40,9 @@ void initialize_rtc() {
 void rtc_handler() {
     // Clear register C otherwise interrupt won't happen again
     // - currently don't care about its value
+    #ifdef RTC_TEST
+    test_interrupts();
+    #endif
     outb(RTC_C, RTC_PORT);
     inb(CMOS_PORT);
 
