@@ -14,6 +14,14 @@
 	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
 #define TEST_OUTPUT(name, result) \
 	printf("[TEST %s] Result = %s\n", name, (result) ? "PASS" : "FAIL");
+
+static inline void assertion_failure()
+{
+	/* Use exception #15 for assertions, otherwise
+	   reserved by Intel */
+	asm volatile("int $15");
+}
+
 #define PRINT_WHERE \
 	printf("In %s at %s:%d\n", __FUNCTION__, __FILE__, __LINE__)
 
@@ -31,6 +39,7 @@
 int test_idt()
 {
 	TEST_HEADER;
+	// printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
 	for (i = 0; i < 10; ++i)
@@ -111,7 +120,6 @@ int test_rtc()
 	printf(" Comment it out to not test.\n");
 
 	return PASS;
-
 }
 
 /* Paging struct test
