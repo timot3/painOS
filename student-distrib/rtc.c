@@ -23,7 +23,7 @@ void initialize_rtc() {
     outb(prev | 0x40, CMOS_PORT); // Turn off bit 6 of register B
     printf("before irq -- prev = %d\n", (int)prev);
     sti();
-    enable_irq(RTC_IRQ);
+    //enable_irq(RTC_IRQ);
     printf("after irq.\n");
 
     // make rtc handler that dumps (write register c to cmd port, take in whatever at data port) the value at register C
@@ -31,9 +31,18 @@ void initialize_rtc() {
     int rate = 1;
     rate &= 0x0F;			// rate must be above 2 and not over 15
     cli();
-    outb(0x8A, RTC_PORT);		// set index to register A, disable NMI
+    outb(RTC_A, RTC_PORT);		// set index to register A, disable NMI
     prev=inb(CMOS_PORT);	// get initial value of register A
-    outb(0x8A, RTC_PORT);		// reset index to A
+    outb(RTC_A, RTC_PORT);		// reset index to A
     outb((prev & 0xF0) | rate, 0x71); //write only our rate to A. Note, rate is the bottom 4 bits.
     enable_irq(RTC_IRQ);
+}
+
+void runThing() {
+    test_interrupts();
+
+
+    outb(RTC_C, RTC_PORT);	// select register C
+    inb(CMOS_PORT);		// just throw away contents
+
 }
