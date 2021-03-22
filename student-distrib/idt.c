@@ -129,7 +129,7 @@ void initialize_idt() {
         idt[i].dpl          = 0;
         idt[i].present      = 0;
 
-        if(i >= NUM_SYSTEM_INTERRUPTS) {
+        if(i == NUM_SYSTEM_INTERRUPTS) {
             idt[i].dpl = 3;
         }
     }
@@ -167,12 +167,12 @@ void initialize_idt() {
 
 
     idt[RTC_NUM].present = 1;
-    idt[KB_NUM].present  = 1;
+    //idt[KB_NUM].present  = 1;
 
     SET_IDT_ENTRY(idt[RTC_NUM], runThing);
-    SET_IDT_ENTRY(idt[KB_NUM],  keyboard_handler);
+    //SET_IDT_ENTRY(idt[KB_NUM],  keyboard_handler);
 
 
     // Load IDT after initialization
-    lidt(idt_desc_ptr);
+    //lidt(idt_desc_ptr);
 }

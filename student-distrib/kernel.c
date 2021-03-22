@@ -138,11 +138,7 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
 
-    /* Init the PIC */
-    i8259_init();
 
-    // Initialize RTC
-    initialize_rtc();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
@@ -154,6 +150,12 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     initialize_idt();
     printf("Finished enabling Interrupts\n");
+    
+
+    /* Init the PIC */
+    i8259_init();
+    // Initialize RTC
+    initialize_rtc();
     sti();
 
 #ifdef RUN_TESTS

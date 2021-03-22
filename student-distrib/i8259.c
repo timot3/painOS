@@ -15,7 +15,6 @@ uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
 void i8259_init(void) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
-
     // Start initialization sequence
     outb(ICW1, MASTER_8259_PORT);
     outb(ICW1, SLAVE_8259_PORT);
@@ -32,8 +31,11 @@ void i8259_init(void) {
     outb(ICW4, MASTER_8259_PORT + 1);
     outb(ICW4, SLAVE_8259_PORT + 1);
 
+    outb(0xFF, MASTER_8259_PORT+1);
+    outb(0xFF, SLAVE_8259_PORT+1);
+
     // Enable slave interrupts
-    enable_irq(SLAVE_8259_PORT);
+    enable_irq(ICW3_SLAVE);
 }
 
 /* Enable (unmask) the specified IRQ */
@@ -42,15 +44,15 @@ void enable_irq(uint32_t irq_num) {
 
     uint16_t port;
     uint8_t value;
- 
+
     if(irq_num < 8) {
-        port = MASTER_8259_PORT;
+        port = MASTER_8259_PORT+1;
     } else {
-        port = SLAVE_8259_PORT;
+        port = SLAVE_8259_PORT+1;
         irq_num -= 8;
     }
     value = inb(port) & ~(1 << irq_num);
-    outb(value, port); 
+    outb(value, port);
 }
 
 /* Disable (mask) the specified IRQ */
@@ -59,15 +61,15 @@ void disable_irq(uint32_t irq_num) {
 
     uint16_t port;
     uint8_t value;
- 
+
     if(irq_num < 8) {
-        port = MASTER_8259_PORT;
+        port = MASTER_8259_PORT+1;
     } else {
-        port = SLAVE_8259_PORT;
+        port = SLAVE_8259_PORT+1;
         irq_num -= 8;
     }
     value = inb(port) | (1 << irq_num);
-    outb(value, port); 
+    outb(value, port);
 }
 
 /* Send end-of-interrupt signal for the specified IRQ */
@@ -83,4 +85,6 @@ void send_eoi(uint32_t irq_num) {
         outb(EOI | irq_num, SLAVE_8259_PORT);
         outb(EOI | ICW3_SLAVE, MASTER_8259_PORT);
     }
+
+    //sti();
 }
