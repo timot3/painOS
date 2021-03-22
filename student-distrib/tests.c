@@ -114,6 +114,7 @@ int interrupt_test()
 int rtc_test()
 {
 	TEST_HEADER;
+	test_interrupts();
 
 	// TODO Put RTC intterupt test here from rtc.h
 	// waiting for RTC to be done
@@ -202,7 +203,9 @@ void launch_tests() {
 	// // launch your tests here
 	//
 	clear();
+
 	TEST_OUTPUT("Div by 0: ", div_by_zero());
 	// dereference_null();
+	TEST_OUTPUT("")
 
 }
