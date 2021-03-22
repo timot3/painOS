@@ -14,4 +14,7 @@ int dereference_null();
 
 void launch_tests();
 
+// #define RTC_TEST 1
+
+
 #endif /* TESTS_H */

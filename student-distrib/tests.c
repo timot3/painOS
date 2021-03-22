@@ -8,6 +8,7 @@
 #define TEST_DIV_BY_0 1
 #define VIDEO 0xB8000
 
+
 /* format these macros as you see fit */
 #define TEST_HEADER \
 	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
@@ -115,10 +116,11 @@ int test_sys_interrupt()
 int test_rtc()
 {
 	TEST_HEADER;
-	test_interrupts();
+	// test_interrupts();
 
-	// TODO Put RTC intterupt test here from rtc.h
-	// waiting for RTC to be done
+	printf("This test has been moved to a compiler macro in tests.h.\n");
+	printf(" Comment it out to not test.\n");
+
 	return PASS;
 
 }
@@ -261,13 +263,13 @@ void launch_tests() {
 	// // launch your tests here
 	//
 	clear();
-	TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct_test());
-	TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
-	//TEST_OUTPUT("Div by 0: ", div_by_zero());
+	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct_test());
+	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	// TEST_OUTPUT("Div by 0: ", div_by_zero());
 	// dereference_null();
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test the keyboard", test_keyb_scancode());
-	// TEST_OUTPUT("Test RTC", test_rtc());
+	TEST_OUTPUT("Test RTC", test_rtc());
 
 }
