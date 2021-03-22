@@ -163,11 +163,13 @@ void entry(unsigned long magic, unsigned long addr)
     i8259_init();
     // Initialize RTC
     initialize_rtc();
-<<<<<<< student-distrib/kernel.c
+
+    //initalize Paging
     paging_init();
-=======
+
+    //initalize Keyboard
     keyboard_init();
->>>>>>> student-distrib/kernel.c
+
     sti();
 
 #ifdef RUN_TESTS
