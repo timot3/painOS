@@ -65,7 +65,8 @@ void paging_init()
 /*
  * get_paging_directory
  *   DESCRIPTION: Copies page_dir for testing
- *   INPUTS: none
+ *   INPUTS: page_dir_alt: new page dir to copy into
+ *           len: length of page dir to copy
  *   OUTPUTS: copies data of page_dir
  *   RETURN VALUE: none
  */
@@ -80,8 +81,8 @@ extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len){
 /*
  * get_paging_table
  *   DESCRIPTION: Copies page_table for testing
- *   INPUTS: none
- *   OUTPUTS: copies data of page_table
+*   INPUTS: page_dir_alt: new page dir to copy into
+ *           len: length *   OUTPUTS: copies data of page_table
  *   RETURN VALUE: none
  */
 
