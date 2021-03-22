@@ -44,6 +44,7 @@ void keyboard_handler() {
     cli();
     unsigned int byte = inb(KB_PORT);
     char c = scan_code_1[byte];
+    //gets rid of spaces from key unpresses
     if(c != 0)
         putc(c);
     send_eoi(KB_IRQ);
