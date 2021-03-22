@@ -210,7 +210,7 @@ int paging_struct_dref()
 	int *ptr;
 
 	ptr = (int *)VIDEO;
-	*ptr = 25;
+	*ptr = 42;
 	for (i = 0; i < 5; i++)
 	{
 		data = *ptr;
