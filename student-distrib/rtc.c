@@ -63,7 +63,7 @@ void rtc_handler() {
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-int rtc_open() {
+uint8_t rtc_open() {
     // Use helper function to set frequency to 2Hz
     setFrequency(0x02);
 
@@ -77,7 +77,7 @@ int rtc_open() {
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-int rtc_close() {
+uint8_t rtc_close() {
     return 0;
 }
 
@@ -88,7 +88,7 @@ int rtc_close() {
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-int rtc_read() {
+uint8_t rtc_read() {
     interruptFlag = 0;
 
     // Spin until new interrupt occurs
@@ -106,9 +106,9 @@ int rtc_read() {
  *   OUTPUTS: none
  *   RETURN VALUE: -1 in invalid frequency input, 0 otherwise
  */
-int rtc_write(void *buffer, int size) {
+uint8_t rtc_write(void *buffer, uint32_t size) {
     // Change frequency using helper function
-    return setFrequency(*(int*)buffer);
+    return setFrequency(*(uint16_t*)buffer);
 }
 
 /*
@@ -118,7 +118,7 @@ int rtc_write(void *buffer, int size) {
  *   OUTPUTS: none
  *   RETURN VALUE: -1 on invalid input (not in range, not power of 2), 0 otherwise
  */
-int setFrequency(int freq) {
+uint8_t setFrequency(uint16_t freq) {
     // Ensure value is within bounds (limited by kernel to 1024, can go to 8192) and is power of 2
     if(freq < 1 || freq > 1024 || (freq & (freq - 1)) != 0)
         return -1;
