@@ -5,7 +5,13 @@
 #include "i8259.h"
 #include "lib.h"
 
-/* Initialize the 8259 PIC */
+/*
+ * i8259_init
+ *   DESCRIPTION: Initialize the 8259 PIC
+ *   INPUTS: none
+ *   OUTPUTS: PIC initialization
+ *   RETURN VALUE: none
+ */
 void i8259_init(void) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
@@ -33,7 +39,13 @@ void i8259_init(void) {
     enable_irq(ICW3_SLAVE);
 }
 
-/* Enable (unmask) the specified IRQ */
+/*
+ * enable_irq
+ *   DESCRIPTION: Enable (unmask) the specified IRQ
+ *   INPUTS: irq_num - IRQ number of desired device (0-15 inclusive)
+ *   OUTPUTS: IRQ of desired device will be enabled
+ *   RETURN VALUE: none
+ */
 void enable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
@@ -41,16 +53,26 @@ void enable_irq(uint32_t irq_num) {
     uint8_t value;
 
     if(irq_num < 8) {
+        // Set port as master
         port = MASTER_DATA_PORT;
     } else {
+        // Set port as slave, change irq_num to get correct location
         port = SLAVE_DATA_PORT;
         irq_num -= 8;
     }
+
+    // Send desired command
     value = inb(port) & ~(1 << irq_num);
     outb(value, port);
 }
 
-/* Disable (mask) the specified IRQ */
+/*
+ * disable_irq
+ *   DESCRIPTION: Disable (mask) the specified IRQ
+ *   INPUTS: irq_num - IRQ number of desired device (0-15 inclusive)
+ *   OUTPUTS: IRQ of desired device will be disabled
+ *   RETURN VALUE: none
+ */
 void disable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
@@ -58,24 +80,34 @@ void disable_irq(uint32_t irq_num) {
     uint8_t value;
 
     if(irq_num < 8) {
+        // Set port as master
         port = MASTER_DATA_PORT;
     } else {
+        // Set port as slave, change irq_num to get correct location
         port = SLAVE_DATA_PORT;
         irq_num -= 8;
     }
+
+    // Send desired command
     value = inb(port) | (1 << irq_num);
     outb(value, port);
 }
 
-/* Send end-of-interrupt signal for the specified IRQ */
+/*
+ * send_eoi
+ *   DESCRIPTION: Send end-of-interrupt signal for the specified IRQ
+ *   INPUTS: irq_num - IRQ number of desired device (0-15 inclusive)
+ *   OUTPUTS: IRQ of desired device will recieve EOI command
+ *   RETURN VALUE: none
+ */
 void send_eoi(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
     if(irq_num < 8) {
-        // Send master EOI
+        // Send EOI to master
         outb(EOI | irq_num, MASTER_8259_PORT);
     } else {
-        // Send slave (and master) EOI
+        // Send EOI to slave (and master)
         irq_num -= 8;
         outb(EOI | irq_num, SLAVE_8259_PORT);
         outb(EOI | ICW3_SLAVE, MASTER_8259_PORT);

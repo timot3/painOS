@@ -6,11 +6,12 @@
 #define CMOS_PORT 0x71
 #define RTC_A 0x8A
 #define RTC_B 0x8B
-#define RTC_C 0x8C
+#define RTC_C 0x0C
 
 // Given in lectures/notes
 #define RTC_IRQ 0x8
 
+// Functions currently required for RTC stuff
 void initialize_rtc();
 void rtc_handler();
 

@@ -2,45 +2,56 @@
 #include "lib.h"
 #include "i8259.h"
 #include "x86_desc.h"
+#include "tests.h"
 
+/*
+ * initialize_rtc
+ *   DESCRIPTION: Initializes the RTC
+ *   INPUTS: none
+ *   OUTPUTS: makes RTC work
+ *   RETURN VALUE: none
+ */
 void initialize_rtc() {
     // Using https://wiki.osdev.org/RTC as reference
 
-
-    cli();        // important that no interrupts happen (perform a CLI)
-    outb(0x8A, RTC_PORT);    // select Status Register A, and disable NMI (by setting the 0x80 bit)
-    outb(0x20, CMOS_PORT);    // write to CMOS/RTC RAM
-    sti();        // (perform an STI) and reenable NMI if you wish
-
     cli();
+    // Disable NMI
     outb(RTC_B, RTC_PORT);
+    // Read value of register B
     char prev = inb(CMOS_PORT);
 
+    // Set index again (read resets index to register D)
     outb(RTC_B, RTC_PORT);
+    // Write previous value read ORed with 0x40 -> turns on bit 6 of register B
     outb(prev | 0x40, CMOS_PORT);
     sti();
+
+    // Enable interrupt requests for RTC on PIC
     enable_irq(RTC_IRQ);
-    printf("after irq.\n");
-
-
-    // Changes frequency
-    // int rate = 1;
-    // rate &= 0x0F;			// rate must be above 2 and not over 15
-    // cli();
-    // outb(0x8A, 0x70);		// set index to register A, disable NMI
-    // prev=inb(0x71);	// get initial value of register A
-    // outb(0x8A, 0x70);		// reset index to A
-    // outb((prev & 0xF0) | rate, 0x71); //write only our rate to A. Note, rate is the bottom 4 bits.
-    // enable_irq(RTC_IRQ);
 }
 
+/*
+ * rtc_handler
+ *   DESCRIPTION: called every time RTC sends interrupt command
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ */
 void rtc_handler() {
-    //cli();
-    outb(0x0C, RTC_PORT);
-    inb(CMOS_PORT);
-    // printf("rtc_handler\n");
-    // test_interrupts();
-    sti();
-    send_eoi(RTC_IRQ);
+    cli();
 
+    // Clear register C otherwise interrupt won't happen again
+    // - currently don't care about its value
+    #ifdef RTC_TEST
+    test_interrupts();
+    #endif
+    outb(RTC_C, RTC_PORT);
+    inb(CMOS_PORT);
+
+    // Comment out test_interrupts to make screen not weird
+    //test_interrupts();
+    sti();
+
+    // Send EOI so device knows we're done
+    send_eoi(RTC_IRQ);
 }
