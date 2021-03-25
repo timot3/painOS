@@ -58,22 +58,7 @@ void rtc_handler() {
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
 int rtc_open() {
-    // Using https://wiki.osdev.org/RTC as reference
-
-    // Set frequency to 2HZ
-    // int freq = 0x0F;
-    //
-    // cli();
-    //
-    // outb(RTC_A, RTC_PORT);
-    // char prev = inb(CMOS_PORT);
-    // outb(RTC_A, RTC_PORT);
-    // outb((prev & 0xF0) | freq, CMOS_PORT);
-    //
-    // sti();
-    //
-    // return 0;
-
+    // Use helper function to set frequency to 2HZ
     return setFrequency(0x02);
 }
 
@@ -119,57 +104,24 @@ int rtc_write(int freq) {
  *   RETURN VALUE: none
  */
 int setFrequency(int freq) {
+    // Ensure value is within bounds and is power of 2
+    if(freq < 1 || freq > 8192 || (freq & (freq - 1)) != 0)
+        return -1;
+
     // Frequency values based on https://courses.grainger.illinois.edu/ece391/sp2021/secure/references/ds12887.pdf table 3 (pg 19)
-    // Convert desired frequency into bits for register A, return -1 if frequency is not valid
+    // Convert desired frequency into bits for register A
     int regAVals;
-    switch(freq) {
-        case 8192:
-            regAVals = 0x03;
-            break;
-        case 4096:
-            regAVals = 0x04;
-            break;
-        case 2048:
-            regAVals = 0x05;
-            break;
-        case 1024:
-            regAVals = 0x06;
-            break;
-        case 512:
-            regAVals = 0x07;
-            break;
-        case 256:
-            regAVals = 0x08;
-            break;
-        case 128:
-            regAVals = 0x09;
-            break;
-        case 64:
-            regAVals = 0x0A;
-            break;
-        case 32:
-            regAVals = 0x0B;
-            break;
-        case 16:
-            regAVals = 0x0C;
-            break;
-        case 8:
-            regAVals = 0x0D;
-            break;
-        case 4:
-            regAVals = 0x0E;
-            break;
-        case 2:
-            regAVals = 0x0F;
-            break;
-        default:
-            return -1;
+
+    while(freq > 1) {
+        freq /= 2;
+        regAVals++;
     }
 
-    cli();
+    regAVals = 0xF - regAVals + 1;
 
     // Set frequency of RTC
     // Using https://wiki.osdev.org/RTC as reference
+    cli();
     outb(RTC_A, RTC_PORT);
     char prev = inb(CMOS_PORT);
     outb(RTC_A, RTC_PORT);
