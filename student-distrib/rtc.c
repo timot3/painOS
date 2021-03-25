@@ -58,13 +58,13 @@ void rtc_handler() {
 
 /*
  * rtc_open
- *   DESCRIPTION: Sets RTC frequency to 2HZ
+ *   DESCRIPTION: Sets RTC frequency to 2Hz
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
 int rtc_open() {
-    // Use helper function to set frequency to 2HZ
+    // Use helper function to set frequency to 2Hz
     setFrequency(0x02);
 
     return 0;
@@ -114,7 +114,7 @@ int rtc_write(void *buffer, int size) {
 /*
  * setFrequency
  *   DESCRIPTION: Helper function to seq frequency of RTC based on input int
- *   INPUTS: freq - input frequency in HZ
+ *   INPUTS: freq - input frequency in Hz
  *   OUTPUTS: none
  *   RETURN VALUE: -1 on invalid input (not in range, not power of 2), 0 otherwise
  */
@@ -132,7 +132,7 @@ int setFrequency(int freq) {
         regAVals++;
     }
 
-    // 0xF is the maximum value (value set when frequency = 2HZ) -> needed since more bits are on when frequency is lower
+    // 0xF is the maximum value (value set when frequency = 2Hz) -> needed since more bits are on when frequency is lower
     regAVals = 0xF - regAVals + 1;
 
     // Set frequency of RTC
