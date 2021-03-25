@@ -2,12 +2,14 @@
 #include "asmWrap.h"
 
 // General wrapper for interrupt functions
-// Saves registers, calls function, then restores registers
+// Saves registers/flags, calls function, then restores registers
 
 #define generalWrap(name, functionCalled) \
     .global name ;\
     name: ;\
+        pushfl ;\
         pushl %ebp ;\
+        pushl %esp ;\
         pushl %eax ;\
         pushl %ecx ;\
         pushl %edi ;\
@@ -21,7 +23,9 @@
         popl %edi ;\
         popl %ecx ;\
         popl %eax ;\
+        popl %esp ;\
         popl %ebp ;\
+        popfl ;\
         iret ;\
 
 generalWrap(rtcASMWrap, rtc_handler);

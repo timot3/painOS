@@ -119,8 +119,8 @@ int rtc_write(void *buffer, int size) {
  *   RETURN VALUE: -1 on invalid input (not in range, not power of 2), 0 otherwise
  */
 int setFrequency(int freq) {
-    // Ensure value is within bounds and is power of 2
-    if(freq < 1 || freq > 8192 || (freq & (freq - 1)) != 0)
+    // Ensure value is within bounds (limited by kernel to 1024, can go to 8192) and is power of 2
+    if(freq < 1 || freq > 1024 || (freq & (freq - 1)) != 0)
         return -1;
 
     // Frequency values based on https://courses.grainger.illinois.edu/ece391/sp2021/secure/references/ds12887.pdf table 3 (pg 19)
