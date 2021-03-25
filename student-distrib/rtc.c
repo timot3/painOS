@@ -1,5 +1,8 @@
 #include "rtc.h"
 
+// Flag for interrupt
+volatile int interruptFlag = 0;
+
 /*
  * initialize_rtc
  *   DESCRIPTION: Initializes the RTC
@@ -28,13 +31,16 @@ void initialize_rtc() {
 
 /*
  * rtc_handler
- *   DESCRIPTION: called every time RTC sends interrupt command
+ *   DESCRIPTION: Called every time RTC sends interrupt command
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: none
  */
 void rtc_handler() {
     cli();
+
+    // Set interrupt flag
+    interruptFlag = 1;
 
     #ifdef RTC_TEST
         test_interrupts();
@@ -59,15 +65,17 @@ void rtc_handler() {
  */
 int rtc_open() {
     // Use helper function to set frequency to 2HZ
-    return setFrequency(0x02);
+    setFrequency(0x02);
+
+    return 0;
 }
 
 /*
  * rtc_close
- *   DESCRIPTION:
+ *   DESCRIPTION: Currently does nothing since we aren't virtualizing the RTC
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
 int rtc_close() {
     return 0;
@@ -75,33 +83,40 @@ int rtc_close() {
 
 /*
  * rtc_read
- *   DESCRIPTION:
+ *   DESCRIPTION: Returns once new RTC interrupt has occured
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
 int rtc_read() {
+    interruptFlag = 0;
+
+    // Spin until new interrupt occurs
+    while(interruptFlag == 0);
+
     return 0;
 }
 
 /*
  * rtc_write
- *   DESCRIPTION:
- *   INPUTS: none
+ *   DESCRIPTION: Sets RTC frequency based on input value
+ *   INPUTS: *buffer - buffer holding new frequency (not sure why it needs to
+ *                     be a buffer, but that's what the discussion said to use)
+ *           size - size of buffer
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: -1 in invalid frequency input, 0 otherwise
  */
-int rtc_write(int freq) {
-    // Change frequency
-    return setFrequency(freq);
+int rtc_write(void *buffer, int size) {
+    // Change frequency using helper function
+    return setFrequency(*(int*)buffer);
 }
 
 /*
  * setFrequency
- *   DESCRIPTION:
- *   INPUTS: none
+ *   DESCRIPTION: Helper function to seq frequency of RTC based on input int
+ *   INPUTS: freq - input frequency in HZ
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: -1 on invalid input (not in range, not power of 2), 0 otherwise
  */
 int setFrequency(int freq) {
     // Ensure value is within bounds and is power of 2
@@ -110,13 +125,14 @@ int setFrequency(int freq) {
 
     // Frequency values based on https://courses.grainger.illinois.edu/ece391/sp2021/secure/references/ds12887.pdf table 3 (pg 19)
     // Convert desired frequency into bits for register A
-    int regAVals;
+    int regAVals = 0x00;
 
     while(freq > 1) {
         freq /= 2;
         regAVals++;
     }
 
+    // 0xF is the maximum value (value set when frequency = 2HZ) -> needed since more bits are on when frequency is lower
     regAVals = 0xF - regAVals + 1;
 
     // Set frequency of RTC
@@ -126,7 +142,6 @@ int setFrequency(int freq) {
     char prev = inb(CMOS_PORT);
     outb(RTC_A, RTC_PORT);
     outb((prev & 0xF0) | regAVals, CMOS_PORT);
-
     sti();
 
     return 0;

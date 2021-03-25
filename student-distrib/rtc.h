@@ -13,7 +13,7 @@
 #define RTC_B 0x8B
 #define RTC_C 0x0C
 
-// Given in lectures/notes
+// IRQ number for RTC - Given in lectures/notes
 #define RTC_IRQ 0x8
 
 // Functions currently required for RTC stuff
