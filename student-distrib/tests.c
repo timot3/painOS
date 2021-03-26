@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "paging.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -229,6 +230,34 @@ int test_dereference_null()
 // add more tests here
 
 /* Checkpoint 2 tests */
+
+/* test_rtc_freq
+ * Tests the RTC read and write functions
+ * Inputs: None
+ * Outputs: 1's printed to console at various frequencies
+ * Side Effects: crashes if failure
+ * Coverage: RTC frequency adjustment
+ * Files: rtc.c
+ */
+int test_rtc_freq() {
+	int i, j;
+
+	// Loop through all valid frequency values
+	for(i = 2; i < 1025; i *= 2) {
+		rtc_write(&i, sizeof(int));
+
+		// Print 10 1's per frequency
+		for(j = 0; j < 10; j++) {
+			rtc_read();
+			printf("1");
+		}
+
+		printf("\n");
+	}
+
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -241,7 +270,9 @@ void launch_tests() {
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test RTC", test_rtc());
 	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
-	TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	//TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
+
+	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
 }
