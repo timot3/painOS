@@ -241,7 +241,7 @@ void launch_tests() {
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test RTC", test_rtc());
 	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
-	TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
-	// TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 }

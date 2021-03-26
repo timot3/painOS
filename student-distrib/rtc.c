@@ -45,7 +45,7 @@ void rtc_handler() {
     #ifdef RTC_TEST
     test_interrupts();
     #endif
-    outb(RTC_C, RTC_PORT);
+    outb(0x8C, RTC_PORT);
     inb(CMOS_PORT);
 
     // Comment out test_interrupts to make screen not weird

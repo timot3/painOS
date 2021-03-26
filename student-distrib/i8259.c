@@ -32,7 +32,7 @@ void i8259_init(void) {
     outb(ICW4, SLAVE_DATA_PORT);
 
     // Mask data sent to PIC
-    outb(PORT_MASK, MASTER_8259_PORT+1);
+    outb(PORT_MASK, MASTER_DATA_PORT);
     outb(PORT_MASK, SLAVE_DATA_PORT);
 
     // Enable slave interrupts
