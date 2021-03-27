@@ -102,6 +102,10 @@ int32_t read_dentry_by_index() {
         putc(filename[i]);
     }
 
+    printf(" type: %d", current_dentry->type);
+    current_inode  = &((inode_t *)boot_blk)[current_dentry->inode + 1];
+    printf(", size: %d", ((inode_t*)(((current_dentry->inode + 1)) + boot_blk))->len);
+
     putc('\0');
     putc('\n');
     file_progress += 1;
