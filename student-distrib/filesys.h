@@ -18,7 +18,7 @@
 typedef struct dentry{
     char fname[MAX_CHAR];
     uint32_t type; 
-    uint32_t inode;
+    uint32_t inode; // pointer to inode, should be 32 bit
     uint8_t reserved[RESERVED_DENTRY_SPACE];
 } dentry_t; // 64 B
 

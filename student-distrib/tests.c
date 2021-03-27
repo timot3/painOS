@@ -282,10 +282,14 @@ int test_rtc_write() {
 
 int read_files() {
 	TEST_HEADER;
+	clear();
 	// If we can't set default rtc frequency, return 0.
 	// dir_open(".");
+	// putc('\n');
 	int i;
-	while(read_dentry_by_index(i) != -1);
+	int ret = 0;
+	for(i = 0; ret != -1; i++)
+		ret = read_dentry_by_index(i);
 	dir_close();
 
 	return PASS;
@@ -311,6 +315,8 @@ void launch_tests() {
 	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
 	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
 	clear();
+
+
 	read_files();
 
 }
