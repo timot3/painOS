@@ -21,20 +21,32 @@ char scan_code_1[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-//initalize keyboard
-void keyboard_init(){
+/*
+ * keyboard_init
+ *   DESCRIPTION: Initialize the keyboard
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ */
+void keyboard_init() {
     enable_irq(KB_IRQ);
 }
 
-
-void keyboard_handler(){
+/*
+ * keyboard_handler
+ *   DESCRIPTION: Runs every time an interrupt is created by the keyboard.
+ *                  Takes character input and prints to screen.
+ *   INPUTS: none
+ *   OUTPUTS: text to screen
+ *   RETURN VALUE: none
+ */
+void keyboard_handler() {
     cli();
-    char byte = inb(KB_PORT);
-    //only look for keypresses if value is defined (0x39 is last defined value in table above)
-    if (byte <= 0x39){
-        char character = scan_code_1[byte];
-        putc(character);
-    }
+    unsigned int byte = inb(KB_PORT);
+    char c = scan_code_1[byte];
+    //gets rid of spaces from key unpresses
+    if(c != 0)
+        putc(c);
     send_eoi(KB_IRQ);
     sti();
 }

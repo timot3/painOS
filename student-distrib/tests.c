@@ -2,11 +2,13 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "paging.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
 #define TEST_DIV_BY_0 1
 #define VIDEO 0xB8000
+
 
 /* format these macros as you see fit */
 #define TEST_HEADER \
@@ -35,15 +37,15 @@ static inline void assertion_failure()
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
-int idt_test()
+int test_idt()
 {
 	TEST_HEADER;
-	printf("\n\n\n\n\n\nn\n\n\n");
 	int i;
 	int result = PASS;
+	// check that the first 10 entries of the idt exist and aren't 0
 	for (i = 0; i < 10; ++i)
 	{
-		PRINT_WHERE;
+		// PRINT_WHERE;
 		if ((idt[i].offset_15_00 == NULL) &&
 				(idt[i].offset_31_16 == NULL))
 		{
@@ -62,33 +64,21 @@ int idt_test()
  * Coverage: IDT Exception, div 0
  * Files: idt.c
  */
-int div_by_zero()
+int test_div_by_zero()
 {
 	TEST_HEADER;
+	// get rid of compiler warnings
 	int zero = 0;
 	int one = 1;
 
 	printf("I am about to divide by 0. ");
+	// div by zero exception
 	printf("%d", one / zero);
-	return 0;
-	
-}
-/* Assertion Fail Test 
- * Asserts that asserting will assert that the program goes into a while loop
- * Inputs: None
- * Outputs: None
- * Side Effects: Goes to while loop
- * Coverage: IDT Exception, assert
- * Files: idt.c
- */
-int assertion_fail_test()
-{
-	asm volatile(
-			"int $15");
-	return 0;
+	return FAIL;
+
 }
 
-/* Interrupt Test 
+/* Interrupt Test
  * Asserts that interrupts are handled
  * Inputs: None
  * Outputs: None
@@ -96,15 +86,14 @@ int assertion_fail_test()
  * Coverage: IDT Exception, interrupt
  * Files: idt.c
  */
-int interrupt_test()
+int test_sys_interrupt()
 {
-	asm volatile(
-			"int $80");
+	asm volatile("int $128"); // directly call system interrupt
 	return 0;
 
 }
 
-/* RTC Interrupt 
+/* RTC Interrupt
  * Asserts that a RTC Interrupt will be caught.
  * Inputs: None
  * Outputs: None
@@ -112,42 +101,26 @@ int interrupt_test()
  * Coverage: IDT Exception
  * Files: idt.c
  */
-int rtc_test()
+int test_rtc()
 {
 	TEST_HEADER;
+	// test_interrupts();
 
-	// TODO Put RTC intterupt test here from rtc.h
-	// waiting for RTC to be done
-	return 0;
+	printf("This test has been moved to a compiler macro in tests.h.\n");
+	printf("Uncomment it to test RTC.\n");
 
-}
-
-/* Scancode keyboard test
- * Tests some keyboard scancodes
- * Inputs: None
- * Outputs: None
- * Side Effects: Goes to while loop
- * Coverage: IDT Exception
- * Files: idt.c
- */
-int keyb_scancode()
-{
-	TEST_HEADER;
-	// TODO handle keypress
-	// waiting on keyboards
-	return 0;
-
+	return PASS;
 }
 
 /* Paging struct test
  * Tests the paging structs for members
  * Inputs: None
- * Outputs: PASS 
+ * Outputs: PASS
  * Side Effects: Crashes on failure
  * Coverage: Paging structs
  * Files: paging.c
  */
-int paging_struct_test()
+int test_paging_struct()
 {
 	TEST_HEADER;
 	int tmp, i;
@@ -156,8 +129,8 @@ int paging_struct_test()
 
 	page_table_entry_t page_table[PAGE_TABLE_LENGTH];
 	get_paging_table(page_table, PAGE_TABLE_LENGTH);
-	
-	
+
+
 	// These will error out if a member doesn't exist
 	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
 		tmp = page_dir[i].val;
@@ -173,7 +146,7 @@ int paging_struct_test()
 		tmp = page_dir[i].available;
 		tmp = page_dir[i].aligned_address;
 	}
-	
+
 
 	// check the members for table_entry
 	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
@@ -192,7 +165,6 @@ int paging_struct_test()
 	}
 
 	return PASS;
-
 }
 
 /* Paging deref test
@@ -203,18 +175,20 @@ int paging_struct_test()
  * Coverage: Paging structs
  * Files: paging.c
  */
-int paging_struct_dref()
+int test_paging_struct_dref()
 {
 	TEST_HEADER;
 	int data, i;
 	int *ptr;
-
+	// test that we can access memory we should be able to access
 	ptr = (int *)VIDEO;
 	*ptr = 42;
+	// repeat 5 times
 	for (i = 0; i < 5; i++)
 	{
 		data = *ptr;
 		ptr = &data;
+		// if access failed, then test failed
 		if (*ptr != data || &data != ptr){
 			return FAIL;
 		}
@@ -222,32 +196,107 @@ int paging_struct_dref()
 	return PASS;
 }
 
-int dereference_null()
+/* dereference null test
+ * Tests the dereferencing of null ptr
+ * Inputs: None
+ * Outputs: what is currently happening in the code
+ * Side Effects: crashes if failure
+ * Coverage: Paging structs
+ * Files: paging.c
+ */
+int test_dereference_null()
 {
-    TEST_HEADER;
-    int x;
+	// init variables
     int *ptr;
+    int x = 5;
+	int test_status = FAIL;
+
+
+    TEST_HEADER;
+	printf("initializing variable x = 5\n");
+	printf("initializing a pointer p = NULL\n");
     ptr = NULL;
+	printf("setting x = *ptr\n");
+	// should cause page fault
     x = *ptr;
-	return 0;
+
+	// should never reach here
+	printf("x = %d\n", x);
+
+	test_status = PASS;
+	return test_status;
 }
 
 // add more tests here
 
 /* Checkpoint 2 tests */
+
+/* test_rtc_freq
+ * Tests the RTC read and write functions
+ * Inputs: None
+ * Outputs: 1's printed to console at various frequencies
+ * Side Effects: crashes if failure
+ * Coverage: RTC frequency adjustment
+ * Files: rtc.c
+ */
+int test_rtc_freq() {
+	int i, j;
+	TEST_HEADER;
+
+	// Loop through all valid frequency values
+	for(i = 2; i < 1025; i *= 2) {
+		// if failed to set rtc frequency, set to false
+		if (rtc_write(&i, sizeof(int)) == -1) {
+			return FAIL;
+		}
+
+		// Print 10 1's per frequency
+		for(j = 0; j < 10; j++) {
+			rtc_read();
+			printf("1");
+		}
+
+		printf("\n");
+	}
+
+	return PASS;
+}
+
+/* test_rtc_write
+ * Tests the RTC open can set default value
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: None
+ * Coverage: RTC frequency adjustment
+ * Files: rtc.c
+ */
+int test_rtc_write() {
+	TEST_HEADER;
+	// If we can't set default rtc frequency, return 0.
+	if (rtc_open() != 0) {
+		return FAIL;
+	}
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
 /* Test suite entry point */
 void launch_tests() {
-	// TEST_OUTPUT("idt_test", idt_test());
-	// // launch your tests here
-	//
-	clear();
-	TEST_OUTPUT("Paging Structs Members+Values", paging_struct_test());
-	TEST_OUTPUT("Paging Dereferencing", paging_struct_dref());
-	//TEST_OUTPUT("Div by 0: ", div_by_zero());
-	// dereference_null();
+	// launch your tests here
+	// clear();
+	// TEST_OUTPUT("Test idt", test_idt());
+	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
+	// TEST_OUTPUT("Test RTC", test_rtc());
+	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
+	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
+
+	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
 
 }

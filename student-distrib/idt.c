@@ -3,6 +3,7 @@
 #include "x86_desc.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "asmWrap.h"
 
 // Header printed at start of all interrupt functions
 #define PAIN_HEADER \
@@ -106,8 +107,7 @@ void BOUND_RANGE_EXCEEDED() {
 
 /*
  * INVALID_OPCODE
- *   DESCRIPTION: interrupt output for invalid opcode (undefined opcode)
- *                  (vector #6)
+ *   DESCRIPTION: interrupt output for invalid opcode (undefined opcode) (vector #6)
  *   INPUTS: none
  *   OUTPUTS: text to screen
  *   RETURN VALUE: none
@@ -239,8 +239,7 @@ void INTEL_RESERVED() {
 
 /*
  * MATH_FAULT
- *   DESCRIPTION: interrupt output for x87 FPU floating-point error (math fault)
- *                  (vector #16)
+ *   DESCRIPTION: interrupt output for x87 FPU floating-point error (math fault) (vector #16)
  *   INPUTS: none
  *   OUTPUTS: text to screen
  *   RETURN VALUE: none
@@ -279,7 +278,7 @@ void MACHINE_CHECK() {
 
 /*
  * SIMD_FLOATING_POINT_EXCEPTION
- *   DESCRIPTION: interrupt output for SIMD floating point exception (vector #18)
+ *   DESCRIPTION: interrupt output for SIMD floating point exception (vector #19)
  *   INPUTS: none
  *   OUTPUTS: text to screen
  *   RETURN VALUE: none
@@ -332,6 +331,7 @@ void initialize_idt() {
             idt[i].dpl = 3; // Greater than 32 has user-level priority
         }
     }
+    idt[32].dpl = 3; // Office hours TA said to do this
 
     // Change values for first 32 items in IDT
     for(i = 0; i < NUM_SYSTEM_INTERRUPTS; i++) {
@@ -374,8 +374,8 @@ void initialize_idt() {
     idt[SYSCALL_NUM].present = 1;
 
     // Add RTC handler, keyboard, and system call to the IDT
-    SET_IDT_ENTRY(idt[RTC_NUM], rtc_handler);
-    SET_IDT_ENTRY(idt[KB_NUM],  keyboard_handler);
+    SET_IDT_ENTRY(idt[RTC_NUM], rtcASMWrap);
+    SET_IDT_ENTRY(idt[KB_NUM], keyboardASMWrap);
     SET_IDT_ENTRY(idt[SYSCALL_NUM],  SYSTEM_CALL);
 
 
