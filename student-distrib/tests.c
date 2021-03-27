@@ -241,10 +241,14 @@ int test_dereference_null()
  */
 int test_rtc_freq() {
 	int i, j;
+	TEST_HEADER;
 
 	// Loop through all valid frequency values
 	for(i = 2; i < 1025; i *= 2) {
-		rtc_write(&i, sizeof(int));
+		// if failed to set rtc frequency, set to false
+		if (rtc_write(&i, sizeof(int)) == -1) {
+			return FAIL;
+		}
 
 		// Print 10 1's per frequency
 		for(j = 0; j < 10; j++) {
@@ -255,6 +259,23 @@ int test_rtc_freq() {
 		printf("\n");
 	}
 
+	return PASS;
+}
+
+/* test_rtc_write
+ * Tests the RTC open can set default value
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: None
+ * Coverage: RTC frequency adjustment
+ * Files: rtc.c
+ */
+int test_rtc_write() {
+	TEST_HEADER;
+	// If we can't set default rtc frequency, return 0.
+	if (rtc_open() != 0) {
+		return FAIL;
+	}
 	return PASS;
 }
 
@@ -270,9 +291,11 @@ void launch_tests() {
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test RTC", test_rtc());
 	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
-	//TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 
 	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+
 }

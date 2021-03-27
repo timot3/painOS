@@ -16,13 +16,16 @@
 // IRQ number for RTC - Given in lectures/notes
 #define RTC_IRQ 0x8
 
+// default RTC frequency is 2Hz
+#define RTC_DEFAULT_FREQUENCY 2
+
 // Functions currently required for RTC stuff
 void initialize_rtc();
 void rtc_handler();
-uint8_t setFrequency(uint16_t freq);
-uint8_t rtc_open();
+uint8_t set_frequency(uint16_t freq);
+int rtc_open();
 uint8_t rtc_close();
 uint8_t rtc_read();
-uint8_t rtc_write(void *buffer, uint32_t size);
+int rtc_write(void *buffer, uint32_t size);
 
 #endif /* RTC_H */

@@ -61,13 +61,11 @@ void rtc_handler() {
  *   DESCRIPTION: Sets RTC frequency to 2Hz
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: Always returns 0 (based on discussion slides)
+ *   RETURN VALUE: 0 on success, -1 on failure (based on discussion slides)
  */
-uint8_t rtc_open() {
+int rtc_open() {
     // Use helper function to set frequency to 2Hz
-    setFrequency(0x02);
-
-    return 0;
+    return set_frequency(RTC_DEFAULT_FREQUENCY);
 }
 
 /*
@@ -106,19 +104,19 @@ uint8_t rtc_read() {
  *   OUTPUTS: none
  *   RETURN VALUE: -1 in invalid frequency input, 0 otherwise
  */
-uint8_t rtc_write(void *buffer, uint32_t size) {
+int rtc_write(void *buffer, uint32_t size) {
     // Change frequency using helper function
-    return setFrequency(*(uint16_t*)buffer);
+    return set_frequency(*(uint16_t*)buffer);
 }
 
 /*
- * setFrequency
+ * set_frequency
  *   DESCRIPTION: Helper function to seq frequency of RTC based on input int
  *   INPUTS: freq - input frequency in Hz
  *   OUTPUTS: none
  *   RETURN VALUE: -1 on invalid input (not in range, not power of 2), 0 otherwise
  */
-uint8_t setFrequency(uint16_t freq) {
+uint8_t set_frequency(uint16_t freq) {
     // Ensure value is within bounds (limited by kernel to 1024, can go to 8192) and is power of 2
     if(freq < 1 || freq > 1024 || (freq & (freq - 1)) != 0)
         return -1;
