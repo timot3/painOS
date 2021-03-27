@@ -49,6 +49,10 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
+    // Ensure input parameter is within bounds
+    if(irq_num < 0 || irq_num > 15)
+        return;
+
     uint16_t port;
     uint8_t value;
 
@@ -76,6 +80,10 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
+    // Ensure input parameter is within bounds
+    if(irq_num < 0 || irq_num > 15)
+        return;
+
     uint16_t port;
     uint8_t value;
 
@@ -102,6 +110,10 @@ void disable_irq(uint32_t irq_num) {
  */
 void send_eoi(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
+
+    // Ensure input parameter is within bounds
+    if(irq_num < 0 || irq_num > 15)
+        return;
 
     if(irq_num < 8) {
         // Send EOI to master

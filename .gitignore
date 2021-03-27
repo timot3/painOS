@@ -112,6 +112,9 @@ dkms.conf
 *.qcow
 source/
 
+# image files
+*.img
+
 # Eustis
 student-distrib/Makefile.dep
 student-distrib/bootimg

@@ -10,6 +10,8 @@ int test_keyb_scancode();
 int test_paging_struct_test();
 int test_paging_struct_dref();
 int test_dereference_null();
+int test_rtc_freq();
+int test_rtc_write();
 
 void launch_tests();
 

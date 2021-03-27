@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "paging.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -114,7 +115,7 @@ int test_rtc()
 /* Paging struct test
  * Tests the paging structs for members
  * Inputs: None
- * Outputs: PASS 
+ * Outputs: PASS
  * Side Effects: Crashes on failure
  * Coverage: Paging structs
  * Files: paging.c
@@ -128,8 +129,8 @@ int test_paging_struct()
 
 	page_table_entry_t page_table[PAGE_TABLE_LENGTH];
 	get_paging_table(page_table, PAGE_TABLE_LENGTH);
-	
-	
+
+
 	// These will error out if a member doesn't exist
 	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
 		tmp = page_dir[i].val;
@@ -145,7 +146,7 @@ int test_paging_struct()
 		tmp = page_dir[i].available;
 		tmp = page_dir[i].aligned_address;
 	}
-	
+
 
 	// check the members for table_entry
 	for (i = 0; i <PAGE_DIRECTORY_LENGTH; i++){
@@ -229,6 +230,55 @@ int test_dereference_null()
 // add more tests here
 
 /* Checkpoint 2 tests */
+
+/* test_rtc_freq
+ * Tests the RTC read and write functions
+ * Inputs: None
+ * Outputs: 1's printed to console at various frequencies
+ * Side Effects: crashes if failure
+ * Coverage: RTC frequency adjustment
+ * Files: rtc.c
+ */
+int test_rtc_freq() {
+	int i, j;
+	TEST_HEADER;
+
+	// Loop through all valid frequency values
+	for(i = 2; i < 1025; i *= 2) {
+		// if failed to set rtc frequency, set to false
+		if (rtc_write(&i, sizeof(int)) == -1) {
+			return FAIL;
+		}
+
+		// Print 10 1's per frequency
+		for(j = 0; j < 10; j++) {
+			rtc_read();
+			printf("1");
+		}
+
+		printf("\n");
+	}
+
+	return PASS;
+}
+
+/* test_rtc_write
+ * Tests the RTC open can set default value
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: None
+ * Coverage: RTC frequency adjustment
+ * Files: rtc.c
+ */
+int test_rtc_write() {
+	TEST_HEADER;
+	// If we can't set default rtc frequency, return 0.
+	if (rtc_open() != 0) {
+		return FAIL;
+	}
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -242,6 +292,11 @@ void launch_tests() {
 	// TEST_OUTPUT("Test RTC", test_rtc());
 	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
 	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
-	TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
+
+	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+
 }
