@@ -2,12 +2,13 @@
 #define FILESYS_H
 
 #include "types.h"
+#include "lib.h" // putc
 
 #define RESERVED_DENTRY_SPACE 24
 #define FOUR_BYTE 32
 #define MAX_CHAR 32
 #define RESERVED_BOOT_BLK 52
-#define NUM_DIR_ENTRIES 63
+#define MAX_DIR_ENTRIES 63
 #define EIGHT_BYTE 64
 #define NUM_D_BLKS 1023
 #define ONE_KB 1024
@@ -44,9 +45,9 @@ int32_t dir_write();
 int32_t dir_close();
 
 int32_t read_dentry_by_name(const uint8_t* fname);
-int read_dentry_by_index();
+int32_t read_dentry_by_name(const uint8_t* fname);
 
-int read_data();
+int32_t read_data(int32_t fd, void* buf, int32_t nbytes);
 
 void filesys_init(void *fs);
 #endif /* filesys.h */
