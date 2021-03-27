@@ -1,100 +1,25 @@
 #include "keyboard.h"
 #include "lib.h"
 #include "i8259.h"
-#include "terminal.h"
 
-/* 0's in order stand in for nothing, escape, enter
-capslock, F1 - F10, numberlock, scrolllock
-200's in order stand for left-shift pressed, right-shift pressed
-201 stands for caps-lock pressed
-202 stands for left-ctrl pressed
-203's in order stand for left-shift released, right-shift released
-204 stands for left-ctrl released
-205 stands for left-alt pressed
-https://wiki.osdev.org/PS/2_Keyboard */
-unsigned char scan_code_1[256] = {
+//0's in order stand in for nothing, escape, enter, left ctrl, left shift, right shift, left alt
+//https://wiki.osdev.org/PS/2_Keyboard
+char scan_code_1[256] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
-    't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', CTRL_PRESS,
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
-    '\'', '`', SHIFT_PRESS, '\\', 'z', 'x', 'c', 'v', 'b', 'n',
-    'm', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, '7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.',
+    't', 'y', 'u', 'i', 'o', 'p', '[', ']', 0, 0, 'a',
+    's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'',
+    '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm',
+    ',', '.', '/', 0, '*', 0, ' ',
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
-
-//same order as scan_code_1 but all keys are their shifted values
-unsigned char scan_code_shift[256] = {
-    0, 0, '!', '@', '#', '$', '%', '^', '&', '*',
-    '(', ')', '_', '+', '\b', '\t', 'Q', 'W', 'E', 'R',
-    'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', CTRL_PRESS,
-    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
-    '"', '~', SHIFT_PRESS, '|', 'Z', 'X', 'C', 'V', 'B', 'N',
-    'M', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, '7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.',
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-//same order as scan_code_1 but all keys are their caps lock values
-unsigned char scan_code_caps[256] = {
-    0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
-    '9', '0', '-', '=', '\b', '\t', 'Q', 'W', 'E', 'R',
-    'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n', CTRL_PRESS,
-    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';',
-    '\'', '`', SHIFT_PRESS, '\\', 'Z', 'X', 'C', 'V', 'B', 'N',
-    'M', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, '7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.',
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-//same order as scan_code_1 but all keys are their shifted caps lock values
-unsigned char scan_code_shift_caps[256] = {
-    0, 0, '!', '@', '#', '$', '%', '^', '&', '*',
-    '(', ')', '_', '+', '\b', '\t', 'q', 'w', 'e', 'r',
-    't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\n', CTRL_PRESS,
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':',
-    '"', '~', SHIFT_PRESS, '|', 'z', 'x', 'c', 'v', 'b', 'n',
-    'm', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, '7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.',
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-
-//flag if button is in use
-char shift_flag = 0;
-char cap_flag = 0;
-char ctrl_flag = 0;
-char alt_flag = 0;
-
-
 
 /*
  * keyboard_init
@@ -118,45 +43,10 @@ void keyboard_init() {
 void keyboard_handler() {
     cli();
     unsigned int byte = inb(KB_PORT);
-    unsigned char c = scan_code_1[byte];
-    switch(c){
-        case 0:
-            break;
-        case ALT_PRESS:
-        case ALT_RELEASE:
-            alt_flag = alt_flag ^ 1;
-            break;
-        case CAP_PRESS:
-            cap_flag = cap_flag ^ 1;
-            break;
-        case SHIFT_PRESS:
-        case SHIFT_RELEASE:
-            shift_flag = shift_flag ^ 1;
-            break;
-        case CTRL_PRESS:
-        case CTRL_RELEASE:
-            ctrl_flag = ctrl_flag ^ 1;
-            break;
-        default:
-            keyboard_print(byte);
-    }
+    char c = scan_code_1[byte];
+    //gets rid of spaces from key unpresses
+    if(c != 0)
+        putc(c);
     send_eoi(KB_IRQ);
     sti();
 }
-
-void keyboard_print(int byte) {
-    unsigned char c;
-    if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L)
-        clear();
-    else if (cap_flag == 1 && shift_flag == 1) 
-        c = scan_code_shift_caps[byte];
-    else if (cap_flag == 1 && shift_flag == 0) 
-        c = scan_code_caps[byte];
-    else if (cap_flag == 0 && shift_flag == 1)
-        c = scan_code_shift[byte];
-    else
-        c = scan_code_1[byte];
-    putc(c);   
-}
-
-
