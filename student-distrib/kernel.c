@@ -11,6 +11,7 @@
 #include "idt.h"
 #include "rtc.h"
 #include "paging.h"
+#include "filesys.h"
 
 // #define RUN_TESTS
 
@@ -163,6 +164,7 @@ void entry(unsigned long magic, unsigned long addr)
     // Initialize RTC
     initialize_rtc();
     paging_init();
+    filesys_init(module->mod_start);
     sti();
 
 #ifdef RUN_TESTS
