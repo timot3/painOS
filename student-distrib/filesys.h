@@ -42,7 +42,7 @@ int32_t dir_read();
 int32_t dir_write();
 int32_t dir_close();
 
-int read_dentry_by_name();
+int32_t read_dentry_by_name(const *inode_t inode);
 int read_dentry_by_index();
 
 int read_data();
