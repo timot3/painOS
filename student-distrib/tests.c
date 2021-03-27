@@ -283,7 +283,10 @@ int test_rtc_write() {
 int read_files() {
 	TEST_HEADER;
 	// If we can't set default rtc frequency, return 0.
-	dir_read();
+	// dir_open(".");
+	int i;
+	while(read_dentry_by_index(i) != -1);
+	dir_close();
 
 	return PASS;
 }
