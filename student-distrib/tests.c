@@ -247,13 +247,13 @@ int test_rtc_freq() {
 	// Loop through all valid frequency values
 	for(i = 2; i < 1025; i *= 2) {
 		// if failed to set rtc frequency, set to false
-		if (rtc_write(&i, sizeof(int)) == -1) {
+		if (rtc_write(0, &i, sizeof(int)) == -1) {
 			return FAIL;
 		}
 
 		// Print 10 1's per frequency
 		for(j = 0; j < 10; j++) {
-			rtc_read();
+			rtc_read(0, 0, 0);
 			printf("1");
 		}
 
@@ -274,7 +274,7 @@ int test_rtc_freq() {
 int test_rtc_write() {
 	TEST_HEADER;
 	// If we can't set default rtc frequency, return 0.
-	if (rtc_open() != 0) {
+	if (rtc_open(0) != 0) {
 		return FAIL;
 	}
 	return PASS;
@@ -283,23 +283,10 @@ int test_rtc_write() {
 int read_files() {
 	TEST_HEADER;
 	clear();
-	// If we can't set default rtc frequency, return 0.
-	int i;
-	int ret = 0;
-	dentry_t inputDentry;
-	for(i = 0; ret != -1; i++) {
-		ret = dir_read(i, &inputDentry);
-		if(ret == -1) {
-			break;
-		}
-
-		printf("name: %s", inputDentry.fname);
-		printf(" type: %d", inputDentry.type);
-		printf(", size: %d\n", ((inode_t*)(inputDentry.inode))->len);
-	}
+	int ret = dir_read(0, 0, 0) + 1;
 	dir_close();
 
-	return PASS;
+	return ret;
 }
 
 /* Checkpoint 3 tests */

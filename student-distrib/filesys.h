@@ -41,7 +41,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t file_close();
 
 int32_t dir_open(const uint8_t* filename);
-int32_t dir_read(uint32_t idx, dentry_t *inputDentry);
+int32_t dir_read(int32_t fd, void *buf, int32_t nbytes);
 int32_t dir_write();
 int32_t dir_close();
 

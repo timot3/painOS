@@ -35,10 +35,28 @@ int32_t dir_open(const uint8_t *filename) {
     return read_dentry_by_name(filename);
 }
 
-int32_t dir_read(uint32_t idx, dentry_t *inputDentry) {
+int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     // read dentry by index
     // reads one at a time
-    return read_dentry_by_index(idx, inputDentry); // 0 when done, otherwise nbytes
+    //return read_dentry_by_index(idx, inputDentry); // 0 when done, otherwise nbytes
+
+    int i, j;
+    int ret = 0;
+    dentry_t inputDentry;
+
+    for(i = 0; ret != -1; i++) {
+        ret = read_dentry_by_index(i, &inputDentry);
+        if(ret == -1)
+            break;
+
+        printf("file_name: ");
+        for(j = 0; j < MAX_CHAR; j++)
+            putc(inputDentry.fname[j]);
+        printf(", file_type: %d", inputDentry.type);
+        printf(", file_size: %d\n", ((inode_t*)(inputDentry.inode))->len);
+    }
+
+    return 0;
 }
 
 int32_t dir_write() {

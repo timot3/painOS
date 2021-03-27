@@ -63,7 +63,7 @@ void rtc_handler() {
  *   OUTPUTS: none
  *   RETURN VALUE: 0 on success, -1 on failure (based on discussion slides)
  */
-int rtc_open(const uint8t *filename) {
+int rtc_open(const uint8_t *filename) {
     // Use helper function to set frequency to 2Hz
     return set_frequency(RTC_DEFAULT_FREQUENCY);
 }
@@ -75,18 +75,20 @@ int rtc_open(const uint8t *filename) {
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-uint8_t rtc_close(int32t fd) {
+uint8_t rtc_close(int32_t fd) {
     return 0;
 }
 
 /*
  * rtc_read
  *   DESCRIPTION: Returns once new RTC interrupt has occured
- *   INPUTS: none
+ *   INPUTS: fd - never used, docs said we needed it
+ *            *buf - never used, docs said we needed it
+ *            nbytes - never used, docs said we needed it
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-uint8_t rtc_read(int32t fd, void *buf, int32t nbytes) {
+uint8_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     interruptFlag = 0;
 
     // Spin until new interrupt occurs
