@@ -45,10 +45,10 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes);
 int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes);
 int32_t dir_close(int32_t fd);
 
-int32_t read_dentry_by_name(const uint8_t* fname);
+int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry);
 int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry);
 
-int32_t read_data(int32_t fd, uint32_t* buf, int32_t nbytes);
+int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes);
 
 void filesys_init(void *fs);
 #endif /* filesys.h */

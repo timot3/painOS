@@ -10,12 +10,12 @@ static dentry_t *current_dentry;
  *   DESCRIPTION:
  *   INPUTS: *filename -
  *   OUTPUTS: none
- *   RETURN VALUE: 
+ *   RETURN VALUE:
  */
 int32_t file_open(const uint8_t *filename) {
     // read dentry by name
     file_progress = 0;
-    return read_dentry_by_name(filename);
+    return read_dentry_by_name(filename, 0);
 }
 
 /*
@@ -28,7 +28,7 @@ int32_t file_open(const uint8_t *filename) {
  *   RETURN VALUE:
  */
 int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
-    return read_data(fd, (uint32_t *)buf, nbytes); // 0 when done, otherwise nbytes read
+    return read_data(0, 0, (uint32_t *)buf, nbytes); // 0 when done, otherwise nbytes read
 }
 
 /*
@@ -70,7 +70,7 @@ int32_t file_close(int32_t fd) {
  */
 int32_t dir_open(const uint8_t *filename) {
     // name == "."
-    return read_dentry_by_name(filename);
+    return read_dentry_by_name(filename, 0);
 }
 
 /*
@@ -139,10 +139,11 @@ int32_t dir_close(int32_t fd) {
  * read_dentry_by_name
  *   DESCRIPTION:
  *   INPUTS: *fname -
+ *           *dentry -
  *   OUTPUTS: none
  *   RETURN VALUE: Return -1 if file not found, 0 otherwise
  */
-int32_t read_dentry_by_name(const uint8_t *fname) {
+int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     // inits
     int i, j, fname_length, cont;
 
@@ -211,13 +212,14 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry) {
 /*
  * read_data
  *   DESCRIPTION:
- *   INPUTS: fd - never used, docs said we needed it
- *            *buf - never used, docs said we needed it
- *            nbytes - never used, docs said we needed it
+ *   INPUTS: inode -
+ *            offset -
+ *            *buf -
+ *            nbytes -
  *   OUTPUTS: none
- *   RETURN VALUE: Always returns 0 (based on discussion slides)
+ *   RETURN VALUE: Always returns 0
  */
-int32_t read_data(int32_t fd, uint32_t *buf, int32_t nbytes) {
+int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes) {
     // uses file_progress, and current_inode
     uint32_t *dblock_addr;
     int i, dblocks_idx, dblocks_offset, fsize, iterations;
