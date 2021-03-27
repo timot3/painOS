@@ -5,6 +5,7 @@
 
 #define RESERVED_DENTRY_SPACE 24
 #define FOUR_BYTE 32
+#define MAX_CHAR 32
 #define RESERVED_BOOT_BLK 52
 #define NUM_DIR_ENTRIES 63
 #define EIGHT_BYTE 64
@@ -13,7 +14,7 @@
 #define FOUR_KB 4096
 
 typedef struct dentry{
-    char fname[FOUR_BYTE];
+    char fname[MAX_CHAR];
     uint32_t type; 
     uint32_t inode;
     uint8_t reserved[RESERVED_DENTRY_SPACE];
@@ -42,7 +43,7 @@ int32_t dir_read();
 int32_t dir_write();
 int32_t dir_close();
 
-int32_t read_dentry_by_name(const *inode_t inode);
+int32_t read_dentry_by_name(const uint8_t* fname);
 int read_dentry_by_index();
 
 int read_data();
