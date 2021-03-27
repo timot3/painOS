@@ -23,9 +23,9 @@
 void initialize_rtc();
 void rtc_handler();
 uint8_t set_frequency(uint16_t freq);
-int rtc_open();
-uint8_t rtc_close();
-uint8_t rtc_read();
+int rtc_open(const uint8t *filename);
+uint8_t rtc_close(int32t fd);
+uint8_t rtc_read(int32_t fd, void *buffer, uint32_t size);
 int rtc_write(void *buffer, uint32_t size);
 
 #endif /* RTC_H */

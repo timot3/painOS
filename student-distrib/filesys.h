@@ -41,12 +41,12 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t file_close();
 
 int32_t dir_open(const uint8_t* filename);
-int32_t dir_read(uint16_t idx, dentry_t *inputDentry);
+int32_t dir_read(uint32_t idx, dentry_t *inputDentry);
 int32_t dir_write();
 int32_t dir_close();
 
 int32_t read_dentry_by_name(const uint8_t* fname);
-int32_t read_dentry_by_index(uint16_t idx, dentry_t *inputDentry);
+int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry);
 
 int32_t read_data(int32_t fd, uint32_t* buf, int32_t nbytes);
 

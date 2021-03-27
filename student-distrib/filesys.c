@@ -35,7 +35,7 @@ int32_t dir_open(const uint8_t *filename) {
     return read_dentry_by_name(filename);
 }
 
-int32_t dir_read(uint16_t idx, dentry_t *inputDentry) {
+int32_t dir_read(uint32_t idx, dentry_t *inputDentry) {
     // read dentry by index
     // reads one at a time
     return read_dentry_by_index(idx, inputDentry); // 0 when done, otherwise nbytes
@@ -88,9 +88,9 @@ int32_t read_dentry_by_name(const uint8_t *fname) {
     return -1;
 }
 
-int32_t read_dentry_by_index(uint16_t idx, dentry_t *inputDentry) {
+int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry) {
     int i;
-    
+
     if(idx == boot_blk->n_dir_entries) return -1;  // no more dirs to read
 
     current_dentry = &(boot_blk->dir_entries[idx]);
