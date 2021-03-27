@@ -163,8 +163,15 @@ void entry(unsigned long magic, unsigned long addr)
     i8259_init();
     // Initialize RTC
     initialize_rtc();
+    
+    filesys_init( (void*)(
+        (module_t*)
+        (&(mbi->mods_addr))
+        )->mod_start);
+
     paging_init();
-    filesys_init(((module_t*)mbi->mods_addr)->mod_start);
+    
+
     sti();
 
 #ifdef RUN_TESTS
