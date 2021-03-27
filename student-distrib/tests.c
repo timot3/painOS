@@ -293,6 +293,7 @@ void launch_tests() {
 	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
 	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
+	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 
 	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());

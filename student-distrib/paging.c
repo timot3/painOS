@@ -27,7 +27,7 @@ void paging_init()
     page_dir[i].val = 0; // clear contents
     // set to rw
     page_dir[i].rw = 1;
-    page_dir[i].us = 1;
+    page_dir[i].us = 0;
   }
 
   for (i = 0; i < PAGE_TABLE_LENGTH; i++)
