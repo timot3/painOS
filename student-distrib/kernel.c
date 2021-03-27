@@ -164,7 +164,7 @@ void entry(unsigned long magic, unsigned long addr)
     // Initialize RTC
     initialize_rtc();
     paging_init();
-    filesys_init(module->mod_start);
+    filesys_init(((module_t*)mbi->mods_addr)->mod_start);
     sti();
 
 #ifdef RUN_TESTS

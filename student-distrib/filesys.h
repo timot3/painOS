@@ -4,6 +4,7 @@
 #include "types.h"
 #include "lib.h" // putc
 
+
 #define RESERVED_DENTRY_SPACE 24
 #define FOUR_BYTE 32
 #define MAX_CHAR 32
@@ -31,7 +32,7 @@ typedef struct boot_blk{
     int32_t n_inodes;
     int32_t n_dblocks;
     char reserved[RESERVED_BOOT_BLK];
-    dentry_t dir_entries[NUM_DIR_ENTRIES];
+    dentry_t dir_entries[MAX_DIR_ENTRIES];
 } boot_blk_t; // 4 KB
 
 int32_t file_open(const uint8_t* filename);
@@ -39,15 +40,15 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t file_close();
 
-int32_t dir_open();
+int32_t dir_open(const uint8_t* filename);
 int32_t dir_read();
 int32_t dir_write();
 int32_t dir_close();
 
 int32_t read_dentry_by_name(const uint8_t* fname);
-int32_t read_dentry_by_name(const uint8_t* fname);
+int32_t read_dentry_by_index();
 
-int32_t read_data(int32_t fd, void* buf, int32_t nbytes);
+int32_t read_data(int32_t fd, uint32_t* buf, int32_t nbytes);
 
 void filesys_init(void *fs);
 #endif /* filesys.h */

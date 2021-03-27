@@ -1,6 +1,6 @@
 #include "filesys.h"
 
-const static boot_blk_t* boot_blk;
+static boot_blk_t* boot_blk;
 static uint32_t file_progress;
 static inode_t* current_inode;
 static dentry_t* current_dentry;
@@ -12,15 +12,15 @@ int32_t file_open(const uint8_t* filename){
 }
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
     // 
-    return read_data(fd, buf, nbytes); // 0 when done, otherwise nbytes read 
+    return read_data(fd, (uint32_t*)buf, nbytes); // 0 when done, otherwise nbytes read 
 }
 int32_t file_write(){
-    printf("Read-Only for now")
+    printf("Read-Only for now");
     return -1;
 }
 int32_t file_close(){
-    inode_t = NULL;
-    dentry_t = NULL;
+    current_inode = NULL;
+    current_dentry = NULL;
     file_progress = 0;
 
     // undo open
@@ -29,45 +29,45 @@ int32_t file_close(){
 
 int32_t dir_open(const uint8_t* filename){
     // name == "."
-    return read_dentry_by_name(const uint8_t* fname);
+    return read_dentry_by_name(filename);
 }
+
 int32_t dir_read(){
     // read dentry by index 
     // reads one at a time
     return read_dentry_by_index(); // 0 when done, otherwise nbytes 
 }
 int32_t dir_write(){
-    printf("You can't write a directory, silly!")
+    printf("You can't write a directory, silly!");
     return -1; 
 }
 int32_t dir_close(){
-    inode_t = NULL;
-    dentry_t = NULL;
+    current_inode = NULL;
+    current_dentry = NULL;
     file_progress = 0;
     return 0;
 }
 
 int32_t read_dentry_by_name(const uint8_t* fname){
     // inits
-    int i, j, fname_length;
-    bool cont = false; 
+    int i, j, fname_length, cont;
+
+    cont = 0;
 
     // get strlen
-    fname_length = strlen(fname);
+    fname_length = strlen((int8_t*)fname);
 
-    // make an array for each of the dir entries 
-    dentry_t dir_entries[MAX_DIR_ENTRIES] = boot_blk->dir_entries;
     
     // for each dir entry 
     for (i=0; i<boot_blk->n_dir_entries; i++){
         // copy the name 
-        char dir_name[MAX_CHAR] = dir_entries[i].fname;
+        
 
         // check each character
         for (j=0; j<fname_length; j++){
-            if (fname[j] != dir_name[j]){
-                cont = true;
-                break
+            if (fname[j] != (boot_blk->dir_entries)[i].fname[j]){
+                cont = 1;
+                break;
             }
         }
 
@@ -87,29 +87,29 @@ int32_t read_dentry_by_name(const uint8_t* fname){
 
 int32_t read_dentry_by_index(){
     int i;
-    char fname[MAX_CHAR];
+    char *filename;
     if (file_progress == boot_blk->n_dir_entries)
         return -1; // no more dirs to read
-    dentry_t dir_entries = boot_blk->dir_entries;
-    current_dentry = dir_entries[file_progress];
-    fname = current_dentry.fname;
-    for (i = 0; i<32 && fname[i]!="\0"; i++){
-        putc(fname[i]);
+
+    current_dentry = &(boot_blk->dir_entries[file_progress]);
+    filename = current_dentry->fname;
+    for (i = 0; i<32 && filename[i]!='\0'; i++){
+        putc(filename[i]);
     }
-    putc("\0");
-    putc("\n");
+    putc('\0');
+    putc('\n');
     file_progress += 1;
 
     return i;
 }
 
-int32_t read_data(int32_t fd, void* buf, int32_t nbytes){
+int32_t read_data(int32_t fd, uint32_t* buf, int32_t nbytes){
 
     // uses file_progress, and current_inode
-    int32_t dblock_addr;
+    uint32_t *dblock_addr;
     int i, dblocks_idx, dblocks_offset, fsize,iterations;
 
-    fsize = current_inode.len;
+    fsize = current_inode->len;
     if (file_progress >= fsize){
         return -1;
         // there is no more to read 
@@ -128,7 +128,7 @@ int32_t read_data(int32_t fd, void* buf, int32_t nbytes){
         dblocks_idx = i/FOUR_KB;
         // get the address of the dblock 
         // bootblk + inodes + idx of dblock (in storage)
-        dblock_addr = boot_blk + (1+boot_blk->n_inodes+current_inode->dblocks[dblocks_idx])*FOUR_KB;
+        dblock_addr = (uint32_t*)boot_blk + (1+boot_blk->n_inodes+current_inode->dblocks[dblocks_idx])*FOUR_KB;
         
         // get offset in the dblock
         dblocks_offset = i%FOUR_KB;
