@@ -284,7 +284,7 @@ int read_files() {
 	TEST_HEADER;
 	clear();
 	int ret = dir_read(0, 0, 0) + 1;
-	dir_close();
+	dir_close(0);
 
 	return ret;
 }
