@@ -35,10 +35,10 @@ int32_t dir_open(const uint8_t *filename) {
     return read_dentry_by_name(filename);
 }
 
-int32_t dir_read() {
+int32_t dir_read(uint16_t idx, dentry_t *inputDentry) {
     // read dentry by index
     // reads one at a time
-    return read_dentry_by_index(); // 0 when done, otherwise nbytes
+    return read_dentry_by_index(idx, inputDentry); // 0 when done, otherwise nbytes
 }
 
 int32_t dir_write() {
@@ -88,47 +88,26 @@ int32_t read_dentry_by_name(const uint8_t *fname) {
     return -1;
 }
 
-int32_t read_dentry_by_index(int idx) {
+int32_t read_dentry_by_index(uint16_t idx, dentry_t *inputDentry) {
     int i;
-    // int32_t filesize;
-    char *filename;
-    char buf[MAX_CHAR + 1];
-    // buf[0] = ' ';
-
-    if(idx == boot_blk->n_dir_entries) return -1;  // no more dirs to
-                                                             // read
+    
+    if(idx == boot_blk->n_dir_entries) return -1;  // no more dirs to read
 
     current_dentry = &(boot_blk->dir_entries[idx]);
 
-    filename       = current_dentry->fname;
-    // filesize       = (inode_t*)(current_dentry->inode)->len;
+    // Deep copy of all variables in dentry_t struct
+    for(i = 0; i < MAX_CHAR; i++)
+        inputDentry->fname[i] = current_dentry->fname[i];
 
+    inputDentry->type = current_dentry->type;
 
+    // boot_blk + 1 for offset of inode starting position
+    inputDentry->inode = current_dentry->inode + 1 + boot_blk;
 
-    for (i = 0; i < MAX_CHAR; i++) {
-        buf[i] = ' ';
-    }
+    for(i = 0; i < RESERVED_DENTRY_SPACE; i++)
+        inputDentry->reserved[i] = current_dentry->reserved[i];
 
-    
-    // iterate through filename characters until NUL terminator
-    // TODO handle non-null terminated files
-    for (i = 1; i < MAX_CHAR + 1; i++) {
-        buf[i] = filename[i - 1];
-    }
-    // buf[MAX_CHAR] = '\0';
-    for (i = 0; i < MAX_CHAR; i++) 
-        putc(buf[i]);
-    // printf("%s ", buf);
-
-    printf(" type: %d", current_dentry->type);
-    current_inode  = &((inode_t *)boot_blk)[current_dentry->inode];
-    printf(", size: %d", ((inode_t*)(((current_dentry->inode + 1)) + boot_blk))->len);
-
-    putc('\0');
-    putc('\n');
-    file_progress += 1;
-
-    return i;
+    return 0;
 }
 
 int32_t read_data(int32_t fd, uint32_t *buf, int32_t nbytes) {

@@ -284,12 +284,19 @@ int read_files() {
 	TEST_HEADER;
 	clear();
 	// If we can't set default rtc frequency, return 0.
-	// dir_open(".");
-	// putc('\n');
 	int i;
 	int ret = 0;
-	for(i = 0; ret != -1; i++)
-		ret = read_dentry_by_index(i);
+	dentry_t inputDentry;
+	for(i = 0; ret != -1; i++) {
+		ret = dir_read(i, &inputDentry);
+		if(ret == -1) {
+			break;
+		}
+
+		printf("name: %s", inputDentry.fname);
+		printf(" type: %d", inputDentry.type);
+		printf(", size: %d\n", ((inode_t*)(inputDentry.inode))->len);
+	}
 	dir_close();
 
 	return PASS;
