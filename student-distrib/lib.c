@@ -24,6 +24,19 @@ void clear(void) {
     }
 }
 
+/* void clear_row(int row);
+ * Inputs: row number
+ * Return Value: none
+ * Function: Clears specified row */
+void clear_row(int row) {
+    int32_t i;
+    for (i = row * NUM_COLS; i < (1 + row) * NUM_COLS; i++) {
+        *(uint8_t *)(video_mem + (i << 1)) = ' ';
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+    }
+}
+
+
 /* Standard printf().
  * Only supports the following format strings:
  * %%  - print a literal '%' character
@@ -164,6 +177,17 @@ int32_t puts(int8_t* s) {
 }
 
 /* void putc(uint8_t c);
+ * Inputs: void
+ * Return Value: void
+ *  Function: Scrolls the terminal up */
+void scroll_up(){
+    int i;
+    for (i = 0; i < (NUM_ROWS - 1) * NUM_COLS; i++){
+        *(uint8_t *)(video_mem + (i << 1)) = *(uint8_t *)(video_mem + ((i + NUM_COLS) << 1));
+    }
+}
+
+/* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
  *  Function: Output a character to the console */
@@ -171,6 +195,12 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
+
+        if (screen_y >= NUM_ROWS){
+            scroll_up();
+	        clear_row(NUM_ROWS-1);
+            screen_y--;
+        }
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
