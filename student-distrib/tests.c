@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "paging.h"
 #include "rtc.h"
+#include "filesys.h"
 
 #define PASS 1
 #define FAIL 0
@@ -279,6 +280,14 @@ int test_rtc_write() {
 	return PASS;
 }
 
+int read_files() {
+	TEST_HEADER;
+	// If we can't set default rtc frequency, return 0.
+	dir_read();
+
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -296,7 +305,9 @@ void launch_tests() {
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 
-	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
-	TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+	clear();
+	read_files();
 
 }

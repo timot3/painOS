@@ -13,7 +13,7 @@
 #include "paging.h"
 #include "filesys.h"
 
-// #define RUN_TESTS
+#define RUN_TESTS
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -163,14 +163,14 @@ void entry(unsigned long magic, unsigned long addr)
     i8259_init();
     // Initialize RTC
     initialize_rtc();
-    
+
     filesys_init( (void*)(
         (module_t*)
         (&(mbi->mods_addr))
         )->mod_start);
 
     paging_init();
-    
+
 
     sti();
 
