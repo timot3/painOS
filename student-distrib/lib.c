@@ -184,15 +184,18 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Deletes the previous char */
 void delete(){
+    //remove last typed character
     int i = screen_y * NUM_COLS + screen_x - 1;
-        *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
-        if (screen_x == 0){
-            screen_x = NUM_COLS;
-            screen_y--;
-        }
-        screen_x--;
-        update_cursor(screen_x, screen_y);
+    *(uint8_t *)(video_mem + (i << 1)) = ' ';
+    *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+
+    //if first char on line update pos correctly
+    if (screen_x == 0){
+        screen_x = NUM_COLS;
+        screen_y--;
+    }
+    screen_x--;
+    update_cursor(screen_x, screen_y);
 }
 
 /* void update_cursor(int x, int y);
@@ -230,6 +233,7 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
+        //vertical scroll if bottom of screen
         if (screen_y >= NUM_ROWS){
             scroll_up();
 	        clear_row(NUM_ROWS-1);
@@ -239,9 +243,11 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+        //vertical scroll if at last character of line
         if (screen_x >= NUM_COLS){
             screen_y++;
             screen_x = 0;
+            //vertical scroll if last character of line and bottom of screen
             if (screen_y >= NUM_ROWS){
                 scroll_up();
 	            clear_row(NUM_ROWS-1);
