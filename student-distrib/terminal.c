@@ -30,6 +30,9 @@ int terminal_close(int fd){
  *   RETURN VALUE: buf is now kb_buffer
  */
 int terminal_read(int fd, unsigned char* buf, int nbytes){
+    int i;
+    for(i=0; i<TERM_BUF_SIZE; i++)
+        buf[i] = kb_buffer[i];
     buf = kb_buffer;
     return 0;
 }
@@ -43,7 +46,9 @@ int terminal_read(int fd, unsigned char* buf, int nbytes){
  */
 int terminal_write(int fd, unsigned char* buf, int nbytes){
     int i;
-    for(i=0; i<nbytes; i++)
+    if(buf[0] == 0)
+        return 0;
+    for(i=0; i<TERM_BUF_SIZE; i++)
         putc(buf[i]);
     return 0;
 }
