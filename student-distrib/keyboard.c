@@ -166,7 +166,10 @@ void keyboard_print(int byte) {
         c = scan_code_1[byte];
 
     if (c == '\b'){
-        delete();
+        if(term_buf_location > 0){
+            delete();
+            term_buf_location--;
+        }
         return;
     }
     if (c == '\n' || c == '\r')
