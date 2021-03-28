@@ -9,4 +9,6 @@ int terminal_close(int fd);
 int terminal_read(int fd, unsigned char* buf, int nbytes);
 int terminal_write(int fd, unsigned char* buf, int nbytes);
 
+unsigned char terminal_buf[128];
+
 #endif /* TERMINAL_H */
