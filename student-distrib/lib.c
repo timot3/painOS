@@ -22,6 +22,9 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    screen_x = 0;
+    screen_y = 0;
+    update_cursor(screen_x, screen_y);
 }
 
 /* void clear_row(int row);
@@ -176,7 +179,38 @@ int32_t puts(int8_t* s) {
     return index;
 }
 
-/* void putc(uint8_t c);
+/* void delete();
+ * Inputs: void
+ * Return Value: void
+ *  Deletes the previous char */
+void delete(){
+    int i = screen_y * NUM_COLS + screen_x - 1;
+        *(uint8_t *)(video_mem + (i << 1)) = ' ';
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        if (screen_x == 0){
+            screen_x = NUM_COLS;
+            screen_y--;
+        }
+        screen_x--;
+        update_cursor(screen_x, screen_y);
+}
+
+/* void update_cursor(int x, int y);
+ * Inputs: x, y
+ * Return Value: void
+ *  Moves the cursor to the correc position
+ * See https://wiki.osdev.org/Text_Mode_Cursor#Moving_the_Cursor_2 */
+void update_cursor(int x, int y)
+{
+	int pos = y * NUM_COLS + x;
+ 
+	outb(0x0F, 0x3D4);
+    outb(pos, 0x3D5);
+    outb(0x0E, 0x3D4);
+    outb(pos >> 8, 0x3D5);
+}
+
+/* void putc();
  * Inputs: void
  * Return Value: void
  *  Function: Scrolls the terminal up */
@@ -184,6 +218,7 @@ void scroll_up(){
     int i;
     for (i = 0; i < (NUM_ROWS - 1) * NUM_COLS; i++){
         *(uint8_t *)(video_mem + (i << 1)) = *(uint8_t *)(video_mem + ((i + NUM_COLS) << 1));
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
 }
 
@@ -195,7 +230,6 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
-
         if (screen_y >= NUM_ROWS){
             scroll_up();
 	        clear_row(NUM_ROWS-1);
@@ -205,9 +239,17 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        if (screen_x >= NUM_COLS){
+            screen_y++;
+            screen_x = 0;
+            if (screen_y >= NUM_ROWS){
+                scroll_up();
+	            clear_row(NUM_ROWS-1);
+                screen_y--;
+            }
+        }
     }
+    update_cursor(screen_x, screen_y);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
