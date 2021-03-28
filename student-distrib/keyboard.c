@@ -119,6 +119,7 @@ void keyboard_handler() {
     cli();
     unsigned int byte = inb(KB_PORT);
     unsigned char c = scan_code_1[byte];
+    int i;
     switch(c){
         case 0:
             break;
@@ -137,6 +138,11 @@ void keyboard_handler() {
         case CTRL_RELEASE:
             ctrl_flag = ctrl_flag ^ 1;
             break;
+        case '\t':
+            for(i=0; i<4; i++){
+                keyboard_print(KB_SPACE);
+            }
+            break;
         default:
             keyboard_print(byte);
     }
@@ -146,8 +152,10 @@ void keyboard_handler() {
 
 void keyboard_print(int byte) {
     unsigned char c;
-    if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L)
+    if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L){
         clear();
+        return;
+    }
     else if (cap_flag == 1 && shift_flag == 1) 
         c = scan_code_shift_caps[byte];
     else if (cap_flag == 1 && shift_flag == 0) 
@@ -156,7 +164,16 @@ void keyboard_print(int byte) {
         c = scan_code_shift[byte];
     else
         c = scan_code_1[byte];
-    putc(c);   
+
+    if (c == '\b'){
+        delete();
+        return;
+    }
+    if (c == '\n' || c == '\r')
+        term_buf_location = 0;
+    if (term_buf_location >= TERM_BUF_SIZE)
+        return;
+
+    putc(c);  
+    term_buf_location++; 
 }
-
-
