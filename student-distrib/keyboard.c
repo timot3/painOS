@@ -87,6 +87,31 @@ unsigned char scan_code_shift_caps[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
+//keyboard buffer to store values for terminal_read
+unsigned char kb_buffer[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '/n'
+    };
+
+/*
+ * reset_buffer
+ *   DESCRIPTION: Reset the keyboard buffer
+ *   INPUTS: none
+ *   OUTPUTS: resets the keyboard buffer
+ *   RETURN VALUE: none
+ */
+void reset_buffer(){
+    int i;
+    for (i=0; i<127; i++){
+        kb_buffer[i] = 0;
+    }
+}
 
 //flag if button is in use
 char shift_flag = 0;
@@ -178,7 +203,7 @@ void keyboard_print(int byte) {
         c = scan_code_1[byte];
 
     //get correct backspace behavior
-    if (c == '\b'){
+    if (scan_code_1[byte] == '\b'){
         if(term_buf_location > 0){
             delete();
             term_buf_location--;
@@ -189,9 +214,11 @@ void keyboard_print(int byte) {
     //get correct newline behavior
     if (c == '\n' || c == '\r')
         term_buf_location = 0;
-    if (term_buf_location >= TERM_BUF_SIZE)
+        reset_buffer();
+    if (term_buf_location >= TERM_BUF_SIZE - 1)
         return;
 
-    putc(c);  
+    putc(c);
+    kb_buffer[term_buf_location] = c;
     term_buf_location++; 
 }
