@@ -14,9 +14,13 @@
 
 #define ASCII_L 108
 #define KB_SPACE 57
+#define TERM_BUF_SIZE 128
 
+void reset_buffer();
 void keyboard_init();
 void keyboard_handler();
 void keyboard_print(int byte);
+
+unsigned char kb_buffer[128];
 
 #endif /* KEYBOARD_H */
