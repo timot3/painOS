@@ -1,8 +1,10 @@
+#pragma once
+
 #include "terminal.h"
 #include "lib.h"
 #include "keyboard.h"
 
-unsigned char term_buf[128] = {
+unsigned char terminal_buf[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -59,13 +61,12 @@ int terminal_read(int fd, unsigned char* buf, int nbytes){
 
     if(nbytes < TERM_BUF_SIZE)
         return -1;
-        
-    while(term_read_flag == 0){
 
-    }  
+    while(term_read_flag == 0);
+
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
-        buf[i] = term_buf[i];
+        buf[i] = terminal_buf[i];
     return 0;
 }
 
@@ -84,4 +85,3 @@ int terminal_write(int fd, unsigned char* buf, int nbytes){
         putc(buf[i]);
     return 0;
 }
-
