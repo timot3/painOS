@@ -192,7 +192,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
 int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry) {
     int i;
 
-    if(idx < 0 || idx == boot_blk->n_dir_entries)   // no more dirs to read
+    if(idx < 0 || idx >= boot_blk->n_dir_entries)   // no more dirs to read
         return -1;
 
     current_dentry = &(boot_blk->dir_entries[idx]);

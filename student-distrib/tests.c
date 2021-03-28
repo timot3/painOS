@@ -289,6 +289,79 @@ int read_files() {
 	return ret;
 }
 
+int test_file_open(){
+	int32_t ret;
+	uint8_t fname[32] = "ls\0";
+	ret = file_open(fname);
+	if (ret == -1){
+		return FAIL;
+	}
+	return PASS;
+}
+
+int test_open_bad_file(){
+	int32_t ret;
+	uint8_t fname[32] = "thisisnotafile\0";
+	ret = file_open(fname);
+	if (ret == 0){
+		return FAIL;
+	}
+	return PASS;
+}
+
+int test_read_dentry_by_index(){
+	dentry_t test_dentry;
+	char fname[MAX_CHAR];
+	uint32_t i, ret;
+	for (i = 0; i<18; i++){
+		ret = read_dentry_by_index(i, &test_dentry);
+		fname = test_dentry.fname;
+		if (i < 17 && ret == -1)
+			return FAIL;
+		if (i == 17 && ret != 0)
+			return FAIL;
+		if (i==0 && fname[0] != '.')
+			return FAIL;
+		if (i==6 && fname[0] != 'f')
+			return FAIL;
+		if (i==12 && fname[0] != 'l')
+			return FAIL;
+		if (i==16 && fname[0] != 'h')
+			return FAIL;
+	}
+	return PASS;
+}
+
+
+int test_read_dentry_by_name(){
+	dentry_t test_dentry;
+	char dot[MAX_CHAR] = ".\0";
+	char fish[MAX_CHAR] = "fish\0";
+	char ls[MAX_CHAR] = "ls\0";
+	char hello[MAX_CHAR] = "hello\0";
+	char garbage[MAX_CHAR] = "thisisnotafile\0";
+	uint32_t i, ret;
+
+	ret = read_dentry_by_name(dot, &test_dentry);
+	if (ret == -1)
+		return FAIL;
+	ret = read_dentry_by_name(fish, &test_dentry);
+	if (ret == -1)
+		return FAIL;
+	ret = read_dentry_by_name(ls, &test_dentry);
+	if (ret == -1)
+		return FAIL;
+	ret = read_dentry_by_name(hello, &test_dentry);
+	if (ret == -1)
+		return FAIL;
+	ret = read_dentry_by_name(garbage, &test_dentry);
+	if (ret != -1)
+		return FAIL;
+	return PASS;
+}
+
+
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
