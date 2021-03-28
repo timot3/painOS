@@ -202,7 +202,7 @@ void delete(){
  * Inputs: x, y
  * Return Value: void
  *  Moves the cursor to the correc position
- * See https://wiki.osdev.org/Text_Mode_Cursor#Moving_the_Cursor_2 */
+ * See https://forum.osdev.org/viewtopic.php?f=1&t=6679*/
 void update_cursor(int x, int y)
 {
 	int pos = y * NUM_COLS + x;
