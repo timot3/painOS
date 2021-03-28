@@ -8,6 +8,8 @@
 #include "types.h"
 
 int32_t printf(int8_t *format, ...);
+void delete();
+void update_cursor(int x, int y);
 void scroll_up();
 void putc(uint8_t c);
 int32_t puts(int8_t *s);
