@@ -11,7 +11,9 @@
 #define CTRL_RELEASE 204
 #define ALT_PRESS 205
 #define ALT_RELEASE 206
+
 #define ASCII_L 108
+#define KB_SPACE 57
 
 void keyboard_init();
 void keyboard_handler();
