@@ -14,8 +14,10 @@ static dentry_t *current_dentry;
  */
 int32_t file_open(const uint8_t *filename) {
     // read dentry by name
+    dentry_t dentry; 
     file_progress = 0;
-    return read_dentry_by_name(filename, 0);
+    return read_dentry_by_name(fname, &dentry);
+    
 }
 
 /*
@@ -28,7 +30,7 @@ int32_t file_open(const uint8_t *filename) {
  *   RETURN VALUE:
  */
 int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
-    return read_data(0, 0, (uint32_t *)buf, nbytes); // 0 when done, otherwise nbytes read
+    return read_data((uint32_t)current_inode, file_progress, (uint8_t *)buf, nbytes); // 0 when done, otherwise nbytes read
 }
 
 /*
@@ -169,6 +171,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
 
         // otherwise set the global vars and return 0
         current_dentry = &(boot_blk->dir_entries[i]);
+        dentry = &(boot_blk->dir_entries[i]);
         current_inode  = &((inode_t *)boot_blk)[current_dentry->inode + 1];
         file_progress  = 0;
         return 0;
@@ -227,9 +230,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
     fsize = current_inode->len;
 
     if(file_progress >= fsize) {
-        return -1;
-
         // there is no more to read
+        return -1;
     }
 
     // keep reading
