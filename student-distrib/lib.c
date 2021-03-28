@@ -207,10 +207,10 @@ void update_cursor(int x, int y)
 {
 	int pos = y * NUM_COLS + x;
  
-	outb(0x0F, 0x3D4);
-    outb(pos, 0x3D5);
-    outb(0x0E, 0x3D4);
-    outb(pos >> 8, 0x3D5);
+	outb(CursorAddLow, CRTCIndex);
+    outb(pos, CRTCData);
+    outb(CursorAddHigh, CRTCIndex);
+    outb(pos >> 8, CRTCData);
 }
 
 /* void putc();
