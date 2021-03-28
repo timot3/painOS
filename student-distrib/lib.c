@@ -15,8 +15,9 @@ static char* video_mem = (char *)VIDEO;
 /* void clear(void);
  * Inputs: void
  * Return Value: none
- * Function: Clears video memory */
+ * Function: Clears video memory and updates screen position */
 void clear(void) {
+    cli();
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
@@ -25,6 +26,7 @@ void clear(void) {
     screen_x = 0;
     screen_y = 0;
     update_cursor(screen_x, screen_y);
+    sti();
 }
 
 /* void clear_row(int row);
