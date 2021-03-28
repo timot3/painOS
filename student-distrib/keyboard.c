@@ -214,10 +214,11 @@ void keyboard_print(int byte) {
     }
 
     //get correct newline behavior
-    if (c == '\n' || c == '\r')
-        terminal_read();
+    if (c == '\n' || c == '\r'){
+        terminal_read(0, terminal_buf, 0);
         term_buf_location = 0;
         reset_buffer();
+    }
     if (term_buf_location >= TERM_BUF_SIZE - 1)
         return;
 
