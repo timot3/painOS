@@ -8,7 +8,7 @@ static dentry_t *current_dentry;
 /*
  * file_open
  *   DESCRIPTION:
- *   INPUTS: *filename -
+ *   INPUTS: *filename - the name of the file to read
  *   OUTPUTS: none
  *   RETURN VALUE:
  */
@@ -16,16 +16,17 @@ int32_t file_open(const uint8_t *filename) {
     // read dentry by name
     dentry_t dentry; 
     file_progress = 0;
+
     return read_dentry_by_name(filename, &dentry);
     
 }
 
 /*
  * file_read
- *   DESCRIPTION:
+ *   DESCRIPTION: Reads a file.
  *   INPUTS: fd -
- *            *buf -
- *            nbytes -
+ *           *buf -
+ *           nbytes -
  *   OUTPUTS: none
  *   RETURN VALUE:
  */
@@ -37,8 +38,11 @@ int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
  * file_write
  *   DESCRIPTION: Does nothing for now
  *   INPUTS: fd - never used, docs said we needed it
- *            *buf - never used, docs said we needed it
- *            nbytes - never used, docs said we needed it
+ *              May be useful for future checkpoints
+ *           *buf - never used, docs said we needed it
+ *              May be useful for future checkpoints
+ *           nbytes - never used, docs said we needed it
+ *              May be useful for future checkpoints
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns -1
  */
@@ -50,11 +54,13 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes) {
 /*
  * file_close
  *   DESCRIPTION:
- *   INPUTS: fd - never used, docs said we needed it
+ *   INPUTS: fd - never used, docs said we needed it. 
+ *      May be useful for future checkpoints
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0
  */
 int32_t file_close(int32_t fd) {
+    // reset current data and data entry
     current_inode  = NULL;
     current_dentry = NULL;
     file_progress  = 0;
@@ -79,8 +85,11 @@ int32_t dir_open(const uint8_t *filename) {
  * dir_read
  *   DESCRIPTION:
  *   INPUTS: fd - never used, docs said we needed it
- *            *buf - never used, docs said we needed it
+ *                May be useful for future checkpoints
+ *           *buf - never used, docs said we needed it
+ *                May be useful for future checkpoints
  *            nbytes - never used, docs said we needed it
+ *                May be useful for future checkpoints
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0
  */
@@ -111,26 +120,31 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
 
 /*
  * dir_write
- *   DESCRIPTION:
+ *   DESCRIPTION: Writes a directory. 
+ *   /// TODO implement
  *   INPUTS: fd - never used, docs said we needed it
- *            *buf - never used, docs said we needed it
- *            nbytes - never used, docs said we needed it
+ *              May be useful for future checkpoints
+ *           *buf - never used, docs said we needed it
+ *              May be useful for future checkpoints
+ *           nbytes - never used, docs said we needed it
+ *              May be useful for future checkpoints
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns -1
  */
 int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes) {
-    printf("You can't write a directory, silly!");
+    printf("This feature is not yet implemented.");
     return -1;
 }
 
 /*
  * dir_close
- *   DESCRIPTION:
+ *   DESCRIPTION: Stops reading the current directory.
  *   INPUTS: fd - never used, docs said we needed it
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0
  */
 int32_t dir_close(int32_t fd) {
+    // reset the current file and file data entry.
     current_inode  = NULL;
     current_dentry = NULL;
     file_progress  = 0;
@@ -140,8 +154,8 @@ int32_t dir_close(int32_t fd) {
 /*
  * read_dentry_by_name
  *   DESCRIPTION:
- *   INPUTS: *fname -
- *           *dentry -
+ *   INPUTS: *fname  - Name of the data entry that we want to read.
+ *           *dentry - Pointer to dentry that we want to populate
  *   OUTPUTS: none
  *   RETURN VALUE: Return -1 if file not found, 0 otherwise
  */
@@ -154,7 +168,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     // get strlen
     fname_length = strlen((int8_t *)fname);
 
-    // for each dir entry
+    // for each dir entry, search to see if the filename matches
     for(i = 0; i < boot_blk->n_dir_entries; i++) {
         // copy the name
         cont = 0;
@@ -189,7 +203,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
  *   OUTPUTS: none
  *   RETURN VALUE: Return -1 if desired value is out of range, 0 otherwise
  */
-int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry) {
+int32_t read_dentry_by_index(uint32_t idx, dentry_t *input_dentry) {
     int i;
 
     if(idx < 0 || idx >= boot_blk->n_dir_entries)   // no more dirs to read
@@ -199,15 +213,15 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry) {
 
     // Deep copy of all variables in dentry_t struct
     for(i = 0; i < MAX_CHAR; i++)
-        inputDentry->fname[i] = current_dentry->fname[i];
+        input_dentry->fname[i] = current_dentry->fname[i];
 
-    inputDentry->type = current_dentry->type;
+    input_dentry->type = current_dentry->type;
 
     // boot_blk + 1 for offset of inode starting position
-    inputDentry->inode = current_dentry->inode + 1 + boot_blk;
+    input_dentry->inode = current_dentry->inode + 1 + boot_blk;
 
     for(i = 0; i < RESERVED_DENTRY_SPACE; i++)
-        inputDentry->reserved[i] = current_dentry->reserved[i];
+        input_dentry->reserved[i] = current_dentry->reserved[i];
 
     return 0;
 }
@@ -216,9 +230,9 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *inputDentry) {
  * read_data
  *   DESCRIPTION:
  *   INPUTS: inode -
- *            offset -
- *            *buf -
- *            nbytes -
+ *           offset -
+ *           *buf -
+ *           nbytes -
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0
  */

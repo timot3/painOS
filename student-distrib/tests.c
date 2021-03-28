@@ -395,6 +395,9 @@ int test_read_dentry_by_name(){
 	return PASS;
 }
 
+int test_read_file_contents() {
+	
+}
 
 
 /* Checkpoint 3 tests */
