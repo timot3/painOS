@@ -4,13 +4,11 @@
 
 /*
  * terminal_open
- *   DESCRIPTION: Initialize the terminal
  *   INPUTS: filename
  *   OUTPUTS: 0
- *   RETURN VALUE: term_buf_location set to 0
+ *   RETURN VALUE: nothing
  */
 int terminal_open(const int* filename){
-    term_buf_location = 0;
     return 0;
 }
 
