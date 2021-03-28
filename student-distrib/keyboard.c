@@ -110,9 +110,9 @@ void keyboard_init() {
 /*
  * keyboard_handler
  *   DESCRIPTION: Runs every time an interrupt is created by the keyboard.
- *                  Takes character input and prints to screen.
+ *                  Takes character input and does initial work before passing to keyboard_print
  *   INPUTS: none
- *   OUTPUTS: text to screen
+ *   OUTPUTS: character values for keyboard_print
  *   RETURN VALUE: none
  */
 void keyboard_handler() {
@@ -120,7 +120,9 @@ void keyboard_handler() {
     unsigned int byte = inb(KB_PORT);
     unsigned char c = scan_code_1[byte];
     int i;
+    //look through all special key cases and assign correct flags or special features
     switch(c){
+        //only allow keys with function through
         case 0:
             break;
         case ALT_PRESS:
@@ -138,6 +140,7 @@ void keyboard_handler() {
         case CTRL_RELEASE:
             ctrl_flag = ctrl_flag ^ 1;
             break;
+        //tabs = 4 spaces
         case '\t':
             for(i=0; i<4; i++){
                 keyboard_print(KB_SPACE);
@@ -150,12 +153,21 @@ void keyboard_handler() {
     sti();
 }
 
+/*
+ * keyboard_print
+ *   DESCRIPTION: prints out the correct response based on keyboard input
+ *   INPUTS: byte
+ *   OUTPUTS: text to screen
+ *   RETURN VALUE: none
+ */
 void keyboard_print(int byte) {
     unsigned char c;
+    //ctrl+L = clear
     if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L){
         clear();
         return;
     }
+    //correct correct scancode table depending on shift/tab
     else if (cap_flag == 1 && shift_flag == 1) 
         c = scan_code_shift_caps[byte];
     else if (cap_flag == 1 && shift_flag == 0) 
@@ -165,6 +177,7 @@ void keyboard_print(int byte) {
     else
         c = scan_code_1[byte];
 
+    //get correct backspace behavior
     if (c == '\b'){
         if(term_buf_location > 0){
             delete();
@@ -172,6 +185,8 @@ void keyboard_print(int byte) {
         }
         return;
     }
+
+    //get correct newline behavior
     if (c == '\n' || c == '\r')
         term_buf_location = 0;
     if (term_buf_location >= TERM_BUF_SIZE)
