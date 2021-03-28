@@ -22,6 +22,6 @@ void keyboard_handler();
 void keyboard_print(int byte);
 
 unsigned char kb_buffer[128];
-int term_read_flag;
+volatile int term_read_flag;
 
 #endif /* KEYBOARD_H */
