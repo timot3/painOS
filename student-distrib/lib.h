@@ -7,6 +7,11 @@
 
 #include "types.h"
 
+#define CRTCIndex 0x3D4
+#define CRTCData 0x3D5
+#define CursorAddHigh 0x0E
+#define CursorAddLow 0x0F
+
 int32_t printf(int8_t *format, ...);
 void delete();
 void update_cursor(int x, int y);
