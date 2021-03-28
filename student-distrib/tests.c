@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "paging.h"
+#include "terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -226,6 +227,14 @@ int test_dereference_null()
 	return test_status;
 }
 
+int test_terminal(){
+	unsigned char test_buf[128];
+	while(1){
+		terminal_read(0, test_buf, 128);
+		terminal_write(0, test_buf, 128);
+	}
+}
+
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -241,7 +250,8 @@ void launch_tests() {
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
 	// TEST_OUTPUT("Test RTC", test_rtc());
 	// TEST_OUTPUT("Paging Structs Members+Values", test_paging_struct());
-	TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
+	// TEST_OUTPUT("Paging Dereferencing", test_paging_struct_dref());
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
+	TEST_OUTPUT("Test Terminal", test_terminal());
 }
