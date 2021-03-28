@@ -13,7 +13,8 @@ unsigned char term_buffer[128] = {
     };
 
 int terminal_open(const int* filename){
-return 0;
+    term_buf_location = 0;
+    return 0;
 }
 
 int terminal_close(int fd){
@@ -22,7 +23,6 @@ return 0;
 
 
 int terminal_read(int fd, unsigned char* buf, int nbytes){
-
 return 0;
 }
 
@@ -32,4 +32,3 @@ int terminal_write(int fd, unsigned char* buf, int nbytes){
         putc(buf[i]);
 return 0;
 }
-
