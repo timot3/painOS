@@ -16,7 +16,7 @@ int32_t file_open(const uint8_t *filename) {
     // read dentry by name
     dentry_t dentry; 
     file_progress = 0;
-    return read_dentry_by_name(fname, &dentry);
+    return read_dentry_by_name(filename, &dentry);
     
 }
 
@@ -157,7 +157,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     // for each dir entry
     for(i = 0; i < boot_blk->n_dir_entries; i++) {
         // copy the name
-
+        cont = 0;
         // check each character
         for(j = 0; j < fname_length; j++) {
             if(fname[j] != (boot_blk->dir_entries)[i].fname[j]) {
