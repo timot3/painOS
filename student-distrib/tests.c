@@ -466,13 +466,13 @@ int test_file_read() {
 	// buffer of arbitrary size
 	uint8_t buf[FOUR_KB];
 	// declare the file to read
-	uint8_t fish[MAX_CHAR] = "frame0.txt\0";
+	uint8_t filename[MAX_CHAR] = "frame0.txt\0";
 	// clear the buffer
 	for(i = 0; i < FOUR_KB; i++)
 		buf[i] = 0;
 
 	// open and read the file
-	file_open(fish);
+	file_open(filename);
 	if (file_read(0, buf, 8192) == 0)
 		return FAIL;
 
@@ -493,12 +493,12 @@ int test_read_large() {
 	int i;
 	// init buffer of arbitrary size
 	uint8_t buf[FOUR_KB];
-	uint8_t fish[MAX_CHAR] = "verylargetextwithverylongname.tx";
+	uint8_t filename[MAX_CHAR] = "verylargetextwithverylongname.tx";
 	for(i = 0; i < FOUR_KB; i++)
 		buf[i] = 0;
 
 	// open and read the file
-	file_open(fish);
+	file_open(filename);
 	file_read(0, buf, FOUR_KB);
 	printf("%s", buf);
 	return PASS;
@@ -514,17 +514,27 @@ int test_read_large() {
  */
 int test_file_read_exe() {
 	int i;
-	uint8_t buf[32];
-	uint8_t fish[MAX_CHAR] = "ls\0";
-	for(i = 0; i < 32; i++)
+	// initialize 8-kb buffer. 
+	// 8 kb is the largest size of a file in fsdir rn
+	// excluding "fish"
+	uint8_t buf[FOUR_KB * 2];
+	uint8_t filename[MAX_CHAR] = "ls\0";
+	// clear the buffer
+	for(i = 0; i < FOUR_KB * 2; i++)
 		buf[i] = 0;
 
-	file_open(fish);
-	file_read(0, buf, 32);
+	file_open(filename);
+	// read 8kb 
+	file_read(0, buf, FOUR_KB * 2);
 	// use putc because of null chars
 	// display the first 2kb
-	for(i = 0; i < 32; i++)
-		putc(buf[i]);
+	for(i = 0; i < FOUR_KB * 2; i++)
+		// in order to see all the file contents, only print non-null characters
+		// comment out the next if statement to see all contents
+		if(buf[i])
+			putc(buf[i]);
+	// newline after test
+	putc('\n');
 	return PASS;
 }
 
@@ -549,16 +559,16 @@ void launch_tests() {
 
 	// CHECKPOINT 2
 	clear();
-	//TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
-	//TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
-	//TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
-	TEST_OUTPUT("Test read_directory", test_read_directory()); //works
+	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+	// TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
+	// TEST_OUTPUT("Test read_directory", test_read_directory()); //works
 	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
 	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
-	 // TEST_OUTPUT("Test test_file_read", test_file_read()); //works
-	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
-	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
+	TEST_OUTPUT("Test test_file_read", test_file_read()); //works
+	TEST_OUTPUT("Test test_read_large", test_read_large()); //works
+	TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
 
 }
