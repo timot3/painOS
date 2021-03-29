@@ -2,9 +2,7 @@
 
 static boot_blk_t *boot_blk;
 static uint32_t file_progress;
-static inode_t *current_inode;
-static dentry_t *current_dentry;
-
+static dentry_t current_dentry;
 /*
  * file_open
  *   DESCRIPTION:
@@ -14,10 +12,19 @@ static dentry_t *current_dentry;
  */
 int32_t file_open(const uint8_t *filename) {
     // read dentry by name
+    int32_t ret, j;
     dentry_t dentry; 
     file_progress = 0;
-    return read_dentry_by_name(filename, &dentry);
-    *current_dentry = dentry;
+    ret =  read_dentry_by_name(filename, &dentry);
+
+    // TODO copy struct data to current_dentry
+    for(j = 0; j < MAX_CHAR; j++) {
+            current_dentry.fname[j] = dentry.fname[j];
+    }
+    current_dentry.type = dentry.type;
+    current_dentry.inode = dentry.inode;
+
+    return ret;
     
 }
 
@@ -31,7 +38,7 @@ int32_t file_open(const uint8_t *filename) {
  *   RETURN VALUE:
  */
 int32_t file_read(int32_t fd, uint8_t *buf, int32_t nbytes) {
-    return read_data(current_dentry->inode, 0, buf, nbytes); // 0 when done, otherwise nbytes read
+    return read_data(current_dentry.inode, 0, buf, nbytes); // 0 when done, otherwise nbytes read
 }
 
 /*
@@ -61,10 +68,7 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes) {
  */
 int32_t file_close(int32_t fd) {
     // reset current data and data entry
-    current_inode  = NULL;
-    current_dentry = NULL;
     file_progress  = 0;
-
     // undo open
     return 0;
 }
@@ -102,7 +106,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     int ret = 0;
     dentry_t inputDentry;
 
-    for(i = 0; ret != -1; i++) {
+    for(i = 0; ret != -1 && i < boot_blk->n_inodes; i++) {
         ret = read_dentry_by_index(i, &inputDentry);
         if(ret == -1)
             break;
@@ -121,7 +125,6 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
 /*
  * dir_write
  *   DESCRIPTION: Writes a directory. 
- *   /// TODO implement
  *   INPUTS: fd - never used, docs said we needed it
  *              May be useful for future checkpoints
  *           *buf - never used, docs said we needed it
@@ -145,8 +148,6 @@ int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes) {
  */
 int32_t dir_close(int32_t fd) {
     // reset the current file and file data entry.
-    current_inode  = NULL;
-    current_dentry = NULL;
     file_progress  = 0;
     return 0;
 }
@@ -161,19 +162,17 @@ int32_t dir_close(int32_t fd) {
  */
 int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     // inits
-    int i, j, fname_length, cont;
+    int i, j, cont;
 
     cont = 0;
 
-    // get strlen
-    fname_length = strlen((int8_t *)fname);
 
     // for each dir entry, search to see if the filename matches
     for(i = 0; i < boot_blk->n_dir_entries; i++) {
         // copy the name
         cont = 0;
         // check each character
-        for(j = 0; j < fname_length; j++) {
+        for(j = 0; j < MAX_CHAR; j++) {
             if(fname[j] != (boot_blk->dir_entries)[i].fname[j]) {
                 cont = 1;
                 break;
@@ -184,9 +183,13 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
         if(cont) continue;
 
         // otherwise set the global vars and return 0
-        current_dentry = &(boot_blk->dir_entries[i]);
-        dentry = &(boot_blk->dir_entries[i]);
-        current_inode  = &((inode_t *)boot_blk)[current_dentry->inode + 1];
+        for(j = 0; j < MAX_CHAR; j++) {
+            dentry->fname[j] = (boot_blk->dir_entries)[i].fname[j];
+        }
+        dentry->type = (boot_blk->dir_entries)[i].type;
+        dentry->inode = (boot_blk->dir_entries)[i].inode;
+
+        // current_inode  = (inode_t *)(boot_blk + ((dentry->inode + 1)*FOUR_KB));
         file_progress  = 0;
         return 0;
     }
@@ -209,20 +212,18 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *input_dentry) {
     if(idx < 0 || idx >= boot_blk->n_dir_entries)   // no more dirs to read
         return -1;
 
-    current_dentry = &(boot_blk->dir_entries[idx]);
+    current_dentry = (dentry_t)boot_blk->dir_entries[idx];
 
     // Deep copy of all variables in dentry_t struct
     for(i = 0; i < MAX_CHAR; i++)
-        input_dentry->fname[i] = current_dentry->fname[i];
+        input_dentry->fname[i] = current_dentry.fname[i];
 
-    input_dentry->type = current_dentry->type;
+    input_dentry->type = current_dentry.type;
 
     // boot_blk + 1 for offset of inode starting position
-    input_dentry->inode = current_dentry->inode + 1 + boot_blk;
+    input_dentry->inode = current_dentry.inode;
 
-    for(i = 0; i < RESERVED_DENTRY_SPACE; i++)
-        input_dentry->reserved[i] = current_dentry->reserved[i];
-
+    
     return 0;
 }
 
@@ -238,11 +239,14 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *input_dentry) {
  */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes) {
     // uses file_progress, and current_inode
-    uint32_t *dblock_addr;
-    int i, dblocks_idx, dblocks_offset, fsize, iterations;
-    // current_inode = (inode_t*)(boot_blk + (inode+1)*FOUR_KB);
+    uint32_t *dblock_addr, fsize;
+    int i, dblocks_idx, dblocks_offset, iterations;
+    inode_t *current_inode = (inode_t*)(boot_blk + inode+1);
 
-    fsize = current_inode->len;
+    inode_t inode_test =*current_inode;
+
+    
+    fsize = inode_test.len;
 
     if(file_progress >= fsize) {
         // there is no more to read
@@ -256,7 +260,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
     for(i = file_progress; i < file_progress + nbytes; i++) {
         // represents number of bytes read so far
         iterations = i - file_progress;
-        if(i == fsize) // if we finish reading
+        if(i >= fsize) // if we finish reading
             return iterations;
 
         // get the dblock index (in inode)
@@ -265,8 +269,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
         // get the address of the dblock
         // bootblk + inodes + idx of dblock (in storage)
         dblock_addr = (uint32_t *)boot_blk +
-                      (1 + boot_blk->n_inodes +
-                       current_inode->dblocks[dblocks_idx]) * FOUR_KB;
+                      1 + boot_blk->n_inodes +
+                       current_inode->dblocks[dblocks_idx];
 
         // get offset in the dblock
         dblocks_offset = i % FOUR_KB;
@@ -275,6 +279,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
         dblock_addr += dblocks_offset;
 
         // copy data into buf
+
         buf[iterations] = dblock_addr[dblocks_offset];
 
     }

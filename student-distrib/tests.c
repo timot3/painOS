@@ -439,6 +439,55 @@ int test_file_read() {
 	return PASS;
 }
 
+int test_read_data(){
+	dentry_t test_dentry;
+
+	uint8_t buf[10], test_name[10] = "frame0.txt\0";
+	
+	uint32_t inode_index;
+	uint8_t i;
+
+	read_dentry_by_name(test_name, &test_dentry);
+	inode_index = test_dentry.inode;
+	printf("INDEX: %d", inode_index);
+	read_data(inode_index, 0, buf, 10);
+
+	for(i = 0; i < 10; i++)  {
+		putc((char)buf[i]);
+	}
+
+	putc('\n');
+	
+	return PASS;
+}
+int test_file_read_exe() {
+	uint32_t ret, i, len=50;
+	uint8_t buf_a[len];
+
+	uint8_t frame[MAX_CHAR] = "sigtext\0";
+	file_open(frame);
+	ret = file_read(0, buf_a, len);
+	for (i=0; i<len; i++){
+		putc(buf_a[i]);
+	}
+
+	if ((int)buf_a[0] != 127){ // 0x7f 
+		printf("Failed test 1");
+		return FAIL;
+	}
+	if ((int)buf_a[1] != 69){ // x45 
+		return FAIL;
+	}
+	if ((int)buf_a[2] != 127){ // 0x76 
+		return FAIL;
+	}
+	if ((int)buf_a[3] != 70){ // 0x4c
+		return FAIL;
+	}
+
+	return PASS;
+}
+
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -464,6 +513,6 @@ void launch_tests() {
 
 	//read_files();
 	//TEST_OUTPUT("Test test_file_open", test_open_bad_file());
-	TEST_OUTPUT("Test test_file_read", test_file_read());
+	test_read_data();
 
 }
