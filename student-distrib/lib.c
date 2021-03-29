@@ -15,32 +15,14 @@ static char* video_mem = (char *)VIDEO;
 /* void clear(void);
  * Inputs: void
  * Return Value: none
- * Function: Clears video memory and updates screen position */
+ * Function: Clears video memory */
 void clear(void) {
-    cli();
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
-    screen_x = 0;
-    screen_y = 0;
-    update_cursor(screen_x, screen_y);
-    sti();
 }
-
-/* void clear_row(int row);
- * Inputs: row number
- * Return Value: none
- * Function: Clears specified row */
-void clear_row(int row) {
-    int32_t i;
-    for (i = row * NUM_COLS; i < (1 + row) * NUM_COLS; i++) {
-        *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
-    }
-}
-
 
 /* Standard printf().
  * Only supports the following format strings:
@@ -181,55 +163,6 @@ int32_t puts(int8_t* s) {
     return index;
 }
 
-/* void delete();
- * Inputs: void
- * Return Value: void
- *  Deletes the previous char */
-void delete(){
-    //edgecase so backspace after clear isn't page_fault
-    if (screen_y==0 && screen_x==0)
-        return;
-    //remove last typed character
-    int i = screen_y * NUM_COLS + screen_x - 1;
-    *(uint8_t *)(video_mem + (i << 1)) = ' ';
-    *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
-
-    //if first char on line update pos correctly
-    if (screen_x == 0){
-        screen_x = NUM_COLS;
-        screen_y--;
-    }
-    screen_x--;
-    update_cursor(screen_x, screen_y);
-}
-
-/* void update_cursor(int x, int y);
- * Inputs: x, y
- * Return Value: void
- *  Moves the cursor to the correc position
- * See https://forum.osdev.org/viewtopic.php?f=1&t=6679*/
-void update_cursor(int x, int y)
-{
-	int pos = y * NUM_COLS + x;
- 
-	outb(CursorAddLow, CRTCIndex);
-    outb(pos, CRTCData);
-    outb(CursorAddHigh, CRTCIndex);
-    outb(pos >> 8, CRTCData);
-}
-
-/* void putc();
- * Inputs: void
- * Return Value: void
- *  Function: Scrolls the terminal up */
-void scroll_up(){
-    int i;
-    for (i = 0; i < (NUM_ROWS - 1) * NUM_COLS; i++){
-        *(uint8_t *)(video_mem + (i << 1)) = *(uint8_t *)(video_mem + ((i + NUM_COLS) << 1));
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
-    }
-}
-
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
@@ -238,29 +171,13 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
-        //vertical scroll if bottom of screen
-        if (screen_y >= NUM_ROWS){
-            scroll_up();
-	        clear_row(NUM_ROWS-1);
-            screen_y--;
-        }
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        //vertical scroll if at last character of line
-        if (screen_x >= NUM_COLS){
-            screen_y++;
-            screen_x = 0;
-            //vertical scroll if last character of line and bottom of screen
-            if (screen_y >= NUM_ROWS){
-                scroll_up();
-	            clear_row(NUM_ROWS-1);
-                screen_y--;
-            }
-        }
+        screen_x %= NUM_COLS;
+        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
-    update_cursor(screen_x, screen_y);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);

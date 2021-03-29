@@ -280,7 +280,7 @@ int test_rtc_write() {
 	return PASS;
 }
 
-int read_files() {
+int read_directory() {
 	TEST_HEADER;
 	clear();
 	int ret = dir_read(0, 0, 0) + 1;
@@ -311,7 +311,6 @@ int test_open_bad_file(){
 
 int test_read_dentry_by_index(){
 	dentry_t test_dentry;
-	char fname[MAX_CHAR];
 	uint32_t i, ret;
 	for (i = 0; i<18; i++){
 		ret = read_dentry_by_index(i, &test_dentry);
@@ -319,17 +318,17 @@ int test_read_dentry_by_index(){
 
 			return FAIL;
 		}
-			
+
 		if (i == 17 && ret != -1){
 
 			return FAIL;
 		}
-			
+
 		if (i==0 && test_dentry.fname[0] != '.'){
 
 			return FAIL;
 		}
-			
+
 		if (i==6 && test_dentry.fname[0] != 'f'){
 
 			return FAIL;
@@ -352,11 +351,11 @@ int test_read_dentry_by_index(){
 
 int test_read_dentry_by_name(){
 	dentry_t test_dentry;
-	char dot[MAX_CHAR] = ".\0";
-	char fish[MAX_CHAR] = "fish\0";
-	char ls[MAX_CHAR] = "ls\0";
-	char hello[MAX_CHAR] = "hello\0";
-	char garbage[MAX_CHAR] = "thisisnotafile\0";
+	const uint8_t dot[MAX_CHAR] = ".\0";
+	const uint8_t  fish[MAX_CHAR] = "fish\0";
+	const uint8_t  ls[MAX_CHAR] = "ls\0";
+	const uint8_t  hello[MAX_CHAR] = "hello\0";
+	const uint8_t  garbage[MAX_CHAR] = "thisisnotafile\0";
 	uint32_t ret;
 
 	ret = read_dentry_by_name(dot, &test_dentry);
@@ -364,7 +363,7 @@ int test_read_dentry_by_name(){
 
 		return FAIL;
 	}
-		
+
 	ret = read_dentry_by_name(fish, &test_dentry);
 	if (ret == -1)
 	{
@@ -404,7 +403,7 @@ int test_file_read() {
 
 	uint8_t buf_a2[1];
 	buf_a2[0] = (uint8_t)'c';
-	char fish[MAX_CHAR] = "frame0.txt\0";
+	uint8_t fish[MAX_CHAR] = "frame0.txt\0";
 	file_open(fish);
 	ret = file_read(0, buf_a, 1);
 
@@ -415,7 +414,7 @@ int test_file_read() {
 	if (buf_a[0] == 'c'){
 		return FAIL;
 	}
-	
+
 	ret = file_read(0, buf_a2, 1);
 	if (ret != 1){
 		return FAIL;
@@ -423,7 +422,7 @@ int test_file_read() {
 	if (buf_a2[0] == 'c'){
 		return FAIL;
 	}
-	
+
 	// of course we want to ensure we're actually reading
 	// properly, so we perform this too
 	file_close(0);
@@ -442,8 +441,8 @@ int test_file_read() {
 int test_read_data(){
 	dentry_t test_dentry;
 
-	uint8_t buf[10], test_name[10] = "frame0.txt\0";
-	
+	uint8_t buf[10], test_name[11] = "frame0.txt\0";
+
 	uint32_t inode_index;
 	uint8_t i;
 
@@ -457,7 +456,7 @@ int test_read_data(){
 	}
 
 	putc('\n');
-	
+
 	return PASS;
 }
 int test_file_read_exe() {
@@ -471,14 +470,14 @@ int test_file_read_exe() {
 		putc(buf_a[i]);
 	}
 
-	if ((int)buf_a[0] != 127){ // 0x7f 
+	if ((int)buf_a[0] != 127){ // 0x7f
 		printf("Failed test 1");
 		return FAIL;
 	}
-	if ((int)buf_a[1] != 69){ // x45 
+	if ((int)buf_a[1] != 69){ // x45
 		return FAIL;
 	}
-	if ((int)buf_a[2] != 127){ // 0x76 
+	if ((int)buf_a[2] != 127){ // 0x76
 		return FAIL;
 	}
 	if ((int)buf_a[3] != 70){ // 0x4c
@@ -496,6 +495,7 @@ int test_file_read_exe() {
 /* Test suite entry point */
 void launch_tests() {
 	// launch your tests here
+	// CHECKPOINT 1
 	// clear();
 	// TEST_OUTPUT("Test idt", test_idt());
 	// TEST_OUTPUT("Test div by zero", test_div_by_zero());
@@ -506,13 +506,17 @@ void launch_tests() {
 	// TEST_OUTPUT("Test dereference null", test_dereference_null());
 	// TEST_OUTPUT("Test System Interrupt", test_sys_interrupt());
 
+
+	// CHECKPOINT 2
+	clear();
 	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
 	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
-	clear();
-
-
-	//read_files();
-	//TEST_OUTPUT("Test test_file_open", test_open_bad_file());
-	test_read_data();
-
+	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
+	// TEST_OUTPUT("Test test_read_data", test_read_data()); //bad
+	// TEST_OUTPUT("Test test_file_read", test_file_read()); //bad
+	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
+	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
+	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
+	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
+	// TEST_OUTPUT("Test read_directory", read_directory()); //works
 }
