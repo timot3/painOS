@@ -46,17 +46,14 @@ int terminal_buf_save(unsigned char* buf){
  */
 int terminal_read(int fd, unsigned char* buf, int nbytes){
     // set last char to newline
-    terminal_buf[TERM_BUF_SIZE - 1] = '\n';
     term_read_flag = 0;
-
-    if(nbytes < TERM_BUF_SIZE)
-        return -1;
 
     while(term_read_flag == 0);
 
     int i;
-    for(i=0; i<TERM_BUF_SIZE; i++)
+    for(i=0; i<(nbytes); i++)
         buf[i] = terminal_buf[i];
+    buf[nbytes - 1] = '\n';
     return 0;
 }
 
