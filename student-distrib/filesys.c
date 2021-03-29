@@ -91,10 +91,8 @@ int32_t dir_open(const uint8_t *filename) {
  *   DESCRIPTION: Gets names, file types, and size of all files in current directory
  *   INPUTS: fd - never used, docs said we needed it
  *                May be useful for future checkpoints
- *           *buf - never used, docs said we needed it
- *                May be useful for future checkpoints
- *            nbytes - never used, docs said we needed it
- *                May be useful for future checkpoints
+ *           *buf - buffer to copy info to
+ *            nbytes - size of buffer
  *   OUTPUTS: Prints contents of directory
  *   RETURN VALUE: Always returns 0
  */
@@ -102,19 +100,124 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     int i, j;
     int ret = 0;
     dentry_t inputDentry;
+    uint8_t fN[11] = "file_name: ", fT[13] = ", file_type: ", fS[13] = ", file_size: ";
+    int loc = 0;
 
     for(i = 0; ret != -1 && i < boot_blk->n_inodes; i++) {
+        // Read items in directory
         ret = read_dentry_by_index(i, &inputDentry);
         if(ret == -1)
-            break;
+            return 0;
 
-        printf("file_name: ");
-        for(j = 0; j < MAX_CHAR; j++)
-            putc(inputDentry.fname[j]);
+        // Copy "file_name: " string to buffer
+        for(j = 0; j < 11; j++) {
+            // Return if buffer is now full
+            if(loc > nbytes) {
+                // Add NULL character at very end of buffer
+                ((uint8_t*)buf)[loc - 1] = '\0';
+                return 0;
+            }
 
-        printf(", file_type: %d", inputDentry.type);
-        printf(", file_size: %d\n", ((inode_t*)(inputDentry.inode + boot_blk + 1))->len);
+            ((uint8_t*)buf)[loc] = fN[j];
+            loc++;
+        }
+
+        // Copy filename to buffer
+        for(j = 0; j < MAX_CHAR; j++) {
+            // Return if buffer is now full
+            if(loc > nbytes) {
+                // Add NULL character at very end of buffer
+                ((uint8_t*)buf)[loc - 1] = '\0';
+                return 0;
+            }
+
+            // Don't send NULl characters, change them to spaces
+            if(inputDentry.fname[j] == 0)
+                ((uint8_t*)buf)[loc] = ' ';
+            else
+                ((uint8_t*)buf)[loc] = inputDentry.fname[j];
+            loc++;
+        }
+
+        // Copy ", file_type: " string to buffer
+        for(j = 0; j < 13; j++) {
+            // Return if buffer is now full
+            if(loc > nbytes) {
+                // Add NULL character at very end of buffer
+                ((uint8_t*)buf)[loc - 1] = '\0';
+                return 0;
+            }
+
+            ((uint8_t*)buf)[loc] = fT[j];
+            loc++;
+        }
+
+        // Convert dentry type int to string
+        uint8_t intBuff[10];
+        itoa(inputDentry.type, intBuff, 10);
+
+        // Copy type to buffer
+        for(j = 0; j < 10; j++) {
+            // Return if buffer is now full
+            if(loc > nbytes) {
+                // Add NULL character at very end of buffer
+                ((uint8_t*)buf)[loc - 1] = '\0';
+                return 0;
+            }
+
+            // Stop copying if NULL character reached
+            if(intBuff[j] == 0)
+                break;
+            ((uint8_t*)buf)[loc] = intBuff[j];
+            loc++;
+        }
+
+        // Copy ", file_size: " string to buffer
+        for(j = 0; j < 13; j++) {
+            // Return if buffer is now full
+            if(loc > nbytes) {
+                // Add NULL character at very end of buffer
+                ((uint8_t*)buf)[loc - 1] = '\0';
+                return 0;
+            }
+
+            ((uint8_t*)buf)[loc] = fS[j];
+            loc++;
+        }
+
+        // Convert dentry size int to string
+        uint8_t intBuff2[10];
+        itoa(((inode_t*)(inputDentry.inode + boot_blk + 1))->len, intBuff2, 10);
+
+        // Copy size to buffer
+        for(j = 0; j < 10; j++) {
+            // Return if buffer is now full
+            if(loc > nbytes) {
+                // Add NULL character at very end of buffer
+                ((uint8_t*)buf)[loc - 1] = '\0';
+                return 0;
+            }
+
+            // Stop copying if NULL character reached
+            if(intBuff2[j] == 0)
+                break;
+            ((uint8_t*)buf)[loc] = intBuff2[j];
+            loc++;
+        }
+
+        // Add newline at end of each entry
+        ((uint8_t*)buf)[loc] = '\n';
+        loc++;
+
+        if(loc > nbytes) {
+            // Add NULL character at very end of buffer
+            ((uint8_t*)buf)[loc - 1] = '\0';
+            return 0;
+        }
     }
+
+    // Add NULL character at very end of buffer
+    ((uint8_t*)buf)[loc] = '\0';
 
     return 0;
 }
@@ -243,12 +346,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
     dblock_t *currData, *startData = (dblock_t *)(boot_blk + 1 + boot_blk->n_inodes);
     int whenToStop = start->len - offset;
 
-    // Loop through number of bytes asked for
-    for(i = 0; i < nbytes; i++) {
-        // Stop if no more data exists
-        if(read > whenToStop)
-            return read;
-
+    // Loop through number of bytes asked for (or until all data read)
+    for(i = 0; i < nbytes && read <= whenToStop; i++) {
         // Set current buffer location to data read
         currData = (dblock_t *)(startData + start->dblocks[offset / FOUR_KB]);
         buf[i] = currData->data[offset % FOUR_KB];

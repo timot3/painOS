@@ -314,8 +314,15 @@ int test_read_directory() {
 	clear();
 	// read the base directory
 	// ret = PASS on success or FAIL on fail
-	int ret = dir_read(0, 0, 0) + 1;
+	uint8_t buf[8192];
+	int ret = dir_read(0, buf, 8192) + 1, i;
 	dir_close(0);
+
+	// printf("%s", buf);
+
+	// for(i = 0; i < 8192/8; i++)
+	// 	putc(buf[i]);
+	printf("%s", buf);
 
 	return ret;
 }
@@ -369,7 +376,7 @@ int test_open_bad_file() {
 int test_read_dentry_by_index() {
 	dentry_t test_dentry;
 	uint32_t i, ret;
-	// Iterate through all the dentries in fsdir. 
+	// Iterate through all the dentries in fsdir.
 	// Check for file name to match based on passed in index.
 	// Only look at the first character because these files basically have unique names
 	// anywyays
@@ -466,7 +473,7 @@ int test_file_read() {
 
 	// open and read the file
 	file_open(fish);
-	if (file_read(0, buf, 8192) == 0) 
+	if (file_read(0, buf, 8192) == 0)
 		return FAIL;
 
 	// print file contents
@@ -542,15 +549,15 @@ void launch_tests() {
 
 	// CHECKPOINT 2
 	clear();
-	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
-	TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
-	TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
-	// TEST_OUTPUT("Test read_directory", test_read_directory()); //works
+	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+	// TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
+	TEST_OUTPUT("Test read_directory", test_read_directory()); //works
 	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
 	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
-	//  TEST_OUTPUT("Test test_file_read", test_file_read()); //works
+	 // TEST_OUTPUT("Test test_file_read", test_file_read()); //works
 	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
 	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
 
