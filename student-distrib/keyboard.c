@@ -99,6 +99,8 @@ unsigned char kb_buffer[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n'
     };
 
+
+// current location in the terminal buffer
 int term_buf_location = 0;
 
 /*
@@ -208,16 +210,21 @@ void keyboard_print(int byte) {
     if (scan_code_1[byte] == '\b'){
         if(term_buf_location > 0){
             delete();
+            // reset current char in keyboard buffer
+            // decrement current buffer location
+            kb_buffer[term_buf_location] = 0;
             term_buf_location--;
         }
         return;
     }
 
     //get correct newline behavior
-    if (c == '\n' || c == '\r')
-        terminal_read();
+    if (c == '\n' || c == '\r'){
+        terminal_buf_save(terminal_buf);
         term_buf_location = 0;
+        term_read_flag = 1;
         reset_buffer();
+    }
     if (term_buf_location >= TERM_BUF_SIZE - 1)
         return;
 
