@@ -16,8 +16,8 @@ int32_t file_open(const uint8_t *filename) {
     // read dentry by name
     dentry_t dentry; 
     file_progress = 0;
-
     return read_dentry_by_name(filename, &dentry);
+    *current_dentry = dentry;
     
 }
 
@@ -30,8 +30,8 @@ int32_t file_open(const uint8_t *filename) {
  *   OUTPUTS: none
  *   RETURN VALUE:
  */
-int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
-    return read_data((uint32_t)current_inode, file_progress, (uint8_t *)buf, nbytes); // 0 when done, otherwise nbytes read
+int32_t file_read(int32_t fd, uint8_t *buf, int32_t nbytes) {
+    return read_data(current_dentry->inode, 0, buf, nbytes); // 0 when done, otherwise nbytes read
 }
 
 /*
@@ -240,11 +240,13 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
     // uses file_progress, and current_inode
     uint32_t *dblock_addr;
     int i, dblocks_idx, dblocks_offset, fsize, iterations;
+    // current_inode = (inode_t*)(boot_blk + (inode+1)*FOUR_KB);
 
     fsize = current_inode->len;
 
     if(file_progress >= fsize) {
         // there is no more to read
+        
         return -1;
     }
 
@@ -254,7 +256,6 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
     for(i = file_progress; i < file_progress + nbytes; i++) {
         // represents number of bytes read so far
         iterations = i - file_progress;
-
         if(i == fsize) // if we finish reading
             return iterations;
 
@@ -275,9 +276,10 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
 
         // copy data into buf
         buf[iterations] = dblock_addr[dblocks_offset];
+
     }
     file_progress = i;
-    return iterations;
+    return iterations + 1;
 }
 
 /*

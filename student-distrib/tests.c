@@ -361,42 +361,82 @@ int test_read_dentry_by_name(){
 
 	ret = read_dentry_by_name(dot, &test_dentry);
 	if (ret == -1){
-		printf("1111111");
+
 		return FAIL;
 	}
 		
 	ret = read_dentry_by_name(fish, &test_dentry);
 	if (ret == -1)
 	{
-		printf("2222222222");
+
 		return FAIL;
 	}
 
 	ret = read_dentry_by_name(ls, &test_dentry);
 	if (ret == -1){
-		printf("333333333333");
+
 		return FAIL;
 	}
 
 	ret = read_dentry_by_name(hello, &test_dentry);
 	if (ret == -1)
 	{
-		printf("44444444444444");
+
 		return FAIL;
 	}
 
 	ret = read_dentry_by_name(garbage, &test_dentry);
 	if (ret != -1)
 	{
-		printf("55555555555");
+
 		return FAIL;
 	}
 
 	return PASS;
 }
 
-int test_read_file_contents() {
+int test_file_read() {
+	uint32_t ret;
+	uint8_t buf_a[1], buf_b[1];
+
+	// we don't know the actual first character, so we do this
+	buf_a[0] = (uint8_t)'c';
+
+	uint8_t buf_a2[1];
+	buf_a2[0] = (uint8_t)'c';
+	char fish[MAX_CHAR] = "frame0.txt\0";
+	file_open(fish);
+	ret = file_read(0, buf_a, 1);
+
+	if (ret != 1){
+
+		return FAIL;
+	}
+	if (buf_a[0] == 'c'){
+		return FAIL;
+	}
 	
+	ret = file_read(0, buf_a2, 1);
+	if (ret != 1){
+		return FAIL;
+	}
+	if (buf_a2[0] == 'c'){
+		return FAIL;
+	}
+	
+	// of course we want to ensure we're actually reading
+	// properly, so we perform this too
+	file_close(0);
+	file_open(fish);
+	ret = file_read(0, buf_b, 1);
+	if (ret != 1){
+		return FAIL;
+	}
+	if (buf_a[0] != buf_b[0]){
+		return FAIL;
+	}
+
+	return PASS;
 }
 
 
@@ -423,7 +463,7 @@ void launch_tests() {
 
 
 	//read_files();
-	TEST_OUTPUT("Test test_file_open", test_open_bad_file());
-	
+	//TEST_OUTPUT("Test test_file_open", test_open_bad_file());
+	TEST_OUTPUT("Test test_file_read", test_file_read());
 
 }

@@ -43,7 +43,7 @@ typedef struct boot_blk{
 
 // Functions for working with files
 int32_t file_open(const uint8_t* filename);
-int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t file_read(int32_t fd, uint8_t* buf, int32_t nbytes);
 int32_t file_write(int32_t fd, const void *buf, int32_t nbytes);
 int32_t file_close(int32_t fd);
 
