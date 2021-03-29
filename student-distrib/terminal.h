@@ -1,16 +1,17 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
+#include "types.h"
+
 #define VGA_WIDTH 80
 #define TERM_BUF_SIZE 128
 
-int terminal_open(const int* filename);
-int terminal_close(int fd);
-int terminal_read(int fd, unsigned char* buf, int nbytes);
-int terminal_write(int fd, unsigned char* buf, int nbytes);
-int terminal_buf_save(unsigned char* buf);
-void erase_char_at_location(int loc);
+int32_t terminal_open(const uint8_t* filename);
+int32_t terminal_close(int32_t fd);
+int32_t terminal_buf_save(unsigned char* buf);
+int32_t terminal_read(int32_t fd, unsigned char* buf, int32_t nbytes);
+int32_t terminal_write(int32_t fd, unsigned char* buf, int32_t nbytes);
 
-unsigned char terminal_buf[TERM_BUF_SIZE]; 
+unsigned char terminal_buf[128];
 
 #endif /* TERMINAL_H */
