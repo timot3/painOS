@@ -423,59 +423,38 @@ int test_file_read() {
 
 	file_open(fish);
 	file_read(0, buf, 8192);
+
 	printf("%s", buf);
 	return PASS;
 }
 
-int test_read_data(){
-	dentry_t test_dentry;
+int test_read_large() {
+	int i;
+	uint8_t buf[8192];
+	uint8_t fish[MAX_CHAR] = "verylargetextwithverylongname.tx\0";
+	for(i = 0; i < 8192; i++)
+		buf[i] = 0;
 
-	uint8_t buf[10], test_name[11] = "frame0.txt\0";
-
-	uint32_t inode_index;
-	uint8_t i;
-
-	read_dentry_by_name(test_name, &test_dentry);
-	inode_index = test_dentry.inode;
-	printf("INDEX: %d", inode_index);
-	read_data(inode_index, 0, buf, 10);
-
-	for(i = 0; i < 10; i++)  {
-		putc((char)buf[i]);
-	}
-
-	putc('\n');
-
+	file_open(fish);
+	file_read(0, buf, 8192);
+	printf("%s", buf);
 	return PASS;
 }
+
 int test_file_read_exe() {
-	uint32_t ret, i, len=50;
-	uint8_t buf_a[len];
+	int i;
+	uint8_t buf[8192];
+	uint8_t fish[MAX_CHAR] = "ls\0";
+	for(i = 0; i < 8192; i++)
+		buf[i] = 0;
 
-	uint8_t frame[MAX_CHAR] = "sigtext\0";
-	file_open(frame);
-	ret = file_read(0, buf_a, len);
-	for (i=0; i<len; i++){
-		putc(buf_a[i]);
-	}
+	file_open(fish);
+	file_read(0, buf, 8192);
 
-	if ((int)buf_a[0] != 127){ // 0x7f
-		printf("Failed test 1");
-		return FAIL;
-	}
-	if ((int)buf_a[1] != 69){ // x45
-		return FAIL;
-	}
-	if ((int)buf_a[2] != 127){ // 0x76
-		return FAIL;
-	}
-	if ((int)buf_a[3] != 70){ // 0x4c
-		return FAIL;
-	}
-
+	for(i = 0; i < 8192/4; i++)
+		putc(buf[i]);
 	return PASS;
 }
-
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -497,17 +476,17 @@ void launch_tests() {
 
 
 	// CHECKPOINT 2
-	// clear();
+	clear();
 	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
 	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
-	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
-	// TEST_OUTPUT("Test test_read_data", test_read_data()); //bad
+	TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
+	// TEST_OUTPUT("Test test_read_large", test_read_large()); //bad
 	// TEST_OUTPUT("Test test_file_read", test_file_read()); //bad
 	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
 	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
 	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
-	TEST_OUTPUT("Test file read", test_file_read());
+	// TEST_OUTPUT("Test file read", test_file_read());
 	// TEST_OUTPUT("Test read_directory", read_directory()); //works
 	// TEST_OUTPUT("Test Terminal", test_terminal());
 }
