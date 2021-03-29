@@ -238,6 +238,7 @@ int test_dereference_null()
  * Files: terminal.c, lib.c
  */
 int test_terminal() {
+	// 129 to ensure null terminated last character, used this for printf testing
 	unsigned char test_buf[129];
 	test_buf[128] = '\0';
 	while(1) {
@@ -300,67 +301,97 @@ int test_rtc_write() {
 	return PASS;
 }
 
-int read_directory() {
+/* read_directory
+ * Works basically as ls, displays file names, typs, and sizes
+ * Inputs: None
+ * Outputs: ls-like output
+ * Side Effects: None
+ * Coverage: file I/O, reading dentries
+ * Files: filesys.c
+ */
+int test_read_directory() {
 	TEST_HEADER;
 	clear();
+	// read the base directory
+	// ret = PASS on success or FAIL on fail
 	int ret = dir_read(0, 0, 0) + 1;
 	dir_close(0);
 
 	return ret;
 }
 
-int test_file_open(){
+/* test_file_open
+ * Tests opening files.
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: None
+ * Coverage: opening files
+ * Files: filesys.c
+ */
+int test_file_open() {
 	int32_t ret;
+	// Open the ls file
 	uint8_t fname[32] = "ls\0";
 	ret = file_open(fname);
-	if (ret == -1){
+	// If we can't find the file, return FAIL
+	if (ret == -1) {
 		return FAIL;
 	}
 	return PASS;
 }
 
-int test_open_bad_file(){
+/* test_open_bad_file
+ * tests that we cannot open files that don't exist
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: None
+ * Coverage: Reading data entries, reading files
+ * Files: filesys.c
+ */
+int test_open_bad_file() {
 	int32_t ret;
 	uint8_t fname[32] = "thisisnotafile\0";
 	ret = file_open(fname);
-	if (ret == 0){
+	if (ret == 0) {
 		return FAIL;
 	}
 	return PASS;
 }
 
-int test_read_dentry_by_index(){
+/* test_read_dentry_by_index
+ * Tests reading dentries by index
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: returns FAIL if wrong file read
+ * Coverage: filesystem reading by index
+ * Files: filesys.c
+ */
+int test_read_dentry_by_index() {
 	dentry_t test_dentry;
 	uint32_t i, ret;
+	// Iterate through all the dentries in fsdir. 
+	// Check for file name to match based on passed in index.
+	// Only look at the first character because these files basically have unique names
+	// anywyays
+	// If the index is wrong, return FAIL.
 	for (i = 0; i<18; i++){
 		ret = read_dentry_by_index(i, &test_dentry);
 		if (i < 17 && ret == -1){
-
+			return FAIL;
+		}
+		if (i==0 && test_dentry.fname[0] != '.') {
 			return FAIL;
 		}
 
-		if (i == 17 && ret != -1){
-
+		if (i==6 && test_dentry.fname[0] != 'f') {
 			return FAIL;
 		}
 
-		if (i==0 && test_dentry.fname[0] != '.'){
-
+		if (i==12 && test_dentry.fname[0] != 'l') {
 			return FAIL;
 		}
 
-		if (i==6 && test_dentry.fname[0] != 'f'){
-
-			return FAIL;
-		}
-
-		if (i==12 && test_dentry.fname[0] != 'l'){
-
-			return FAIL;
-		}
-
-		if (i==16 && test_dentry.fname[0] != 'h'){
-
+		if (i==16 && test_dentry.fname[0] != 'h') {
 			return FAIL;
 		}
 
@@ -368,9 +399,17 @@ int test_read_dentry_by_index(){
 	return PASS;
 }
 
-
-int test_read_dentry_by_name(){
+/* test_read_dentry_by_name
+ * Tests reading data entries by name
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: returns FAIL if failed to read the proper entry
+ * Coverage: RTC frequency adjustment
+ * Files: filesys.c
+ */
+int test_read_dentry_by_name() {
 	dentry_t test_dentry;
+	// pick 5 files to open, all null terminated
 	const uint8_t dot[MAX_CHAR] = ".\0";
 	const uint8_t  fish[MAX_CHAR] = "fish\0";
 	const uint8_t  ls[MAX_CHAR] = "ls\0";
@@ -378,69 +417,94 @@ int test_read_dentry_by_name(){
 	const uint8_t  garbage[MAX_CHAR] = "thisisnotafile\0";
 	uint32_t ret;
 
+	// read the files and return fail if file not found
 	ret = read_dentry_by_name(dot, &test_dentry);
-	if (ret == -1){
-
+	if (ret == -1) {
 		return FAIL;
 	}
 
 	ret = read_dentry_by_name(fish, &test_dentry);
-	if (ret == -1)
-	{
-
+	if (ret == -1) {
 		return FAIL;
 	}
 
 	ret = read_dentry_by_name(ls, &test_dentry);
-	if (ret == -1){
-
+	if (ret == -1) {
 		return FAIL;
 	}
 
 	ret = read_dentry_by_name(hello, &test_dentry);
-	if (ret == -1)
-	{
-
+	if (ret == -1) {
 		return FAIL;
 	}
 
 	ret = read_dentry_by_name(garbage, &test_dentry);
-	if (ret != -1)
-	{
-
+	if (ret != -1) {
 		return FAIL;
 	}
 
 	return PASS;
 }
 
+/* test_file_read
+ * Tests reading a basic text file
+ * Inputs: None
+ * Outputs: contents of frame0.txt
+ * Side Effects: None
+ * Coverage: file reading
+ * Files: filesys.c
+ */
 int test_file_read() {
 	int i;
-	uint8_t buf[8192];
+	// buffer of arbitrary size
+	uint8_t buf[FOUR_KB];
+	// declare the file to read
 	uint8_t fish[MAX_CHAR] = "frame0.txt\0";
-	for(i = 0; i < 8192; i++)
+	// clear the buffer
+	for(i = 0; i < FOUR_KB; i++)
 		buf[i] = 0;
 
+	// open and read the file
 	file_open(fish);
-	file_read(0, buf, 8192);
+	if (file_read(0, buf, 8192) == 0) 
+		return FAIL;
 
+	// print file contents
 	printf("%s", buf);
 	return PASS;
 }
 
+/* test_read_large
+ * Tests display of files with many characters
+ * Inputs: None
+ * Outputs: contents of verylargetextwithverylongname.tx
+ * Side Effects: Scrolls terminal down
+ * Coverage: Terminal, display of files
+ * Files: terminal.c, lib.c, filesys.c
+ */
 int test_read_large() {
 	int i;
-	uint8_t buf[8192];
-	uint8_t fish[MAX_CHAR] = "verylargetextwithverylongname.tx\0";
-	for(i = 0; i < 8192; i++)
+	// init buffer of arbitrary size
+	uint8_t buf[FOUR_KB];
+	uint8_t fish[MAX_CHAR] = "verylargetextwithverylongname.tx";
+	for(i = 0; i < FOUR_KB; i++)
 		buf[i] = 0;
 
+	// open and read the file
 	file_open(fish);
-	file_read(0, buf, 8192);
+	file_read(0, buf, FOUR_KB);
 	printf("%s", buf);
 	return PASS;
 }
 
+/* test_file_read_exe
+ * Tests reading exe file contents.
+ * Inputs: None
+ * Outputs: contents of the "ls" file
+ * Side Effects: None
+ * Coverage: read-only file i/o
+ * Files: filesys.c
+ */
 int test_file_read_exe() {
 	int i;
 	uint8_t buf[8192];
@@ -450,8 +514,9 @@ int test_file_read_exe() {
 
 	file_open(fish);
 	file_read(0, buf, 8192);
-
-	for(i = 0; i < 8192/4; i++)
+	// use putc because of null chars
+	// display the first 2kb
+	for(i = 0; i < FOUR_KB/2; i++)
 		putc(buf[i]);
 	return PASS;
 }
@@ -477,16 +542,16 @@ void launch_tests() {
 
 	// CHECKPOINT 2
 	clear();
-	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
-	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
-	TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
-	// TEST_OUTPUT("Test test_read_large", test_read_large()); //bad
-	// TEST_OUTPUT("Test test_file_read", test_file_read()); //bad
-	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
-	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
-	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
+	TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+	TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
+	// TEST_OUTPUT("Test read_directory", test_read_directory()); //works
 	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
-	// TEST_OUTPUT("Test file read", test_file_read());
-	// TEST_OUTPUT("Test read_directory", read_directory()); //works
-	// TEST_OUTPUT("Test Terminal", test_terminal());
+	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
+	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
+	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
+	//  TEST_OUTPUT("Test test_file_read", test_file_read()); //works
+	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
+	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
+
 }
