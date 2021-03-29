@@ -58,7 +58,7 @@ int32_t terminal_read(int32_t fd, unsigned char* buf, int32_t nbytes){
         smallBuf = nbytes;
     for(i=0; i<(nbytes); i++)
         buf[i] = terminal_buf[i];
-    buf[nbytes - 1] = '\n';
+    buf[smallBuf - 1] = '\n';
     return 0;
 }
 
