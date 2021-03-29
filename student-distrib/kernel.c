@@ -11,6 +11,7 @@
 #include "idt.h"
 #include "rtc.h"
 #include "paging.h"
+#include "filesys.h"
 #include "keyboard.h"
 
 #define RUN_TESTS
@@ -164,21 +165,17 @@ void entry(unsigned long magic, unsigned long addr)
     // Initialize RTC
     initialize_rtc();
 
-    //initalize Paging
+    filesys_init((void*)((module_t*)(mbi->mods_addr))->mod_start);
+
     paging_init();
 
-    //initalize Keyboard
     keyboard_init();
-
     sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
     // test_interrupts();
-    clear(); // clear screen before running tests
-    printf("Running tests:\n");
     launch_tests();
-    printf("Finished running tests.\n");
 #endif
     /* Execute the first program ("shell") ... */
 
