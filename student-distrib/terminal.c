@@ -51,6 +51,11 @@ int terminal_read(int fd, unsigned char* buf, int nbytes){
     while(term_read_flag == 0);
 
     int i;
+    int smallBuf;
+    if (nbytes > TERM_BUF_SIZE)
+        smallBuf = TERM_BUF_SIZE;
+    else 
+        smallBuf = nbytes;
     for(i=0; i<(nbytes); i++)
         buf[i] = terminal_buf[i];
     buf[nbytes - 1] = '\n';
@@ -69,8 +74,14 @@ int terminal_read(int fd, unsigned char* buf, int nbytes){
  */
 int terminal_write(int fd, unsigned char* buf, int nbytes){
     int i;
-    for(i=0; i<nbytes; i++) {
-        putc(buf[i]);
+    int smallBuf;
+    if (nbytes > TERM_BUF_SIZE)
+        smallBuf = TERM_BUF_SIZE;
+    else 
+        smallBuf = nbytes;
+    for(i=0; i<smallBuf; i++) {
+        if(buf[i] != 0)
+            putc(buf[i]);
     }
     return 0;
 }
