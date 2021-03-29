@@ -212,8 +212,8 @@ void keyboard_print(int byte) {
             delete();
             // reset current char in keyboard buffer
             // decrement current buffer location
-            kb_buffer[term_buf_location] = 0;
             term_buf_location--;
+            kb_buffer[term_buf_location] = 0;
         }
         return;
     }
