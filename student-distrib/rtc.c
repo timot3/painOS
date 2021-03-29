@@ -59,11 +59,11 @@ void rtc_handler() {
 /*
  * rtc_open
  *   DESCRIPTION: Sets RTC frequency to 2Hz
- *   INPUTS: none
+ *   INPUTS: *filename - never used, docs said we needed it
  *   OUTPUTS: none
  *   RETURN VALUE: 0 on success, -1 on failure (based on discussion slides)
  */
-int rtc_open() {
+int rtc_open(const uint8_t *filename) {
     // Use helper function to set frequency to 2Hz
     return set_frequency(RTC_DEFAULT_FREQUENCY);
 }
@@ -71,22 +71,24 @@ int rtc_open() {
 /*
  * rtc_close
  *   DESCRIPTION: Currently does nothing since we aren't virtualizing the RTC
- *   INPUTS: none
+ *   INPUTS: fd - never used, docs said we needed it
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-uint8_t rtc_close() {
+uint8_t rtc_close(int32_t fd) {
     return 0;
 }
 
 /*
  * rtc_read
  *   DESCRIPTION: Returns once new RTC interrupt has occured
- *   INPUTS: none
+ *   INPUTS: fd - never used, docs said we needed it
+ *            *buf - never used, docs said we needed it
+ *            nbytes - never used, docs said we needed it
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-uint8_t rtc_read() {
+uint8_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     interruptFlag = 0;
 
     // Spin until new interrupt occurs
@@ -98,13 +100,14 @@ uint8_t rtc_read() {
 /*
  * rtc_write
  *   DESCRIPTION: Sets RTC frequency based on input value
- *   INPUTS: *buffer - buffer holding new frequency (not sure why it needs to
+ *   INPUTS: fd - never used, docs said we needed it
+ *           *buffer - buffer holding new frequency (not sure why it needs to
  *                     be a buffer, but that's what the discussion said to use)
  *           size - size of buffer
  *   OUTPUTS: none
  *   RETURN VALUE: -1 in invalid frequency input, 0 otherwise
  */
-int rtc_write(void *buffer, uint32_t size) {
+int rtc_write(int32_t fd, void *buffer, uint32_t size) {
     // Change frequency using helper function
     return set_frequency(*(uint16_t*)buffer);
 }

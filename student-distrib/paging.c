@@ -16,7 +16,7 @@ page_table_entry_t page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TAB
  * * Creates Page Directory
  * * Creates Page Table(s)
  * * Implements paging for kernel space
- * * Implements paging for Video memory 
+ * * Implements paging for Video memory
  */
 void paging_init()
 {
@@ -26,15 +26,15 @@ void paging_init()
   {
     page_dir[i].val = 0; // clear contents
     // set to rw
-    page_dir[i].rw = 1;
-    page_dir[i].us = 0;
+    page_dir[i].rw = 0;
+    page_dir[i].us = 1;
   }
 
   for (i = 0; i < PAGE_TABLE_LENGTH; i++)
   {
     page_table[i].val = 0; // clear contents
     // set to rw
-    page_table[i].rw = 1;
+    page_table[i].rw = 0;
     page_table[i].us = 1;
     // set address
     page_table[i].aligned_address = i;
@@ -52,7 +52,7 @@ void paging_init()
   page_dir[1].rw = 1;
   page_dir[1].size = 1; // 4 MB
 
-  // connect video memory 
+  // connect video memory
   page_table[VID_MEM].aligned_address = 0xB8;
   page_table[VID_MEM].present = 1;
   page_table[VID_MEM].cache_disable = 1;
