@@ -514,16 +514,16 @@ int test_read_large() {
  */
 int test_file_read_exe() {
 	int i;
-	uint8_t buf[8192];
+	uint8_t buf[32];
 	uint8_t fish[MAX_CHAR] = "ls\0";
-	for(i = 0; i < 8192; i++)
+	for(i = 0; i < 32; i++)
 		buf[i] = 0;
 
 	file_open(fish);
-	file_read(0, buf, 8192);
+	file_read(0, buf, 32);
 	// use putc because of null chars
 	// display the first 2kb
-	for(i = 0; i < FOUR_KB/2; i++)
+	for(i = 0; i < 32; i++)
 		putc(buf[i]);
 	return PASS;
 }
@@ -549,16 +549,16 @@ void launch_tests() {
 
 	// CHECKPOINT 2
 	clear();
-	// TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
-	// TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
-	// TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
-	TEST_OUTPUT("Test read_directory", test_read_directory()); //works
+	//TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
+	//TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
+	//TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
+	// TEST_OUTPUT("Test read_directory", test_read_directory()); //works
 	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
 	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
 	 // TEST_OUTPUT("Test test_file_read", test_file_read()); //works
 	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
-	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
+	TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
 
 }
