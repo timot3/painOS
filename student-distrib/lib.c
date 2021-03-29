@@ -185,7 +185,10 @@ int32_t puts(int8_t* s) {
  * Inputs: void
  * Return Value: void
  *  Deletes the previous char */
-void delete() {
+void delete(){
+    //edgecase so backspace after clear isn't page_fault
+    if (screen_y==0 && screen_x==0)
+        return;
     //remove last typed character
     int i = screen_y * NUM_COLS + screen_x - 1;
     *(uint8_t *)(video_mem + (i << 1)) = ' ';
@@ -203,7 +206,7 @@ void delete() {
 /* void update_cursor(int x, int y);
  * Inputs: x, y
  * Return Value: void
- *  Moves the cursor to the correct position
+ *  Moves the cursor to the correc position
  * See https://forum.osdev.org/viewtopic.php?f=1&t=6679*/
 void update_cursor(int x, int y)
 {
