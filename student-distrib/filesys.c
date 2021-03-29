@@ -5,10 +5,10 @@ static uint32_t file_progress;
 static dentry_t current_dentry;
 /*
  * file_open
- *   DESCRIPTION:
+ *   DESCRIPTION: Opens file, stores found dentry in global current_dentry variable
  *   INPUTS: *filename - the name of the file to read
  *   OUTPUTS: none
- *   RETURN VALUE:
+ *   RETURN VALUE: Return -1 if file not found, 0 otherwise
  */
 int32_t file_open(const uint8_t *filename) {
     // read dentry by name
@@ -17,11 +17,12 @@ int32_t file_open(const uint8_t *filename) {
     file_progress = 0;
     ret =  read_dentry_by_name(filename, &dentry);
 
-    // TODO copy struct data to current_dentry
+    // Copy name to global dentry
     for(j = 0; j < MAX_CHAR; j++) {
         current_dentry.fname[j] = dentry.fname[j];
     }
 
+    // Copy other attributes to global dentry
     current_dentry.type = dentry.type;
     current_dentry.inode = dentry.inode;
 
@@ -30,12 +31,12 @@ int32_t file_open(const uint8_t *filename) {
 
 /*
  * file_read
- *   DESCRIPTION: Reads a file.
- *   INPUTS: fd -
- *           *buf -
- *           nbytes -
+ *   DESCRIPTION: Reads data of the currently open file
+ *   INPUTS: fd - file descriptor (not currently used)
+ *           *buf - buffer to store returned data
+ *           nbytes - size of given buffer
  *   OUTPUTS: none
- *   RETURN VALUE:
+ *   RETURN VALUE: Amount of bytes read
  */
 int32_t file_read(int32_t fd, uint8_t *buf, int32_t nbytes) {
     return read_data(current_dentry.inode, 0, buf, nbytes); // 0 when done, otherwise nbytes read
@@ -60,7 +61,7 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes) {
 
 /*
  * file_close
- *   DESCRIPTION:
+ *   DESCRIPTION: Closes currently open file
  *   INPUTS: fd - never used, docs said we needed it.
  *      May be useful for future checkpoints
  *   OUTPUTS: none
@@ -75,8 +76,8 @@ int32_t file_close(int32_t fd) {
 
 /*
  * dir_open
- *   DESCRIPTION:
- *   INPUTS: *filename - the name of the file to be opened
+ *   DESCRIPTION: Opens given directory
+ *   INPUTS: *filename - the name of the file (directory) to be opened
  *   OUTPUTS: none
  *   RETURN VALUE: Return -1 if file not found, 0 otherwise
  */
@@ -87,21 +88,17 @@ int32_t dir_open(const uint8_t *filename) {
 
 /*
  * dir_read
- *   DESCRIPTION:
+ *   DESCRIPTION: Gets names, file types, and size of all files in current directory
  *   INPUTS: fd - never used, docs said we needed it
  *                May be useful for future checkpoints
  *           *buf - never used, docs said we needed it
  *                May be useful for future checkpoints
  *            nbytes - never used, docs said we needed it
  *                May be useful for future checkpoints
- *   OUTPUTS: none
+ *   OUTPUTS: Prints contents of directory
  *   RETURN VALUE: Always returns 0
  */
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
-    // read dentry by index
-    // reads one at a time
-    //return read_dentry_by_index(idx, inputDentry); // 0 when done, otherwise nbytes
-
     int i, j;
     int ret = 0;
     dentry_t inputDentry;
@@ -199,7 +196,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
 
 /*
  * read_dentry_by_index
- *   DESCRIPTION:
+ *   DESCRIPTION: Gets dentry information at a given index
  *   INPUTS: idx - index of dentry to view
  *            *inputDentry - dentry to copy info to
  *   OUTPUTS: none
@@ -227,11 +224,11 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *input_dentry) {
 
 /*
  * read_data
- *   DESCRIPTION:
- *   INPUTS: inode -
- *           offset -
- *           *buf -
- *           nbytes -
+ *   DESCRIPTION: Reads data of given inode index
+ *   INPUTS: inode - index of inode
+ *           offset - offset of data read
+ *           *buf - buffer to copy info into
+ *           nbytes - size of buffer
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0
  */
@@ -276,7 +273,4 @@ void filesys_init(void *fs) {
     printf("n_dir_entries: %d | n_inodes: %d",
            boot_blk->n_dir_entries,
            boot_blk->n_inodes);
-
-    // inode_ptr = &((inode_t*)fs)[1];
-    // den_ptr = &((dentry_t*)fs)[1];
 }
