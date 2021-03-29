@@ -395,46 +395,15 @@ int test_read_dentry_by_name(){
 }
 
 int test_file_read() {
-	uint32_t ret;
-	uint8_t buf_a[1], buf_b[1];
-
-	// we don't know the actual first character, so we do this
-	buf_a[0] = (uint8_t)'c';
-
-	uint8_t buf_a2[1];
-	buf_a2[0] = (uint8_t)'c';
+	int i;
+	uint8_t buf[8192];
 	uint8_t fish[MAX_CHAR] = "frame0.txt\0";
+	for(i = 0; i < 8192; i++)
+		buf[i] = 0;
+
 	file_open(fish);
-	ret = file_read(0, buf_a, 1);
-
-	if (ret != 1){
-
-		return FAIL;
-	}
-	if (buf_a[0] == 'c'){
-		return FAIL;
-	}
-
-	ret = file_read(0, buf_a2, 1);
-	if (ret != 1){
-		return FAIL;
-	}
-	if (buf_a2[0] == 'c'){
-		return FAIL;
-	}
-
-	// of course we want to ensure we're actually reading
-	// properly, so we perform this too
-	file_close(0);
-	file_open(fish);
-	ret = file_read(0, buf_b, 1);
-	if (ret != 1){
-		return FAIL;
-	}
-	if (buf_a[0] != buf_b[0]){
-		return FAIL;
-	}
-
+	int ret = file_read(0, buf, 8192);
+	printf("%s", buf);
 	return PASS;
 }
 
@@ -519,4 +488,5 @@ void launch_tests() {
 	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
 	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
 	// TEST_OUTPUT("Test read_directory", read_directory()); //works
+	test_file_read();
 }

@@ -22,6 +22,7 @@ typedef struct dentry{
     uint32_t inode; // inode index
     uint8_t reserved[RESERVED_DENTRY_SPACE];
 } dentry_t; // 64 B
+
 /*
  * a structure on the disk that represents a file, directory,
  * symbolic link, etc. Inodes do not contain the data of the
@@ -31,6 +32,10 @@ typedef struct inode{
     int32_t len;
     int32_t dblocks[NUM_D_BLKS];
 } inode_t; // 4 KB
+
+typedef struct dblock {
+    char data[FOUR_KB];
+} dblock_t; // 4 KB
 
 // Starting location of the filesystem
 typedef struct boot_blk{

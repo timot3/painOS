@@ -236,52 +236,32 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *input_dentry) {
  *   RETURN VALUE: Always returns 0
  */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes) {
-    // uses file_progress, and current_inode
-    uint32_t *dblock_addr, fsize;
-    int i, dblocks_idx, dblocks_offset, iterations;
-    inode_t *current_inode = (inode_t*)(boot_blk + inode+1);
-
-    inode_t inode_test =*current_inode;
-
-
-    fsize = inode_test.len;
-
-    if(file_progress >= fsize) {
-        // there is no more to read
+    // Bounds checking
+    if(inode > boot_blk->n_inodes || inode < 0 || offset < 0 || buf == NULL)
         return -1;
+
+    // Define variables
+    int i, read = 0;
+    inode_t *start = (inode_t *)(boot_blk + 1 + inode);
+    dblock_t *currData, *startData = (dblock_t *)(boot_blk + 1 + boot_blk->n_inodes);
+    int whenToStop = start->len - offset;
+
+    // Loop through number of bytes asked for
+    for(i = 0; i < nbytes; i++) {
+        // Stop if no more data exists
+        if(read > whenToStop)
+            return read;
+
+        // Set current buffer location to data read
+        currData = (dblock_t *)(startData + start->dblocks[offset / FOUR_KB]);
+        buf[i] = currData->data[offset % FOUR_KB];
+
+        // Increment counters
+        offset++;
+        read++;
     }
 
-    // keep reading
-    // start at where we left off
-    // go until we read nbytes (or return early)
-    for(i = file_progress; i < file_progress + nbytes; i++) {
-        // represents number of bytes read so far
-        iterations = i - file_progress;
-        if(i >= fsize) // if we finish reading
-            return iterations;
-
-        // get the dblock index (in inode)
-        dblocks_idx = i / FOUR_KB;
-
-        // get the address of the dblock
-        // bootblk + inodes + idx of dblock (in storage)
-        dblock_addr = (uint32_t*)boot_blk +
-                      1 + boot_blk->n_inodes +
-                       current_inode->dblocks[dblocks_idx];
-
-        // get offset in the dblock
-        dblocks_offset = i % FOUR_KB;
-
-        // set ptr to represent current position
-        dblock_addr += dblocks_offset;
-
-        // copy data into buf
-
-        buf[iterations] = dblock_addr[dblocks_offset];
-
-    }
-    file_progress = i;
-    return iterations + 1;
+    return read;
 }
 
 /*
