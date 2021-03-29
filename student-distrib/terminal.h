@@ -9,7 +9,8 @@ int terminal_close(int fd);
 int terminal_read(int fd, unsigned char* buf, int nbytes);
 int terminal_write(int fd, unsigned char* buf, int nbytes);
 int terminal_buf_save(unsigned char* buf);
+void erase_char_at_location(int loc);
 
-unsigned char terminal_buf[128];
+unsigned char terminal_buf[TERM_BUF_SIZE]; 
 
 #endif /* TERMINAL_H */

@@ -227,12 +227,23 @@ int test_dereference_null()
 	return test_status;
 }
 
+/* Terminal test
+ * Tests reading/writing the terminal buffer.
+ * Inputs: None
+ * Outputs: On newline, echoes terminal buffer to terminal.
+ * Side Effects: crashes if failure
+ * Coverage: Terminal
+ * Files: terminal.c, lib.c
+ */
 int test_terminal(){
-	unsigned char test_buf[128];
-	while(1){
+	unsigned char test_buf[129];
+	test_buf[128] = '\0';
+	while(1) {
 		terminal_read(0, test_buf, 128);
+		// printf("\ncurrent buffer contents: %s\n",test_buf);
 		terminal_write(0, test_buf, 128);
 	}
+	return PASS;
 }
 
 // add more tests here

@@ -99,6 +99,7 @@ unsigned char kb_buffer[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n'
     };
 
+// current location in the terminal buffer
 int term_buf_location = 0;
 
 /*
@@ -180,6 +181,7 @@ void keyboard_handler() {
     sti();
 }
 
+
 /*
  * keyboard_print
  *   DESCRIPTION: prints out the correct response based on keyboard input
@@ -208,6 +210,9 @@ void keyboard_print(int byte) {
     if (scan_code_1[byte] == '\b'){
         if(term_buf_location > 0){
             delete();
+            // reset current char in keyboard buffer
+            // decrement current buffer location
+            kb_buffer[term_buf_location] = 0;
             term_buf_location--;
         }
         return;

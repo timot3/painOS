@@ -1,19 +1,6 @@
-#pragma once
-
 #include "terminal.h"
 #include "lib.h"
 #include "keyboard.h"
-
-unsigned char terminal_buf[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n'
-    };
 
 /*
  * terminal_open
@@ -27,9 +14,10 @@ int terminal_open(const int* filename){
 
 /*
  * terminal_close
+ *   Description: Unused for checkpoint 2.
  *   INPUTS: fd
- *   OUTPUTS: 0
- *   RETURN VALUE: nothing
+ *   OUTPUTS: None
+ *   RETURN VALUE: 0
  */
 int terminal_close(int fd){
     return 0;
@@ -51,12 +39,14 @@ int terminal_buf_save(unsigned char* buf){
 
 /*
  * terminal_read
- *   DESCRIPTION: buf is now term_buf
+ *   DESCRIPTION: set buf to terminal buffer
  *   INPUTS: fd, buf, nybtes
- *   OUTPUTS: 0
- *   RETURN VALUE: buf is now term_buf
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
  */
 int terminal_read(int fd, unsigned char* buf, int nbytes){
+    // set last char to newline
+    terminal_buf[TERM_BUF_SIZE - 1] = '\n';
     term_read_flag = 0;
 
     if(nbytes < TERM_BUF_SIZE)
@@ -73,15 +63,17 @@ int terminal_read(int fd, unsigned char* buf, int nbytes){
 /*
  * terminal_write
  *   DESCRIPTION: write buf to screen
- *   INPUTS: fd, buf, nbytes
- *   OUTPUTS: 0
- *   RETURN VALUE: screen is now buff
+ *   INPUTS: fd - currently unused, 
+ *           buf - buffer to write, 
+ *           nbytes - how many bytes to write
+ *   OUTPUTS: contents of buf
+ *   RETURN VALUE: screen is now buf
+ *   SIDE EFFECTS: None
  */
 int terminal_write(int fd, unsigned char* buf, int nbytes){
     int i;
-    if(buf[0] == 0)
-        return 0;
-    for(i=0; i<TERM_BUF_SIZE; i++)
+    for(i=0; i<nbytes; i++) {
         putc(buf[i]);
+    }
     return 0;
 }
