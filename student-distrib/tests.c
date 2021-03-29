@@ -315,7 +315,7 @@ int test_read_directory() {
 	// read the base directory
 	// ret = PASS on success or FAIL on fail
 	uint8_t buf[8192];
-	int ret = dir_read(0, buf, 8192) + 1, i;
+	int ret = dir_read(0, buf, 8192) + 1;
 	dir_close(0);
 
 	// printf("%s", buf);
@@ -552,13 +552,13 @@ void launch_tests() {
 	//TEST_OUTPUT("Test rtc frequency adjustment", test_rtc_freq());
 	//TEST_OUTPUT("Test rtc default frequency", test_rtc_write());
 	//TEST_OUTPUT("Test Terminal", test_terminal()); // while(1) loops
-	// TEST_OUTPUT("Test read_directory", test_read_directory()); //works
+	TEST_OUTPUT("Test read_directory", test_read_directory()); //works
 	// TEST_OUTPUT("Test test_file_open", test_file_open()); //works
 	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
 	 // TEST_OUTPUT("Test test_file_read", test_file_read()); //works
 	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
-	TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
+	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
 
 }

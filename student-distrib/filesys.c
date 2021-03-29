@@ -154,7 +154,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
 
         // Convert dentry type int to string
         uint8_t intBuff[10];
-        itoa(inputDentry.type, intBuff, 10);
+        itoa(inputDentry.type, (int8_t*)intBuff, 10);
 
         // Copy type to buffer
         for(j = 0; j < 10; j++) {
@@ -187,7 +187,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
 
         // Convert dentry size int to string
         uint8_t intBuff2[10];
-        itoa(((inode_t*)(inputDentry.inode + boot_blk + 1))->len, intBuff2, 10);
+        itoa(((inode_t*)(inputDentry.inode + boot_blk + 1))->len, (int8_t*)intBuff2, 10);
 
         // Copy size to buffer
         for(j = 0; j < 10; j++) {
