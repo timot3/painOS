@@ -8,7 +8,7 @@
  *   OUTPUTS: 0
  *   RETURN VALUE: nothing
  */
-int terminal_open(const int* filename){
+int32_t terminal_open(const uint8_t* filename){
     return 0;
 }
 
@@ -19,7 +19,7 @@ int terminal_open(const int* filename){
  *   OUTPUTS: None
  *   RETURN VALUE: 0
  */
-int terminal_close(int fd){
+int32_t terminal_close(int32_t fd){
     return 0;
 }
 
@@ -30,7 +30,7 @@ int terminal_close(int fd){
  *   OUTPUTS: 0
  *   RETURN VALUE: term_buf is now kb_buffer
  */
-int terminal_buf_save(unsigned char* buf){
+int32_t terminal_buf_save(unsigned char* buf){
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
         buf[i] = kb_buffer[i];
@@ -44,7 +44,7 @@ int terminal_buf_save(unsigned char* buf){
  *   OUTPUTS: none
  *   RETURN VALUE: 0
  */
-int terminal_read(int fd, unsigned char* buf, int nbytes){
+int32_t terminal_read(int32_t fd, unsigned char* buf, int32_t nbytes){
     // set last char to newline
     term_read_flag = 0;
 
@@ -72,7 +72,7 @@ int terminal_read(int fd, unsigned char* buf, int nbytes){
  *   RETURN VALUE: screen is now buf
  *   SIDE EFFECTS: None
  */
-int terminal_write(int fd, unsigned char* buf, int nbytes){
+int32_t terminal_write(int32_t fd, unsigned char* buf, int32_t nbytes){
     int i;
     int smallBuf;
     if (nbytes > TERM_BUF_SIZE)
