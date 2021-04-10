@@ -50,14 +50,20 @@ typedef struct fd_items {
     int32_t inode_idx;
 } fd_items_t;
 
+typedef struct parent_pcb {
+    uint32_t ksp;
+    uint32_t kbp;
+    uint32_t pid;
+} parent_pcb_t;
+
 typedef struct pcb {
     fd_items_t fd_items[8];
-    int32_t pid;
-    int32_t parent;
-    int32_t esp;
-    int32_t ebp;
-    int32_t ss0;
-    int32_t esp0;
+    uint32_t pid;
+    parent_pcb_t parent;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t ss0;
+    uint32_t esp0;
 } pcb_t;
 
 // Functions for working with files
