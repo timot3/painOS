@@ -28,7 +28,7 @@ typedef struct dentry{
  * symbolic link, etc. Inodes do not contain the data of the
  * file / directory / etc. that they represent.
  */
-typedef struct inode{
+typedef struct inode {
     int32_t len;
     int32_t dblocks[NUM_D_BLKS];
 } inode_t; // 4 KB
@@ -38,13 +38,27 @@ typedef struct dblock {
 } dblock_t; // 4 KB
 
 // Starting location of the filesystem
-typedef struct boot_blk{
+typedef struct boot_blk {
     int32_t n_dir_entries;
     int32_t n_inodes;
     int32_t n_dblocks;
     char reserved[RESERVED_BOOT_BLK];
     dentry_t dir_entries[MAX_DIR_ENTRIES];
 } boot_blk_t; // 4 KB
+
+typedef struct fd_items {
+    int32_t inode_idx;
+} fd_items_t;
+
+typedef struct pcb {
+    fd_items_t fd_items[8];
+    int32_t pid;
+    int32_t parent;
+    int32_t esp;
+    int32_t ebp;
+    int32_t ss0;
+    int32_t esp0;
+} pcb_t;
 
 // Functions for working with files
 int32_t file_open(const uint8_t* filename);
