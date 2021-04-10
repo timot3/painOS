@@ -1,6 +1,7 @@
 #define ASM     1
 
 .globl edit_paging_flags
+.globl tlb_flush
 .align 4
 edit_paging_flags:
   pushl %ebp
@@ -17,6 +18,16 @@ edit_paging_flags:
   orl  $0x80000001, %eax  
   movl %eax, %cr0
 
+  leave
+  ret
+
+# https://wiki.osdev.org/TLB
+# Flush the transaction lookaside buffer.
+tlb_flush:
+  pushl %ebp
+  movl  %esp, %ebp
+	movl	%cr3,%eax
+	movl	%eax,%cr3
   leave
   ret
 
