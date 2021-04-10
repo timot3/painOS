@@ -4,6 +4,7 @@
 
 syscall_help:
     # save registers
+    # do we need this?
 #    pushl %ebp
 #    pushl %edi
 #    pushl %esi
@@ -11,13 +12,13 @@ syscall_help:
     # syscall bound test
     cmp $1, %eax
     jl oob_syscall
-    cmp $10, $eax
+    cmp $10, %eax
     jg oob_syscall
 
-#   # Push argument registers
-#   pushl %edx
-#   pushl %ecx
-#   pushl %ebx
+   # Push argument registers
+   pushl %edx
+   pushl %ecx
+   pushl %ebx
 
     # jmp table starts at 0, so fit eax to table
     decl %eax
@@ -29,13 +30,14 @@ syscall_help:
 #    popl %ecx
 #    popl %edx
 
+
 oob_syscall:
     # restore other registers
 #    popl %esi
 #    popl %edi
 #    popl %ebp
-    # Throw bound_range_exceeded interrupt
-    int 0x5
-    
+    # move -1 into eax, then return from int
+    movl $-1, %eax
+    iret    
 syscall_table:
     .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn

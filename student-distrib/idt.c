@@ -4,6 +4,8 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "asmWrap.h"
+#include "syscall.h"
+#include "syscall_helper.h"
 
 // Header printed at start of all interrupt functions
 #define PAIN_HEADER \
@@ -376,7 +378,7 @@ void initialize_idt() {
     // Add RTC handler, keyboard, and system call to the IDT
     SET_IDT_ENTRY(idt[RTC_NUM], rtcASMWrap);
     SET_IDT_ENTRY(idt[KB_NUM], keyboardASMWrap);
-    SET_IDT_ENTRY(idt[SYSCALL_NUM],  SYSTEM_CALL);
+    SET_IDT_ENTRY(idt[SYSCALL_NUM],  syscall_help);
 
 
     // Load IDT after initialization
