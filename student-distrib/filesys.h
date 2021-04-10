@@ -7,7 +7,7 @@
 
 #define RESERVED_DENTRY_SPACE 24
 #define FOUR_BYTE 32
-#define MAX_CHAR 32
+#define MAX_FILENAME_LEN 32
 #define RESERVED_BOOT_BLK 52
 #define MAX_DIR_ENTRIES 63
 #define EIGHT_BYTE 64
@@ -17,7 +17,7 @@
 
 // data entry
 typedef struct dentry{
-    char fname[MAX_CHAR];
+    char fname[MAX_FILENAME_LEN];
     uint32_t type;
     uint32_t inode; // inode index
     uint8_t reserved[RESERVED_DENTRY_SPACE];

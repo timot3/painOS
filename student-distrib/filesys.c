@@ -18,7 +18,7 @@ int32_t file_open(const uint8_t *filename) {
     ret =  read_dentry_by_name(filename, &dentry);
 
     // Copy name to global dentry
-    for(j = 0; j < MAX_CHAR; j++) {
+    for(j = 0; j < MAX_FILENAME_LEN; j++) {
         current_dentry.fname[j] = dentry.fname[j];
     }
 
@@ -123,7 +123,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
         }
 
         // Copy filename to buffer
-        for(j = 0; j < MAX_CHAR; j++) {
+        for(j = 0; j < MAX_FILENAME_LEN; j++) {
             // Return if buffer is now full
             if(loc > nbytes) {
                 // Add NULL character at very end of buffer
@@ -269,7 +269,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
         // copy the name
         cont = 0;
         // check each character
-        for(j = 0; j < MAX_CHAR; j++) {
+        for(j = 0; j < MAX_FILENAME_LEN; j++) {
             if(fname[j] != (boot_blk->dir_entries)[i].fname[j]) {
                 cont = 1;
                 break;
@@ -281,7 +281,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
 
         // otherwise set the global vars and return 0
         dentry_t currDentry = boot_blk->dir_entries[i];
-        for(j = 0; j < MAX_CHAR; j++) {
+        for(j = 0; j < MAX_FILENAME_LEN; j++) {
             dentry->fname[j] = currDentry.fname[j];
         }
 
@@ -314,7 +314,7 @@ int32_t read_dentry_by_index(uint32_t idx, dentry_t *input_dentry) {
     current_dentry = (dentry_t)boot_blk->dir_entries[idx];
 
     // Deep copy of all variables in dentry_t struct
-    for(i = 0; i < MAX_CHAR; i++)
+    for(i = 0; i < MAX_FILENAME_LEN; i++)
         input_dentry->fname[i] = current_dentry.fname[i];
 
     input_dentry->type = current_dentry.type;

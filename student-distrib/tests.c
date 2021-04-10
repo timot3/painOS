@@ -417,11 +417,11 @@ int test_read_dentry_by_index() {
 int test_read_dentry_by_name() {
 	dentry_t test_dentry;
 	// pick 5 files to open, all null terminated
-	const uint8_t dot[MAX_CHAR] = ".\0";
-	const uint8_t  fish[MAX_CHAR] = "fish\0";
-	const uint8_t  ls[MAX_CHAR] = "ls\0";
-	const uint8_t  hello[MAX_CHAR] = "hello\0";
-	const uint8_t  garbage[MAX_CHAR] = "thisisnotafile\0";
+	const uint8_t dot[MAX_FILENAME_LEN] = ".\0";
+	const uint8_t  fish[MAX_FILENAME_LEN] = "fish\0";
+	const uint8_t  ls[MAX_FILENAME_LEN] = "ls\0";
+	const uint8_t  hello[MAX_FILENAME_LEN] = "hello\0";
+	const uint8_t  garbage[MAX_FILENAME_LEN] = "thisisnotafile\0";
 	uint32_t ret;
 
 	// read the files and return fail if file not found
@@ -466,7 +466,7 @@ int test_file_read() {
 	// buffer of arbitrary size
 	uint8_t buf[FOUR_KB];
 	// declare the file to read
-	uint8_t filename[MAX_CHAR] = "frame0.txt\0";
+	uint8_t filename[MAX_FILENAME_LEN] = "frame0.txt\0";
 	// clear the buffer
 	for(i = 0; i < FOUR_KB; i++)
 		buf[i] = 0;
@@ -493,7 +493,7 @@ int test_read_large() {
 	int i;
 	// init buffer of arbitrary size
 	uint8_t buf[FOUR_KB];
-	uint8_t filename[MAX_CHAR] = "verylargetextwithverylongname.tx";
+	uint8_t filename[MAX_FILENAME_LEN] = "verylargetextwithverylongname.tx";
 	for(i = 0; i < FOUR_KB; i++)
 		buf[i] = 0;
 
@@ -518,7 +518,7 @@ int test_file_read_exe() {
 	// 8 kb is the largest size of a file in fsdir rn
 	// excluding "fish"
 	uint8_t buf[FOUR_KB * 2];
-	uint8_t filename[MAX_CHAR] = "ls\0";
+	uint8_t filename[MAX_FILENAME_LEN] = "ls\0";
 	// clear the buffer
 	for(i = 0; i < FOUR_KB * 2; i++)
 		buf[i] = 0;

@@ -14,4 +14,7 @@ int32_t vidmap (uint8_t** screen_start);
 int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);
 
+// constants
+#define CMD_MAX_LEN 32
+
 #endif /* SYSCALL_H */
