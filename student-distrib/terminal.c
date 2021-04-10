@@ -5,22 +5,22 @@
 /*
  * terminal_open
  *   INPUTS: filename
- *   OUTPUTS: 0
+ *   OUTPUTS: -1
  *   RETURN VALUE: nothing
  */
 int32_t terminal_open(const uint8_t* filename){
-    return 0;
+    return -1;
 }
 
 /*
  * terminal_close
  *   Description: Unused for checkpoint 2.
  *   INPUTS: fd
- *   OUTPUTS: None
+ *   OUTPUTS: -1
  *   RETURN VALUE: 0
  */
 int32_t terminal_close(int32_t fd){
-    return 0;
+    return -1;
 }
 
 /*
