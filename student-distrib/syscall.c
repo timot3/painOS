@@ -34,9 +34,8 @@ int32_t execute (const uint8_t* command) {
     if (first_32_bytes[0] != 0x7f || first_32_bytes[1] != 0x45 || first_32_bytes[2] != 0x4c || first_32_bytes[3] != 0x46)
         return -1;
 
+    // TODO: later checkpoint
     // save arguments from command --> need for getargs
-
-    // TODO later checkpoint
 
     // Get entry point
 
