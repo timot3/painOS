@@ -1,6 +1,44 @@
 #ifndef SYSCALL_H
 #define SYSCALL_H
 #include "lib.h"
+#include "terminal.h"
+#include "filesys.h"
+#include "rtc.h"
+
+static struct file_op_table rtc_table = {
+    .open = rtc_open,
+    .read = rtc_read,
+    .write = rtc_write,
+    .close = rtc_close
+};
+
+static struct file_op_table file_table = {
+    .open = file_open,
+    .read = file_read,
+    .write = file_write,
+    .close = file_close
+};
+
+static struct file_op_table dir_table = {
+    .open = dir_open,
+    .read = dir_read,
+    .write = dir_write,
+    .close = dir_close
+};
+
+static struct file_op_table stdin_table = {
+    .open = std_bad_call,
+    .read = terminal_read,
+    .write = std_bad_call,
+    .close = std_bad_call
+};
+
+static struct file_op_table stdout_table = {
+    .open = std_bad_call,
+    .read = std_bad_call,
+    .write = terminal_write,
+    .close = std_bad_call
+};
 
 int32_t halt (uint8_t status);
 int32_t execute (const uint8_t* command);
