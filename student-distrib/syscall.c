@@ -10,7 +10,7 @@ int32_t halt (uint8_t status) {
     return status;
 
 }
-int32_t execute (const uint8_t* command) {
+/* int32_t execute (const uint8_t* command) {
     int i, ret;
     uint8_t buf[CMD_MAX_LEN];
     // find file by name --> use func from filesys
@@ -45,6 +45,14 @@ int32_t execute (const uint8_t* command) {
     // then we return specified value in halt
 
     return ret_status;
+} */
+
+int32_t execute (const uint8_t* command) {
+    int pid = assign_pid();
+    if (pid == -1) return -1;
+    pcb_t* pcb = allocate_pcb(pid);
+    int parse_error = parse_command(command, pcb);
+
 }
 
 /*
@@ -63,17 +71,95 @@ int assign_pid(void){
     }
     return -1;
 }
-void init_pcb (void){
-    for (int i = 0)
-    process_control_block.fd_items
+
+/*
+ * unassign_pid
+ *   DESCRIPTION: helper function, unassigns the pid specified
+ *   INPUTS: pid you want unassigned
+ *   RETURN VALUE: 1 if success, -1 if pid is already unassigned
+ */
+int unassign_pid(int pid){
+    if (pid_arr[pid] == 1){
+        pid_arr[pid] == 0;
+        return 1;
+    } 
+    else
+        return -1;
 }
 
-int allocate_pcb(int pid){
+/*
+ * get_latest_pid
+ *   DESCRIPTION: helper function, gets the most recently assigned pid
+ *   INPUTS: none
+ *   RETURN VALUE: idx of most recently used pid or -1 if none
+ */
+int get_latest_pid(){
+    int i;
+    for (i = 0; i < PROCESS_LIMIT; i++) {
+        if (pid_arr[i] == 1) 
+            return i; 
+    }
     return -1;
+}
+
+/*
+ * get_pcb_addr
+ *   DESCRIPTION: get pointer to pcb location of given pid
+ *   INPUTS: pid of pcb that you want
+ *   RETURN VALUE: pcb location
+ */
+pcb_t* get_pcb_addr(int pid) {
+    return (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
+}
+/*
+ * allocate_pcb
+ *   DESCRIPTION: get pointer to pcb location and initialize stdin and stdout
+ *   INPUTS: pid of pcb that you want
+ *   RETURN VALUE: pcb location
+ */
+pcb_t* allocate_pcb(int pid){
+    //pcb is located at top of kernel stack (which is at bottom of kernel page) for process
+    pcb_t* pcb = get_pcb_addr(pid);
+
+    //stdin in position 0
+    pcb -> fd_items[0].file_op_jmp = stdin_table;
+    pcb -> fd_items[0].inode = 0;
+    pcb -> fd_items[0].file_position = 0;
+    pcb -> fd_items[0].flags = 1;
+
+    //stdout in position 1
+    pcb -> fd_items[1].file_op_jmp = stdout_table;
+    pcb -> fd_items[1].inode = 0;
+    pcb -> fd_items[1].file_position = 0;
+    pcb -> fd_items[1].flags = 1;
+
+    return pcb;
+}
+
+/*
+ * parse_comand
+ *   DESCRIPTION: helper function parse execute function ,move arguments to pcb for safekeeping
+ *   INPUTS: command and pcb_pointer
+ *   RETURN VALUE: if successful 1, if fail -1
+ */
+int parse_comand(const uint8_t* command, pcb_t* pcb){
+    uint8_t exec_file[CMD_MAX_LEN];
+    for (i = 0; i < CMD_MAX_LEN; i++) {
+        if (command[i] == ' ' || command[i] == '\0' || command[i] == '\n') {
+            if (i == 0) return -1;
+            else{
+                
+            }
+            break;
+        }
+        exec_file[i] = command[i];
+    }
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
-    return -1;
+    // get the pcb somehow
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    return pcb->fd_items[fd].file_op_jmp->read(fd, buf, nbytes);
 
 }
 int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
