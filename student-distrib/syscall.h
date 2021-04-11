@@ -92,7 +92,7 @@ int unassign_pid(int pid);
 int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
 pcb_t* allocate_pcb(int pid);
-int parse_comand(const uint8_t* command, pcb_t* pcb);
+int parse_command(const uint8_t* command, pcb_t* pcb);
 
 #define O_RDONLY         00
 #define O_WRONLY         01

@@ -82,7 +82,7 @@ int unassign_pid(int pid){
     if (pid_arr[pid] == 1){
         pid_arr[pid] == 0;
         return 1;
-    } 
+    }
     else
         return -1;
 }
@@ -96,8 +96,8 @@ int unassign_pid(int pid){
 int get_latest_pid(){
     int i;
     for (i = 0; i < PROCESS_LIMIT; i++) {
-        if (pid_arr[i] == 1) 
-            return i; 
+        if (pid_arr[i] == 1)
+            return i;
     }
     return -1;
 }
@@ -137,18 +137,18 @@ pcb_t* allocate_pcb(int pid){
 }
 
 /*
- * parse_comand
+ * parse_command
  *   DESCRIPTION: helper function parse execute function ,move arguments to pcb for safekeeping
  *   INPUTS: command and pcb_pointer
  *   RETURN VALUE: if successful 1, if fail -1
  */
-int parse_comand(const uint8_t* command, pcb_t* pcb){
+int parse_command(const uint8_t* command, pcb_t* pcb){
     uint8_t exec_file[CMD_MAX_LEN];
     for (i = 0; i < CMD_MAX_LEN; i++) {
         if (command[i] == ' ' || command[i] == '\0' || command[i] == '\n') {
             if (i == 0) return -1;
             else{
-                
+
             }
             break;
         }
@@ -168,12 +168,12 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     if (buf == NULL || nbytes < 0 || fd < 0 || fd == STDOUT_IDX || fd > MAX_OPEN_FILES) {
         return -1;
     }
-    
+
     // get the pcb ptr
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
 
-    // check for write-only 
+    // check for write-only
     if (file_item.flags == O_WRONLY) {
         printf("This file is write only. You can't read it.\n");
         return -1;
@@ -190,17 +190,17 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
  *   RETURN VALUE: if successful returns 0, if fail -1
  */
 int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
-    
+
     // check for invalid conditions
     if (buf == NULL || nbytes < 0 || fd <= STDIN_IDX || fd > MAX_OPEN_FILES) {
         return -1;
     }
-    
+
     // get the pcb ptr
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
 
-    // check for read-only 
+    // check for read-only
     if (file_item.flags == O_RDONLY) {
         printf("This file is read only. You can't write to it.\n");
         return -1;

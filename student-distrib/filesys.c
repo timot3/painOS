@@ -38,7 +38,7 @@ int32_t file_open(const uint8_t *filename) {
  *   OUTPUTS: none
  *   RETURN VALUE: Amount of bytes read
  */
-int32_t file_read(int32_t fd, uint8_t *buf, int32_t nbytes) {
+int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
     return read_data(current_dentry.inode, 0, buf, nbytes); // 0 when done, otherwise nbytes read
 }
 
@@ -249,7 +249,7 @@ int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes) {
 int32_t dir_close(int32_t fd) {
     // reset the current file and file data entry.
     file_progress  = 0;
-    pcb
+    // pcb
     return 0;
 }
 
