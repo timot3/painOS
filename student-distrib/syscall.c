@@ -17,10 +17,10 @@ int32_t execute (const uint8_t* command) {
     pcb_t* pcb = allocate_pcb(pid);
     int parse = parse_command(command, pcb, pid);
     if (parse == -1){
-        int unpid = unassign_pid(pid);
+        unassign_pid(pid);
         return -1;
     }
-
+return -1;
 }
 
 /*
@@ -112,7 +112,7 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid){
         if (command[i] != ' ' && exec_status == 1)
             exec_buf[i] = command[i];
         //argument buffer is space padded
-        if (exec_status = 2)
+        if (exec_status == 2)
             pcb -> argument_buf[j] = command[i];
             j++;
     }
@@ -125,6 +125,8 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid){
     file_read(0, first_4_char, 4);
     if (first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != L || first_4_char[3] != F)
         return -1;
+        
+    return 1;
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
