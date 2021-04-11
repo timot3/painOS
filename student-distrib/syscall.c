@@ -122,7 +122,7 @@ pcb_t* allocate_pcb(int pid){
  *   INPUTS: command and pcb_pointer
  *   RETURN VALUE: if successful 1, if fail -1
  */
-int parse_comand(const uint8_t* command, pcb_t* pcb, int pid){
+int parse_command(const uint8_t* command, pcb_t* pcb, int pid){
     uint8_t exec_buf[CMD_MAX_LEN];
     int i;
     int j = 0;
