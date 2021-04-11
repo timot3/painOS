@@ -5,6 +5,42 @@
 #include "filesys.h"
 #include "rtc.h"
 
+#define CMD_MAX_LEN 32
+#define PROCESS_LIMIT 2
+#define KERNEL_PAGE_BOT 0x800000
+#define KERNEL_STACK_SIZE 8192
+
+typedef struct file_op_table {
+    int32_t (*open)(const uint8_t *filename);
+    int32_t (*read)(int32_t fd, void *buf, int32_t nbytes);
+    int32_t (*write)(int32_t fd, const void *buf, int32_t nbytes);
+    int32_t (*close)(int32_t fd);
+} file_op_table_t;
+
+typedef struct fd_items {
+    file_op_table_t file_op_jmp;
+    uint32_t inode;
+    uint32_t file_position;
+    uint32_t flags;
+} fd_items_t;
+
+typedef struct parent_pcb {
+    uint32_t ksp;
+    uint32_t kbp;
+    uint32_t pid;
+} parent_pcb_t;
+
+typedef struct pcb {
+    fd_items_t fd_items[MAX_OPEN_FILES];
+    uint8_t argument_buf[CMD_MAX_LEN];
+    uint32_t pid;
+    parent_pcb_t parent;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t ss0;
+    uint32_t esp0;
+} pcb_t;
+
 file_op_table_t rtc_table = {
     .open = rtc_open,
     .read = rtc_read,
@@ -52,12 +88,8 @@ int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);
 
 int assign_pid(void);
-int allocate_pcb(int pid);
-void init_pcb(void);
-
-
-// constants
-#define CMD_MAX_LEN 32
-#define PROCESS_LIMIT 2
+int unassign_pid(int pid);
+pcb_t* allocate_pcb(int pid);
+void parse_comand();
 
 #endif /* SYSCALL_H */
