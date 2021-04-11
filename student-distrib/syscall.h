@@ -5,35 +5,35 @@
 #include "filesys.h"
 #include "rtc.h"
 
-static struct file_op_table rtc_table = {
+file_op_table_t rtc_table = {
     .open = rtc_open,
     .read = rtc_read,
     .write = rtc_write,
     .close = rtc_close
 };
 
-static struct file_op_table file_table = {
+file_op_table_t file_table = {
     .open = file_open,
     .read = file_read,
     .write = file_write,
     .close = file_close
 };
 
-static struct file_op_table dir_table = {
+file_op_table_t dir_table = {
     .open = dir_open,
     .read = dir_read,
     .write = dir_write,
     .close = dir_close
 };
 
-static struct file_op_table stdin_table = {
+file_op_table_t stdin_table = {
     .open = std_bad_call,
     .read = terminal_read,
     .write = std_bad_call,
     .close = std_bad_call
 };
 
-static struct file_op_table stdout_table = {
+file_op_table_t stdout_table = {
     .open = std_bad_call,
     .read = std_bad_call,
     .write = terminal_write,
