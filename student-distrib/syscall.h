@@ -9,6 +9,11 @@
 #define PROCESS_LIMIT 2
 #define KERNEL_PAGE_BOT 0x800000
 #define KERNEL_STACK_SIZE 8192
+#define DELETE 0x7F
+#define E 0x45
+#define L 0x4c
+#define F 0x46
+
 
 typedef struct file_op_table {
     int32_t (*open)(const uint8_t *filename);
@@ -32,7 +37,7 @@ typedef struct parent_pcb {
 
 typedef struct pcb {
     fd_items_t fd_items[MAX_OPEN_FILES];
-    uint8_t argument_buf[CMD_MAX_LEN];
+    uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     uint32_t pid;
     parent_pcb_t parent;
     uint32_t esp;
@@ -90,6 +95,6 @@ int32_t sigreturn (void);
 int assign_pid(void);
 int unassign_pid(int pid);
 pcb_t* allocate_pcb(int pid);
-int parse_comand(const uint8_t* command, pcb_t* pcb);
+int parse_comand(const uint8_t* command, pcb_t* pcb, int pid);
 
 #endif /* SYSCALL_H */
