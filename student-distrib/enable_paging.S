@@ -30,5 +30,3 @@ tlb_flush:
 	movl	%eax,%cr3
   leave
   ret
-
-
