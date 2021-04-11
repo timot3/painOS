@@ -26,7 +26,7 @@ typedef struct fd_items {
     file_op_table_t file_op_jmp;
     uint32_t inode;
     uint32_t file_position;
-    uint32_t flags;
+    uint32_t flags; // bit 0, 1 == read, write, read/write perms
 } fd_items_t;
 
 typedef struct parent_pcb {
@@ -69,6 +69,8 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid);
 #define O_RDONLY         00
 #define O_WRONLY         01
 #define O_RDWR           02
+
+#define LAST_TWO_BITS 3 // 11 in binary
 
 #define STDIN_IDX 0
 #define STDOUT_IDX 1

@@ -8,7 +8,7 @@
  *   OUTPUTS: -1
  *   RETURN VALUE: nothing
  */
-int32_t terminal_open(const uint8_t* filename){
+int32_t terminal_open(const uint8_t* filename) {
     return -1;
 }
 
@@ -19,7 +19,7 @@ int32_t terminal_open(const uint8_t* filename){
  *   OUTPUTS: -1
  *   RETURN VALUE: 0
  */
-int32_t terminal_close(int32_t fd){
+int32_t terminal_close(int32_t fd) {
     return -1;
 }
 
@@ -30,7 +30,7 @@ int32_t terminal_close(int32_t fd){
  *   OUTPUTS: 0
  *   RETURN VALUE: term_buf is now kb_buffer
  */
-int32_t terminal_buf_save(unsigned char* buf){
+int32_t terminal_buf_save(unsigned char* buf) {
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
         buf[i] = kb_buffer[i];
@@ -44,7 +44,7 @@ int32_t terminal_buf_save(unsigned char* buf){
  *   OUTPUTS: none
  *   RETURN VALUE: 0
  */
-int32_t terminal_read(int32_t fd, unsigned char* buf, int32_t nbytes){
+int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     // set last char to newline
     term_read_flag = 0;
 
@@ -54,34 +54,34 @@ int32_t terminal_read(int32_t fd, unsigned char* buf, int32_t nbytes){
     int smallBuf;
     if (nbytes > TERM_BUF_SIZE)
         smallBuf = TERM_BUF_SIZE;
-    else 
+    else
         smallBuf = nbytes;
     for(i=0; i<(nbytes); i++)
-        buf[i] = terminal_buf[i];
-    buf[smallBuf - 1] = '\n';
+        ((uint8_t*)buf)[i] = terminal_buf[i];
+    ((uint8_t*)buf)[smallBuf - 1] = '\n';
     return 0;
 }
 
 /*
  * terminal_write
  *   DESCRIPTION: write buf to screen
- *   INPUTS: fd - currently unused, 
- *           buf - buffer to write, 
+ *   INPUTS: fd - currently unused,
+ *           buf - buffer to write,
  *           nbytes - how many bytes to write
  *   OUTPUTS: contents of buf
  *   RETURN VALUE: screen is now buf
  *   SIDE EFFECTS: None
  */
-int32_t terminal_write(int32_t fd, unsigned char* buf, int32_t nbytes){
+int32_t terminal_write(int32_t fd, const void *buf, int32_t nbytes) {
     int i;
     int smallBuf;
     if (nbytes > TERM_BUF_SIZE)
         smallBuf = TERM_BUF_SIZE;
-    else 
+    else
         smallBuf = nbytes;
     for(i=0; i<smallBuf; i++) {
-        if(buf[i] != 0)
-            putc(buf[i]);
+        if(((uint8_t*)buf)[i] != NULL)
+            putc(((uint8_t*)buf)[i]);
     }
     return 0;
 }

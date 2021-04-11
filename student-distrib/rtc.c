@@ -63,7 +63,7 @@ void rtc_handler() {
  *   OUTPUTS: none
  *   RETURN VALUE: 0 on success, -1 on failure (based on discussion slides)
  */
-int rtc_open(const uint8_t *filename) {
+int32_t rtc_open(const uint8_t *filename) {
     // Use helper function to set frequency to 2Hz
     return set_frequency(RTC_DEFAULT_FREQUENCY);
 }
@@ -75,7 +75,7 @@ int rtc_open(const uint8_t *filename) {
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-uint8_t rtc_close(int32_t fd) {
+int32_t rtc_close(int32_t fd) {
     return 0;
 }
 
@@ -88,7 +88,7 @@ uint8_t rtc_close(int32_t fd) {
  *   OUTPUTS: none
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
-uint8_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
+int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     interruptFlag = 0;
 
     // Spin until new interrupt occurs
@@ -101,15 +101,15 @@ uint8_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
  * rtc_write
  *   DESCRIPTION: Sets RTC frequency based on input value
  *   INPUTS: fd - never used, docs said we needed it
- *           *buffer - buffer holding new frequency (not sure why it needs to
+ *           *buf - buffer holding new frequency (not sure why it needs to
  *                     be a buffer, but that's what the discussion said to use)
- *           size - size of buffer
+ *           nbytes - size of buffer
  *   OUTPUTS: none
  *   RETURN VALUE: -1 in invalid frequency input, 0 otherwise
  */
-int rtc_write(int32_t fd, void *buffer, uint32_t size) {
+int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes) {
     // Change frequency using helper function
-    return set_frequency(*(uint16_t*)buffer);
+    return set_frequency(*(uint16_t*)buf);
 }
 
 /*
@@ -119,7 +119,7 @@ int rtc_write(int32_t fd, void *buffer, uint32_t size) {
  *   OUTPUTS: none
  *   RETURN VALUE: -1 on invalid input (not in range, not power of 2), 0 otherwise
  */
-uint8_t set_frequency(uint16_t freq) {
+int32_t set_frequency(uint16_t freq) {
     // Ensure value is within bounds (limited by kernel to 1024, can go to 8192) and is power of 2
     if(freq < 1 || freq > 1024 || (freq & (freq - 1)) != 0)
         return -1;
