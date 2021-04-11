@@ -90,6 +90,6 @@ int32_t sigreturn (void);
 int assign_pid(void);
 int unassign_pid(int pid);
 pcb_t* allocate_pcb(int pid);
-void parse_comand(const uint8_t* command, pcb_t* pcb);
+int parse_comand(const uint8_t* command, pcb_t* pcb);
 
 #endif /* SYSCALL_H */
