@@ -98,4 +98,7 @@ int parse_comand(const uint8_t* command, pcb_t* pcb);
 #define O_WRONLY         01
 #define O_RDWR           02
 
+#define STDIN_IDX 0
+#define STDOUT_IDX 1
+
 #endif /* SYSCALL_H */

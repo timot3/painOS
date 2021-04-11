@@ -122,16 +122,16 @@ pcb_t* allocate_pcb(int pid){
     pcb_t* pcb = get_pcb_addr(pid);
 
     //stdin in position 0
-    pcb -> fd_items[0].file_op_jmp = stdin_table;
-    pcb -> fd_items[0].inode = 0;
-    pcb -> fd_items[0].file_position = 0;
-    pcb -> fd_items[0].flags = 1;
+    pcb -> fd_items[STDIN_IDX].file_op_jmp = stdin_table;
+    pcb -> fd_items[STDIN_IDX].inode = 0;
+    pcb -> fd_items[STDIN_IDX].file_position = 0;
+    pcb -> fd_items[STDIN_IDX].flags = 1;
 
     //stdout in position 1
-    pcb -> fd_items[1].file_op_jmp = stdout_table;
-    pcb -> fd_items[1].inode = 0;
-    pcb -> fd_items[1].file_position = 0;
-    pcb -> fd_items[1].flags = 1;
+    pcb -> fd_items[STDOUT_IDX].file_op_jmp = stdout_table;
+    pcb -> fd_items[STDOUT_IDX].inode = 0;
+    pcb -> fd_items[STDOUT_IDX].file_position = 0;
+    pcb -> fd_items[STDOUT_IDX].flags = 1;
 
     return pcb;
 }
@@ -156,15 +156,57 @@ int parse_comand(const uint8_t* command, pcb_t* pcb){
     }
 }
 
+/*
+ * read
+ *   DESCRIPTION: opens file at given fd for reading into the buffer
+ *   INPUTS: file descriptor idx (fd), buffer to read into (buf), number of bytes to read (nbytes)
+ *   RETURN VALUE: if successful returns amount of bytes read, if fail -1
+ */
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
-    // get the pcb somehow
+
+    // check for invalid conditions
+    if (buf == NULL || nbytes < 0 || fd < 0 || fd == STDOUT_IDX || fd > MAX_OPEN_FILES) {
+        return -1;
+    }
+    
+    // get the pcb ptr
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
-    return pcb->fd_items[fd].file_op_jmp->read(fd, buf, nbytes);
+    fd_items_t file_item = pcb->fd_items[fd];
+
+    // check for write-only 
+    if (file_item.flags == O_WRONLY) {
+        printf("This file is write only. You can't read it.\n");
+        return -1;
+    }
+
+    return file_item.file_op_jmp->read(fd, buf, nbytes);
 
 }
-int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
-    return -1;
 
+/*
+ * write
+ *   DESCRIPTION: writes into the passed in buffer
+ *   INPUTS: file descriptor idx (fd), buffer to read into (buf), number of bytes to write (nbytes)
+ *   RETURN VALUE: if successful returns 0, if fail -1
+ */
+int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
+    
+    // check for invalid conditions
+    if (buf == NULL || nbytes < 0 || fd <= STDIN_IDX || fd > MAX_OPEN_FILES) {
+        return -1;
+    }
+    
+    // get the pcb ptr
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    fd_items_t file_item = pcb->fd_items[fd];
+
+    // check for read-only 
+    if (file_item.flags == O_RDONLY) {
+        printf("This file is read only. You can't write to it.\n");
+        return -1;
+    }
+
+    return file_item.file_op_jmp->write(fd, buf, nbytes);
 }
 int32_t open (const uint8_t* filename) {
 
