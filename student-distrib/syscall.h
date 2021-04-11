@@ -17,4 +17,8 @@ int32_t sigreturn (void);
 // constants
 #define CMD_MAX_LEN 32
 
+#define O_RDONLY         00
+#define O_WRONLY         01
+#define O_RDWR           02
+
 #endif /* SYSCALL_H */

@@ -55,7 +55,23 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
 
 }
 int32_t open (const uint8_t* filename) {
-    return -1;
+
+    uint32_t rval;
+
+    // if is directory
+    if (0 == strncmp (filename, (uint8_t*)".")) {
+        dir = read_dentry_by_name (".");
+            dir_fd = open ("/dev/null", O_RDONLY);
+        return dir_fd;
+    }
+
+    asm volatile ("INT $0x80" : "=a" (rval) :
+		  "a" (5), "b" (filename), "c" (O_RDONLY));
+    if (rval > 0xFFFFC000)
+        return -1;
+    return rval;
+
+
 }
 int32_t close (int32_t fd) {
     return -1;
