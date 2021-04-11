@@ -52,8 +52,6 @@ int32_t execute (const uint8_t* command) {
     if (pid == -1) return -1;
     pcb_t* pcb = allocate_pcb(pid);
 
-
-
 }
 
 /*
@@ -88,19 +86,30 @@ int unassign_pid(int pid){
         return -1;
 }
 
-void init_pcb (void){
-    return -1
-}
-
 /*
  * allocate_pcb
- *   DESCRIPTION: get pointer to pcb location
+ *   DESCRIPTION: get pointer to pcb location and initialize stdin and stdout
  *   INPUTS: pid of pcb that you want
  *   RETURN VALUE: pcb location
  */
 pcb_t* allocate_pcb(int pid){
     //pcb is located at top of kernel stack (which is at bottom of kernel page) for process
-    return (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE)
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
+
+    //stdin in position 0
+    pcb -> fd_items[0].file_op_jmp = stdin_table;
+    pcb -> fd_items[0].inode = 0;
+    pcb -> fd_items[0].file_position = 0;
+    pcb -> fd_items[0].flags = 1;
+
+    //stdout in position 1
+    pcb -> fd_items[1].file_op_jmp = stdout_table;
+    pcb -> fd_items[1].inode = 0;
+    pcb -> fd_items[1].file_position = 0;
+    pcb -> fd_items[1].flags = 1;
+
+
+    return pcb
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
