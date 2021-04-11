@@ -14,6 +14,7 @@
 #define NUM_D_BLKS 1023
 #define ONE_KB 1024
 #define FOUR_KB 4096
+#define MAX_OPEN_FILES 8
 
 // data entry
 typedef struct dentry{
@@ -46,18 +47,35 @@ typedef struct boot_blk {
     dentry_t dir_entries[MAX_DIR_ENTRIES];
 } boot_blk_t; // 4 KB
 
+
+typedef struct file_op_table {
+    int32_t (*open)(const uint8_t *filename);
+    int32_t (*read)(int32_t fd, void *buf, int32_t nbytes);
+    int32_t (*write)(int32_t fd, const void *buf, int32_t nbytes);
+    int32_t (*close)(int32_t fd);
+} file_op_table_t;
+
 typedef struct fd_items {
-    int32_t inode_idx;
+    file_op_table_t file_op_jmp;
+    uint32_t inode;
+    uint32_t file_position;
+    uint32_t flags;
 } fd_items_t;
 
+typedef struct parent_pcb {
+    uint32_t ksp;
+    uint32_t kbp;
+    uint32_t pid;
+} parent_pcb_t;
+
 typedef struct pcb {
-    fd_items_t fd_items[8];
-    int32_t pid;
-    int32_t parent;
-    int32_t esp;
-    int32_t ebp;
-    int32_t ss0;
-    int32_t esp0;
+    fd_items_t fd_items[MAX_OPEN_FILES];
+    uint32_t pid;
+    parent_pcb_t parent;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t ss0;
+    uint32_t esp0;
 } pcb_t;
 
 // Functions for working with files
