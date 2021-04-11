@@ -293,7 +293,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
         return 0;
     }
 
-    // return 1 if not found
+    // return -1 if not found
     return -1;
 }
 
