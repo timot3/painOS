@@ -51,7 +51,7 @@ int32_t execute (const uint8_t* command) {
     int pid = assign_pid();
     if (pid == -1) return -1;
     pcb_t* pcb = allocate_pcb(pid);
-    parse_command(command, pcb);
+    int parse_error = parse_command(command, pcb);
 
 }
 
@@ -116,9 +116,20 @@ pcb_t* allocate_pcb(int pid){
  * parse_comand
  *   DESCRIPTION: helper function parse execute function ,move arguments to pcb for safekeeping
  *   INPUTS: command and pcb_pointer
- *   RETURN VALUE: none
+ *   RETURN VALUE: if successful 1, if fail -1
  */
-void parse_comand(const uint8_t* command, pcb_t* pcb){
+int parse_comand(const uint8_t* command, pcb_t* pcb){
+    uint8_t exec_file[CMD_MAX_LEN];
+    for (i = 0; i < CMD_MAX_LEN; i++) {
+        if (command[i] == ' ' || command[i] == '\0' || command[i] == '\n') {
+            if (i == 0) return -1;
+            else{
+                
+            }
+            break;
+        }
+        exec_file[i] = command[i];
+    }
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
