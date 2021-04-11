@@ -64,11 +64,12 @@ int assign_pid(void){
     return -1;
 }
 void init_pcb (void){
-    return -1
+    for (int i = 0)
+    process_control_block.fd_items
 }
 
 int allocate_pcb(int pid){
-    return -1
+    return -1;
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
@@ -82,7 +83,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
 int32_t open (const uint8_t* filename) {
 
     uint32_t rval;
-    
+
     return rval;
 
 

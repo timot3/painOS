@@ -57,6 +57,7 @@ typedef struct file_op_table {
 
 typedef struct fd_items {
     file_op_table_t file_op_jmp;
+    uint8_t fname[MAX_FILENAME_LEN];
     uint32_t inode;
     uint32_t file_position;
     uint32_t flags;
@@ -77,6 +78,8 @@ typedef struct pcb {
     uint32_t ss0;
     uint32_t esp0;
 } pcb_t;
+
+extern pcb_t process_control_block; // init a process control block
 
 // Functions for working with files
 int32_t file_open(const uint8_t* filename);
