@@ -10,7 +10,7 @@ int32_t halt (uint8_t status) {
     return status;
 
 }
-int32_t execute (const uint8_t* command) {
+/* int32_t execute (const uint8_t* command) {
     int i, ret;
     uint8_t buf[CMD_MAX_LEN];
     // find file by name --> use func from filesys
@@ -45,6 +45,15 @@ int32_t execute (const uint8_t* command) {
     // then we return specified value in halt
 
     return ret_status;
+} */
+
+int32_t execute (const uint8_t* command) {
+    int pid = assign_pid();
+    if (pid == -1) return -1;
+    pcb_t* pcb = allocate_pcb(pid);
+
+
+
 }
 
 /*
@@ -63,12 +72,35 @@ int assign_pid(void){
     }
     return -1;
 }
+
+/*
+ * unassign_pid
+ *   DESCRIPTION: helper function, unassigns the pid specified
+ *   INPUTS: pid you want unassigned
+ *   RETURN VALUE: 1 if success, -1 if pid is already unassigned
+ */
+int unassign_pid(int pid){
+    if (pid_arr[pid] == 1){
+        pid_arr[pid] == 0;
+        return 1;
+    } 
+    else
+        return -1;
+}
+
 void init_pcb (void){
     return -1
 }
 
-int allocate_pcb(int pid){
-    return -1
+/*
+ * allocate_pcb
+ *   DESCRIPTION: get pointer to pcb location
+ *   INPUTS: pid of pcb that you want
+ *   RETURN VALUE: pcb location
+ */
+pcb_t* allocate_pcb(int pid){
+    //pcb is located at top of kernel stack (which is at bottom of kernel page) for process
+    return (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE)
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
