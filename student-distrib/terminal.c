@@ -92,5 +92,5 @@ int32_t terminal_write(int32_t fd, unsigned char* buf, int32_t nbytes){
  *   RETURN VALUE: -1
  */
 int32_t std_bad_call(){
-    return -1
+    return -1;
 }

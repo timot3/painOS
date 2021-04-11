@@ -65,7 +65,7 @@ int assign_pid(void){
     int i;
     for(i=0; i<PROCESS_LIMIT; i++){
         if(pid_arr[i]==0){
-            pid_arr[i]==1;
+            pid_arr[i]=1;
             return i;
         }
     }
@@ -80,7 +80,7 @@ int assign_pid(void){
  */
 int unassign_pid(int pid){
     if (pid_arr[pid] == 1){
-        pid_arr[pid] == 0;
+        pid_arr[pid] = 0;
         return 1;
     } 
     else
@@ -144,6 +144,7 @@ pcb_t* allocate_pcb(int pid){
  */
 int parse_comand(const uint8_t* command, pcb_t* pcb){
     uint8_t exec_file[CMD_MAX_LEN];
+    int i;
     for (i = 0; i < CMD_MAX_LEN; i++) {
         if (command[i] == ' ' || command[i] == '\0' || command[i] == '\n') {
             if (i == 0) return -1;
@@ -179,7 +180,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
         return -1;
     }
 
-    return file_item.file_op_jmp->read(fd, buf, nbytes);
+    return file_item.file_op_jmp.read(fd, buf, nbytes);
 
 }
 
@@ -206,7 +207,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
     }
 
-    return file_item.file_op_jmp->write(fd, buf, nbytes);
+    return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
 int32_t open (const uint8_t* filename) {
 
