@@ -3,6 +3,41 @@
 
 volatile uint8_t ret_status = -1;
 
+file_op_table_t rtc_table = {
+    .open = rtc_open,
+    .read = rtc_read,
+    .write = rtc_write,
+    .close = rtc_close
+};
+
+file_op_table_t file_table = {
+    .open = file_open,
+    .read = file_read,
+    .write = file_write,
+    .close = file_close
+};
+
+file_op_table_t dir_table = {
+    .open = dir_open,
+    .read = dir_read,
+    .write = dir_write,
+    .close = dir_close
+};
+
+file_op_table_t stdin_table = {
+    .open = std_bad_call,
+    .read = terminal_read,
+    .write = std_bad_call,
+    .close = std_bad_call
+};
+
+file_op_table_t stdout_table = {
+    .open = std_bad_call,
+    .read = std_bad_call,
+    .write = terminal_write,
+    .close = std_bad_call
+};
+
 char pid_arr[PROCESS_LIMIT] = {0, 0};
 
 int32_t halt (uint8_t status) {
@@ -125,7 +160,7 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid){
     file_read(0, first_4_char, 4);
     if (first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != L || first_4_char[3] != F)
         return -1;
-        
+
     return 1;
 }
 
