@@ -51,7 +51,11 @@ int32_t execute (const uint8_t* command) {
     int pid = assign_pid();
     if (pid == -1) return -1;
     pcb_t* pcb = allocate_pcb(pid);
-    int parse_error = parse_command(command, pcb);
+    int parse = parse_command(command, pcb, pid);
+    if (parse == -1){
+        int unpid = unassign_pid(pid);
+        return -1;
+    }
 
 }
 
@@ -118,18 +122,45 @@ pcb_t* allocate_pcb(int pid){
  *   INPUTS: command and pcb_pointer
  *   RETURN VALUE: if successful 1, if fail -1
  */
-int parse_comand(const uint8_t* command, pcb_t* pcb){
-    uint8_t exec_file[CMD_MAX_LEN];
-    for (i = 0; i < CMD_MAX_LEN; i++) {
-        if (command[i] == ' ' || command[i] == '\0' || command[i] == '\n') {
-            if (i == 0) return -1;
-            else{
-                
-            }
+int parse_comand(const uint8_t* command, pcb_t* pcb, int pid){
+    uint8_t exec_buf[CMD_MAX_LEN];
+    int i;
+    int j = 0;
+    //exec status stages 0 = nothing, 1 = started, 2 = completed
+    uint8_t exec_status = 0;
+
+    for (i = 0; i < TERM_BUF_SIZE; i++) {
+        //end of command if newline or null char
+        if (command[i] == '\0' || command[i] == '\n'){
+            if (i == 0)
+                return -1;
             break;
         }
-        exec_file[i] = command[i];
+
+        //at first non-space, char exec starts
+        if (command[i] != ' ' && exec_status == 0)
+            exec_status = 1;
+        //after first space after exec starts, exec ends
+        else if (command[i] == ' ' && exec_status == 1)
+            exec_status = 2;
+
+        //put characters into correct buffer depending on exec status
+        if (command[i] != ' ' && exec_status == 1)
+            exec_buf[i] = command[i];
+        //argument buffer is space padded
+        if (exec_status = 2)
+            pcb -> argument_buf[j] = command[i];
+            j++;
     }
+    //check if file exists
+    if (file_open(exec_buf) == -1) 
+        return -1;
+
+    //check that first four characters are Delete, E, L, F
+    uint8_t first_4_char[4];
+    file_read(0, first_4_char, 4);
+    if (first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != 0x4c || first_4_char[3] != 0x46)
+        return -1;
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
