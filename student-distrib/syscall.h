@@ -1,4 +1,3 @@
-
 #ifndef SYSCALL_H
 #define SYSCALL_H
 #include "lib.h"
@@ -14,8 +13,14 @@ int32_t vidmap (uint8_t** screen_start);
 int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);
 
+int assign_pid(void);
+int allocate_pcb(int pid);
+void init_pcb(void);
+
+
 // constants
 #define CMD_MAX_LEN 32
+#define PROCESS_LIMIT 2
 
 #define O_RDONLY         00
 #define O_WRONLY         01

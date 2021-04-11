@@ -3,7 +3,7 @@
 
 volatile uint8_t ret_status = -1;
 
-
+char pid_arr[PROCESS_LIMIT] = {0, 0};
 
 int32_t halt (uint8_t status) {
     ret_status = status;
@@ -46,6 +46,31 @@ int32_t execute (const uint8_t* command) {
 
     return ret_status;
 }
+
+/*
+ * assign_pid
+ *   DESCRIPTION: helper function, gives process first non-assigned value
+ *   INPUTS: none
+ *   RETURN VALUE: assigned process value or -1 if processes are full
+ */
+int assign_pid(void){
+    int i;
+    for(i=0; i<PROCESS_LIMIT; i++){
+        if(pid_arr[i]==0){
+            pid_arr[i]==1;
+            return i;
+        }
+    }
+    return -1;
+}
+void init_pcb (void){
+    return -1
+}
+
+int allocate_pcb(int pid){
+    return -1
+}
+
 int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     return -1;
 
