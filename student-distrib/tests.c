@@ -315,16 +315,14 @@ int test_read_directory() {
 	// read the base directory
 	// ret = PASS on success or FAIL on fail
 	uint8_t buf[8192];
-	int ret = dir_read(0, buf, 8192) + 1;
+	int i = 0;
+	while(dir_read(i, buf, 8192) != -1) {
+		printf("%s", buf);
+		i++;
+	}
+
 	dir_close(0);
-
-	// printf("%s", buf);
-
-	// for(i = 0; i < 8192/8; i++)
-	// 	putc(buf[i]);
-	printf("%s", buf);
-
-	return ret;
+	return 1;
 }
 
 /* test_file_open
@@ -514,7 +512,7 @@ int test_read_large() {
  */
 int test_file_read_exe() {
 	int i;
-	// initialize 8-kb buffer. 
+	// initialize 8-kb buffer.
 	// 8 kb is the largest size of a file in fsdir rn
 	// excluding "fish"
 	uint8_t buf[FOUR_KB * 2];
@@ -524,7 +522,7 @@ int test_file_read_exe() {
 		buf[i] = 0;
 
 	file_open(filename);
-	// read 8kb 
+	// read 8kb
 	file_read(0, buf, FOUR_KB * 2);
 	// use putc because of null chars
 	// display the first 2kb
@@ -570,5 +568,4 @@ void launch_tests() {
 	TEST_OUTPUT("Test test_file_read", test_file_read()); //works
 	TEST_OUTPUT("Test test_read_large", test_read_large()); //works
 	TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
-
 }
