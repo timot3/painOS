@@ -9,6 +9,11 @@
 #define PROCESS_LIMIT 2
 #define KERNEL_PAGE_BOT 0x800000
 #define KERNEL_STACK_SIZE 8192
+#define DELETE 0x7F
+#define E 0x45
+#define L 0x4c
+#define F 0x46
+
 
 typedef struct file_op_table {
     int32_t (*open)(const uint8_t *filename);
@@ -32,7 +37,7 @@ typedef struct parent_pcb {
 
 typedef struct pcb {
     fd_items_t fd_items[MAX_OPEN_FILES];
-    uint8_t argument_buf[CMD_MAX_LEN];
+    uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     uint32_t pid;
     parent_pcb_t parent;
     uint32_t esp;
@@ -41,40 +46,7 @@ typedef struct pcb {
     uint32_t esp0;
 } pcb_t;
 
-file_op_table_t rtc_table = {
-    .open = rtc_open,
-    .read = rtc_read,
-    .write = rtc_write,
-    .close = rtc_close
-};
 
-file_op_table_t file_table = {
-    .open = file_open,
-    .read = file_read,
-    .write = file_write,
-    .close = file_close
-};
-
-file_op_table_t dir_table = {
-    .open = dir_open,
-    .read = dir_read,
-    .write = dir_write,
-    .close = dir_close
-};
-
-file_op_table_t stdin_table = {
-    .open = std_bad_call,
-    .read = terminal_read,
-    .write = std_bad_call,
-    .close = std_bad_call
-};
-
-file_op_table_t stdout_table = {
-    .open = std_bad_call,
-    .read = std_bad_call,
-    .write = terminal_write,
-    .close = std_bad_call
-};
 
 int32_t halt (uint8_t status);
 int32_t execute (const uint8_t* command);
@@ -92,7 +64,7 @@ int unassign_pid(int pid);
 int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
 pcb_t* allocate_pcb(int pid);
-int parse_comand(const uint8_t* command, pcb_t* pcb);
+int parse_command(const uint8_t* command, pcb_t* pcb, int pid);
 
 #define O_RDONLY         00
 #define O_WRONLY         01
