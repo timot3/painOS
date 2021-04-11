@@ -12,6 +12,8 @@ int32_t terminal_buf_save(unsigned char* buf);
 int32_t terminal_read(int32_t fd, unsigned char* buf, int32_t nbytes);
 int32_t terminal_write(int32_t fd, unsigned char* buf, int32_t nbytes);
 
+int32_t std_bad_call();
+
 unsigned char terminal_buf[128];
 
 #endif /* TERMINAL_H */
