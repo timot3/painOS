@@ -46,40 +46,7 @@ typedef struct pcb {
     uint32_t esp0;
 } pcb_t;
 
-file_op_table_t rtc_table = {
-    .open = rtc_open,
-    .read = rtc_read,
-    .write = rtc_write,
-    .close = rtc_close
-};
 
-file_op_table_t file_table = {
-    .open = file_open,
-    .read = file_read,
-    .write = file_write,
-    .close = file_close
-};
-
-file_op_table_t dir_table = {
-    .open = dir_open,
-    .read = dir_read,
-    .write = dir_write,
-    .close = dir_close
-};
-
-file_op_table_t stdin_table = {
-    .open = std_bad_call,
-    .read = terminal_read,
-    .write = std_bad_call,
-    .close = std_bad_call
-};
-
-file_op_table_t stdout_table = {
-    .open = std_bad_call,
-    .read = std_bad_call,
-    .write = terminal_write,
-    .close = std_bad_call
-};
 
 int32_t halt (uint8_t status);
 int32_t execute (const uint8_t* command);
