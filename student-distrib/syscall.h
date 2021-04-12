@@ -75,7 +75,8 @@ void setup_TSS(int pid);
 #define O_WRONLY         01
 #define O_RDWR           02
 
-#define LAST_TWO_BITS 3 // 11 in binary
+
+#define READ_WRITE_MASK 3 // 11 in binary
 
 #define STDIN_IDX 0
 #define STDOUT_IDX 1

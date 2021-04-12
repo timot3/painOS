@@ -86,7 +86,13 @@ int32_t halt (uint8_t status) {
     tss.ss0 = KERNEL_DS;
 
     // 6.  swap to saved parent's stack state and return from execute
+    asm volatile (
+        "movl %0, %%eax;"
+            : 
+            : "g" (status)
+    );
 
+    goto execute_return;
     // must return with value of 256
     // ret_status = status;
     return 256;
@@ -140,6 +146,7 @@ int32_t execute (const uint8_t* command) {
     //iret context switch
     context_switch();
 
+execute_return:
     return -1;
 }
 
