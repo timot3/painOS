@@ -126,7 +126,7 @@ int32_t execute (const uint8_t* command) {
 
     //copy user program to page
 
-    int p = read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
+    read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
 
 
     //setup TSS for good context switching
