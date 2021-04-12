@@ -63,7 +63,7 @@ int32_t halt (uint8_t status) {
             // mark file as not present
             curr_fd_item.flags ^= 0x4;
             // call close on file
-            curr_fd_item.file_op_jmp.close(i);
+          //  curr_fd_item.file_op_jmp.close(i);
         }
     }
     // 3.  set up file state for return to parent
@@ -125,9 +125,9 @@ int32_t execute (const uint8_t* command) {
     map_page_pid(pid);
 
     //copy user program to page
-    printf("JHHAH %d", dentry.inode);
+
     int p = read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
-    printf("hjjjjjj %d",p);
+
 
     //setup TSS for good context switching
     setup_TSS(pid);
@@ -210,12 +210,6 @@ int unassign_pid(int pid){
  *   RETURN VALUE: idx of most recently used pid or -1 if none
  */
 int get_latest_pid(){
-    // int i;
-    // for (i = 0; i < PROCESS_LIMIT; i++) {
-    //     if (pid_arr[i] == 1)
-    //         return i;
-    // }
-    // return -1;
     return curr_pid;
 }
 
