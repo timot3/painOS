@@ -55,6 +55,8 @@ int32_t execute (const uint8_t* command) {
         unassign_pid(pid);
         return -1;
     }
+    map_page_pid(pid);
+
 return -1;
 }
 
