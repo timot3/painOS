@@ -71,7 +71,7 @@ int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
 pcb_t* allocate_pcb(int pid);
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid);
-void setup_TSS(pcb_t* pcb);
+void setup_TSS(int pid);
 
 #define O_RDONLY         00
 #define O_WRONLY         01
