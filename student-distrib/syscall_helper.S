@@ -1,13 +1,16 @@
 #define ASM 1
 
 .globl syscall_help
+.globl context_switch
 
 syscall_help:
     # save registers
     # do we need this?
-#    pushl %ebp
-#    pushl %edi
-#    pushl %esi
+    pushl %ebp
+    movl  %ebp, %esp
+    pushl %edi
+    pushl %esi
+    pushfl
 
     # syscall bound test
     cmp $1, %eax
@@ -16,28 +19,33 @@ syscall_help:
     jg oob_syscall
 
    # Push argument registers
-   pushl %edx
-   pushl %ecx
-   pushl %ebx
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
 
     # jmp table starts at 0, so fit eax to table
     decl %eax
-    jmp *syscall_table(, %eax, 4)
+    call *syscall_table(, %eax, 4)
 
-# return_syscall:
     # restore argument registers
-#    popl %ebx
-#    popl %ecx
-#    popl %edx
+    popl %ebx
+    popl %ecx
+    popl %edx
 
+    jmp return_syscall
 
 oob_syscall:
-    # restore other registers
-#    popl %esi
-#    popl %edi
-#    popl %ebp
-    # move -1 into eax, then return from int
     movl $-1, %eax
+return_syscall:
+    # restore other registers
+    popfl
+    popl %esi
+    popl %edi
+    popl %ebp
+    # move -1 into eax, then return from int
+    leave
     iret    
 syscall_table:
     .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
+
+iret_context_switch:
