@@ -1,6 +1,5 @@
 #include "syscall.h"
 #include "filesys.h"
-
 volatile uint8_t ret_status = -1;
 
 file_op_table_t rtc_table = {
@@ -43,8 +42,60 @@ char pid_arr[PROCESS_LIMIT] = {0, 0};
 int32_t curr_pid = 0;
 
 int32_t halt (uint8_t status) {
-    ret_status = status;
-    return status;
+    int i;
+    // get current pcb
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    if (pcb == NULL) return -1;
+    // 1.  if base shell, re-execute base shell
+    if (pcb->parent.ksp == 0 && pcb->parent.kbp == 0) {
+        // 7 is the length of our string
+        execute((uint8_t*)"shell");
+    }
+    //else:
+    //2.  close all file descriptors
+    for (i = 0; i < MAX_OPEN_FILES; i++) {
+        fd_items_t curr_fd_item = pcb->fd_items[i];
+        // 3rd bit of flag is the "not in use" bit
+        // so bitwise anding it with 0x4 == 0b100 will
+        // check if file is in use
+        if ((curr_fd_item.flags & 0x4) != 0) {
+            // mark file as not present
+            curr_fd_item.flags ^= 0x4;
+            // call close on file
+            curr_fd_item.file_op_jmp.close(i);
+        }
+    }
+    // 3.  set up file state for return to parent
+
+    // unassign current pid
+    unassign_pid(pcb->pid);
+    // instead assign it to the parent pid
+    pcb->pid = pcb->parent.pid;
+
+    // 4.  restore parent's paging and flush the tlb
+
+    
+    // assembly wrapper for tlb flush
+    tlb_flush();
+
+    // 5.  set tss to point to parent's stack
+    // set esp0 to point to base of parent's kernel stack
+    tss.esp0 = pcb->parent.kbp;
+    // set ss0 to kernel data segment
+    tss.ss0 = KERNEL_DS;
+
+    // 6.  swap to saved parent's stack state and return from execute
+    asm volatile (
+        "movl %0, %%eax;"
+            : 
+            : "g" (status)
+            : "eax"
+    );
+
+    asm volatile ("jmp execute_return");
+    // must return with value of 256
+    // ret_status = status;
+    return 256;
 
 }
 /*
@@ -114,6 +165,7 @@ int32_t execute (const uint8_t* command) {
         : "g" (USER_DS), "g" (USER_PAGE_BOT), "g" (USER_CS), "g" (EIP)
     );
 
+    asm volatile ("execute_return:");
     return -1;
 }
 
@@ -157,12 +209,13 @@ int unassign_pid(int pid){
  *   RETURN VALUE: idx of most recently used pid or -1 if none
  */
 int get_latest_pid(){
-    int i;
-    for (i = 0; i < PROCESS_LIMIT; i++) {
-        if (pid_arr[i] == 1)
-            return i;
-    }
-    return -1;
+    // int i;
+    // for (i = 0; i < PROCESS_LIMIT; i++) {
+    //     if (pid_arr[i] == 1)
+    //         return i;
+    // }
+    // return -1;
+    return curr_pid;
 }
 
 /*
@@ -195,6 +248,11 @@ pcb_t* allocate_pcb(int pid){
     pcb -> fd_items[STDOUT_IDX].inode = 0;
     pcb -> fd_items[STDOUT_IDX].file_position = 0;
     pcb -> fd_items[STDOUT_IDX].flags = 1;
+
+    // set parent to null
+    pcb->parent.ksp = 0;
+    pcb->parent.kbp = 0;
+
 
     pcb -> pid = pid;
     return pcb;
@@ -275,7 +333,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for write-only
-    if (file_item.flags == O_WRONLY) {
+    if ((file_item.flags & READ_WRITE_MASK) == O_WRONLY) {
         printf("This file is write only. You can't read it.\n");
         return -1;
     }
@@ -302,7 +360,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for read-only
-    if (file_item.flags == O_RDONLY) {
+    if ((file_item.flags & READ_WRITE_MASK) == O_RDONLY) {
         printf("This file is read only. You can't write to it.\n");
         return -1;
     }
@@ -334,7 +392,6 @@ void setup_TSS(int pid) {
  * * returns fd
  */
 int32_t open (const uint8_t* filename) {
-
     pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
     dentry_t tmp_dentry;
     file_op_table_t* tmp_f_ops;

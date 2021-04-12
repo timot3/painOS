@@ -569,7 +569,8 @@ void launch_tests() {
 	// TEST_OUTPUT("Test test_file_read", test_file_read()); //works
 	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
 	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //works
-	// uint8_t progName[32] = "shell\0";
-	// execute(progName);
+	
+	// CHECKPOINT 3
+	execute((uint8_t*)"shell");
 
 }

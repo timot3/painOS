@@ -4,9 +4,7 @@
 
 syscall_help:
     # save registers
-    # do we need this?
     pushl %ebp
-    movl  %ebp, %esp
     pushl %edi
     pushl %esi
     pushfl
@@ -30,7 +28,6 @@ syscall_help:
     popl %ebx
     popl %ecx
     popl %edx
-
     jmp return_syscall
 
 oob_syscall:
