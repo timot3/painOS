@@ -4,6 +4,7 @@
 #include "terminal.h"
 #include "filesys.h"
 #include "rtc.h"
+#include "paging.h"
 
 #define CMD_MAX_LEN 32
 #define PROCESS_LIMIT 2
@@ -13,6 +14,8 @@
 #define E 0x45
 #define L 0x4c
 #define F 0x46
+#define BUFFER_START 0x8048000 
+#define MAX_FILE_SIZE 0x400000
 
 #define ACTIVE_FLAG_MASK 4
 #define ACTIVE_FLAG 1
