@@ -69,6 +69,6 @@ int assign_pid(void);
 int unassign_pid(int pid);
 pcb_t* allocate_pcb(int pid);
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid);
-void setup_TSS(pcb_t* pcb);
+void setup_TSS(int pid);
 
 #endif /* SYSCALL_H */
