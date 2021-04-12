@@ -39,23 +39,43 @@ file_op_table_t stdout_table = {
 };
 
 char pid_arr[PROCESS_LIMIT] = {0, 0};
+
 int32_t curr_pid = 0; 
+
 int32_t halt (uint8_t status) {
     ret_status = status;
     return status;
 
 }
-
+/*
+ * execute
+ *   DESCRIPTION: executs the command, lots of helper functions see them for more details
+ *   INPUTS: command
+ *   RETURN VALUE:
+ */
 int32_t execute (const uint8_t* command) {
+    //get pid if none avaialbe fail
     int pid = assign_pid();
     if (pid == -1) return -1;
+
+    //get pcb and initialize
     pcb_t* pcb = allocate_pcb(pid);
     int parse = parse_command(command, pcb, pid);
+
+    //parse command, if bad fail
     if (parse == -1){
         unassign_pid(pid);
         return -1;
     }
+
+    //set up page
     map_page_pid(pid);
+
+    //copy user program to page
+    dentry_t dentry;
+    read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
+
+
 
 return -1;
 }
