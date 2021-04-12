@@ -1,7 +1,6 @@
 #define ASM 1
 
 .globl syscall_help
-.globl context_switch
 
 syscall_help:
     # save registers
@@ -47,5 +46,3 @@ return_syscall:
     iret    
 syscall_table:
     .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
-
-iret_context_switch:
