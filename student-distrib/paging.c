@@ -106,11 +106,12 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len) {
 */
 void map_page_pid(int pid) {
   int phys_addr = KERNEL_PAGE + pid * TASK_SIZE;
-  page_dir[32].present = 1;
-  page_dir[32].rw = 1;
-  page_dir[32].us = 1;
-  page_dir[32].size = 1;
-  page_dir[32].aligned_address = phys_addr >> 12;
+  int page_idx = 32 + pid;
+  page_dir[page_idx].present = 1;
+  page_dir[page_idx].rw = 1;
+  page_dir[page_idx].us = 1;
+  page_dir[page_idx].size = 1;
+  page_dir[page_idx].aligned_address = phys_addr >> 12;
 
   tlb_flush();
 }
