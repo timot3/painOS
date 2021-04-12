@@ -39,7 +39,7 @@ file_op_table_t stdout_table = {
 };
 
 char pid_arr[PROCESS_LIMIT] = {0, 0};
-
+int32_t curr_pid = 0; 
 int32_t halt (uint8_t status) {
     ret_status = status;
     return status;
@@ -69,6 +69,7 @@ int assign_pid(void){
     for(i=0; i<PROCESS_LIMIT; i++){
         if(pid_arr[i]==0){
             pid_arr[i] = 1;
+            curr_pid = i;
             return i;
         }
     }
@@ -190,11 +191,10 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
  */
 int32_t open (const uint8_t* filename) {
     
-    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
     dentry_t tmp_dentry;
     file_op_table_t* tmp_f_ops;
     int i = 0, asm_ret_val;
-    fd_items_t fda[MAX_OPEN_FILES] = pcb->fd_items;
     // check if valid name
     // check null
     if (filename[0] == '\0'){
@@ -207,7 +207,7 @@ int32_t open (const uint8_t* filename) {
     // handle stdin
     if (strncmp((int8_t*)filename, (int8_t*)"stdin", 5)){
         // stdin is index0
-        fda[0].file_op_jmp = stdin_table;
+        pcb->fd_items[0].file_op_jmp = stdin_table;
         if(set_active_flag(0, ACTIVE_FLAG))
             return 0; // return fd
         else
@@ -218,7 +218,7 @@ int32_t open (const uint8_t* filename) {
     // handle stdout
     if (strncmp((int8_t*)filename, (int8_t*)"stdout", 6)){
         // stdout is index1
-        fda[1].file_op_jmp = stdin_table;
+        pcb->fd_items[1].file_op_jmp = stdout_table;
         if (set_active_flag(1, ACTIVE_FLAG))
             return 1; // return fd
         else
@@ -236,7 +236,7 @@ int32_t open (const uint8_t* filename) {
     for (i=0; i<MAX_OPEN_FILES; i++){
         if (i==0 || i==1)
             continue;
-        if (fda[i].flags & ACTIVE_FLAG_MASK == 0) // check if active
+        if ((pcb->fd_items[i].flags & ACTIVE_FLAG_MASK) == 0) // check if active
             break;
     }
     // i stores open spot 
@@ -254,7 +254,7 @@ int32_t open (const uint8_t* filename) {
 
     // call fopen, trying with asm first
     asm volatile("pushl	%2;"
-				 "call  %1;"
+				 "call  *%1;"
 		 		 "movl 	%%eax,%0;"
 		 		 "addl	$4,%%esp;"
 		 		 : "=r"(asm_ret_val)
@@ -266,24 +266,24 @@ int32_t open (const uint8_t* filename) {
     // if success set struct data - set flag to active (3rd bit (& 4) == 1 )
     if (!set_active_flag(i, ACTIVE_FLAG))
         return -1; // failed
-    fda[i].file_op_jmp = *tmp_f_ops;
-    fda[i].inode = dentry.inode;
-    fda[i].file_position = 0;
+    pcb->fd_items[i].file_op_jmp = *tmp_f_ops;
+    pcb->fd_items[i].inode = tmp_dentry.inode;
+    pcb->fd_items[i].file_position = 0;
     return i;
 }
 
 int32_t set_active_flag (int32_t fd, int32_t new_status){
-    fd_items_t fda_item = pcb->fd_items[fd];
-    uint32_t flags = fda_item.flags;
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+    uint32_t flags = pcb->fd_items[fd].flags;
     if (new_status == 1){  // if setting to active
-        if (flags & ACTIVE_FLAG_MASK > 0)
+        if ((flags & ACTIVE_FLAG_MASK) > 0)
             return 0; 
         else{
             flags |= ACTIVE_FLAG_MASK;
         }
     }
     else if (new_status == 0){
-        if (flags & ACTIVE_FLAG_MASK == 0)
+        if ((flags & ACTIVE_FLAG_MASK) == 0)
             return 0; 
         else{
             flags ^= ACTIVE_FLAG_MASK; // ==4 
@@ -304,10 +304,9 @@ int32_t set_active_flag (int32_t fd, int32_t new_status){
  */
 
 int32_t close (int32_t fd) {
-    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
 
     int i = 0, asm_ret_val;
-    fd_items_t fda[MAX_OPEN_FILES] = pcb->fd_items;
     // dont let them close stdin/out
     if(fd == 0 || fd == 1)
         return -1;
@@ -317,17 +316,17 @@ int32_t close (int32_t fd) {
         return -1;
     
     // dont let them close inactive files
-    if(fda[fd].flags & ACTIVE_FLAG_MASK == 0)
+    if((pcb->fd_items[fd].flags & ACTIVE_FLAG_MASK) == 0)
         return -1;
 
 
     // call fclose, handle failed fclose
     asm volatile("pushl	%2;"
-				 "call  %1;"
+				 "call  *%1;"
 		 		 "movl 	%%eax,%0;"
 		 		 "addl	$4,%%esp;"
 		 		 : "=r"(asm_ret_val)
-		 		 : "g" (fda[fd].file_op_jmp.close), "g" (fd)
+		 		 : "g" (pcb->fd_items[fd].file_op_jmp.close), "g" (fd)
 		 		 : "eax");
 
     // check if successful 
@@ -338,9 +337,8 @@ int32_t close (int32_t fd) {
     if (!set_active_flag(i, INACTIVE_FLAG))
         return -1; // failed
     
-    fda[fd].file_op_jmp = NULL;
-    fda[fd].inode = -1;
-    fda[fd].file_position = -1;
+    pcb->fd_items[fd].inode = -1;
+    pcb->fd_items[fd].file_position = -1;
     return 0;
 }
 int32_t getargs (uint8_t* buf, int32_t nbytes) {

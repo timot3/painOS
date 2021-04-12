@@ -5,6 +5,7 @@
 #include "rtc.h"
 #include "terminal.h"
 #include "filesys.h"
+#include "syscall.h"
 
 #define PASS 1
 #define FAIL 0
@@ -567,8 +568,9 @@ void launch_tests() {
 	// TEST_OUTPUT("Test test_open_bad_file", test_open_bad_file()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_index", test_read_dentry_by_index()); //works
 	// TEST_OUTPUT("Test test_read_dentry_by_name", test_read_dentry_by_name()); //works
-	TEST_OUTPUT("Test test_file_read", test_file_read()); //works
-	TEST_OUTPUT("Test test_read_large", test_read_large()); //works
-	TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //bad
+	// TEST_OUTPUT("Test test_file_read", test_file_read()); //works
+	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
+	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //works
+	execute((uint8_t*)"shell");
 
 }
