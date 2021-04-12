@@ -50,8 +50,7 @@ int32_t halt (uint8_t status) {
     // 1.  if base shell, re-execute base shell
     if (pcb->parent.ksp == 0 && pcb->parent.kbp == 0) {
         // 7 is the length of our string
-        uint8_t shell_cmd[7] = "shell\0";
-        execute(shell_cmd);
+        execute((uint8_t*)"shell");
     }
     //else:
     //2.  close all file descriptors
