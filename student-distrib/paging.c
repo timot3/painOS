@@ -93,3 +93,20 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len){
       page_table_alt[i]=page_table[i];
    }
 }
+
+/*
+* map_page_pid
+*   DESCRIPTION: map virtual address to physical address based on pid https://wiki.osdev.org/Paging#Enabling
+*   INPUTS: pid
+*   OUTPUTS: maps virtual address to physical address
+*   RETURN VALUE: none
+*/
+void map_page_pid(int pid){
+  int phys_addr = KERNEL_PAGE + pid * TASK_SIZE;
+  page_dir[32].present = 1;
+  page_dir[32].rw = 1;
+  page_dir[32].us = 1;
+  page_dir[32].size = 1;
+  page_dir[32].aligned_address = phys_addr;
+  tlb_flush();
+}

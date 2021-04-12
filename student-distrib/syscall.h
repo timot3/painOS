@@ -4,6 +4,7 @@
 #include "terminal.h"
 #include "filesys.h"
 #include "rtc.h"
+#include "paging.h"
 
 #define CMD_MAX_LEN 32
 #define PROCESS_LIMIT 2
@@ -13,7 +14,12 @@
 #define E 0x45
 #define L 0x4c
 #define F 0x46
+#define BUFFER_START 0x8048000 
+#define MAX_FILE_SIZE 0x400000
 
+#define ACTIVE_FLAG_MASK 4
+#define ACTIVE_FLAG 1
+#define INACTIVE_FLAG 0
 
 typedef struct file_op_table {
     int32_t (*open)(const uint8_t *filename);
@@ -39,7 +45,7 @@ typedef struct pcb {
     fd_items_t fd_items[MAX_OPEN_FILES];
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     uint32_t pid;
-    parent_pcb_t parent;
+    parent_pcb_t* parent;
     uint32_t esp;
     uint32_t ebp;
     uint32_t ss0;
@@ -53,6 +59,7 @@ int32_t execute (const uint8_t* command);
 int32_t read (int32_t fd, void* buf, int32_t nbytes);
 int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t open (const uint8_t* filename);
+int32_t set_active_flag (int32_t fd, int32_t new_status);
 int32_t close (int32_t fd);
 int32_t getargs (uint8_t* buf, int32_t nbytes);
 int32_t vidmap (uint8_t** screen_start);

@@ -9,6 +9,10 @@
 #define KERNEL_LOCATION 0x400000 // for the kernel block
 #define VID_MEM 0xB8 // for vid mem block
 
+#define VIRT_PAGE_NUM 32
+#define TASK_SIZE 0x400000
+#define KERNEL_PAGE 0x800000
+
 // PDE struct
 typedef struct page_dir_entry
 {
@@ -63,5 +67,7 @@ extern void paging_init();
 extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len);
 // For test functions, copies a paging table
 extern void get_paging_table(page_table_entry_t *page_table_alt, int len);
+
+void map_page_pid(int pid);
 
 #endif /* PAGING_H */

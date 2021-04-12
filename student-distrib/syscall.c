@@ -40,21 +40,80 @@ file_op_table_t stdout_table = {
 
 char pid_arr[PROCESS_LIMIT] = {0, 0};
 
+int32_t curr_pid = 0; 
+
 int32_t halt (uint8_t status) {
-    ret_status = status;
-    return status;
+    int i;
+    // get current pcb
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    if (pcb == NULL) return -1;
+    // if base shell, re-execute base shell
+    if (pcb->parent.ksp == 0 && pcb->parent.kbp == 0) {
+        execute("shell");
+    }
+    //else:
+    // close all file descriptors
+    for (i = 0; i < MAX_OPEN_FILES; i++) {
+        fd_items_t curr_fd_item = pcb->fd_items[i];
+        // 3rd bit of flag is the "not in use" bit
+        // so bitwise anding it with 0x4 == 0b100 will
+        // check if file is in use
+        if (curr_fd_item.flags & 0x4 != 0) {
+            // mark file as not present
+            curr_fd_item.flags ^= 0x4;
+            // call close on file
+            curr_fd_item.file_op_jmp.close(i);
+        }
+    }
+    // set up file state for return to parent
+
+    // unassign current pid
+    unassign_pid(pcb->pid);
+    // instead assign it to the parent pid
+    pcb->pid = pcb->parent.pid;
+
+    // restore parent's paging and flush the tlb
+
+    // set tss to point to parent's stack
+
+    // swap to saved parent's stack state and return from execute
+
+    // must return with value of 256
+
+    // ret_status = status;
+    return 256;
 
 }
-
+/*
+ * execute
+ *   DESCRIPTION: executs the command, lots of helper functions see them for more details
+ *   INPUTS: command
+ *   RETURN VALUE:
+ */
 int32_t execute (const uint8_t* command) {
+    //get pid if none avaialbe fail
     int pid = assign_pid();
     if (pid == -1) return -1;
+
+    //get pcb and initialize
     pcb_t* pcb = allocate_pcb(pid);
     int parse = parse_command(command, pcb, pid);
+
+    //parse command, if bad fail
     if (parse == -1){
         unassign_pid(pid);
         return -1;
     }
+
+    //set up page
+    map_page_pid(pid);
+
+    //copy user program to page
+    dentry_t dentry;
+    read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
+
+
+
 return -1;
 }
 
@@ -69,6 +128,7 @@ int assign_pid(void){
     for(i=0; i<PROCESS_LIMIT; i++){
         if(pid_arr[i]==0){
             pid_arr[i] = 1;
+            curr_pid = i;
             return i;
         }
     }
@@ -97,12 +157,13 @@ int unassign_pid(int pid){
  *   RETURN VALUE: idx of most recently used pid or -1 if none
  */
 int get_latest_pid(){
-    int i;
-    for (i = 0; i < PROCESS_LIMIT; i++) {
-        if (pid_arr[i] == 1)
-            return i;
-    }
-    return -1;
+    // int i;
+    // for (i = 0; i < PROCESS_LIMIT; i++) {
+    //     if (pid_arr[i] == 1)
+    //         return i;
+    // }
+    // return -1;
+    return curr_pid;
 }
 
 /*
@@ -135,6 +196,9 @@ pcb_t* allocate_pcb(int pid){
     pcb -> fd_items[STDOUT_IDX].inode = 0;
     pcb -> fd_items[STDOUT_IDX].file_position = 0;
     pcb -> fd_items[STDOUT_IDX].flags = 1;
+
+    // set parent to null
+    pcb->parent = (parent_pcb_t*)NULL;
 
     return pcb;
 }
@@ -240,16 +304,173 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
 
     return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
+/*
+ * syscall open
+ *   DESCRIPTION: Opens a file
+ *   INPUTS: none
+ *   OUTPUTS: None
+ *   RETURN VALUE: None
+ *   Side Effects:
+ * * Allocates fda entry for fname
+ * * * find free entry
+ * * * Setup fops
+ * * * inode
+ * * * file_pos
+ * * * flags
+ * * calls fop fopen 
+ * * returns fd
+ */
 int32_t open (const uint8_t* filename) {
+    
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+    dentry_t tmp_dentry;
+    file_op_table_t* tmp_f_ops;
+    int i = 0, asm_ret_val;
+    // check if valid name
+    // check null
+    if (filename[0] == '\0'){
+        return -1;
+    }
+    // check len
+    if (strlen((int8_t*)filename) > 33){
+        return -1;
+    }
+    // handle stdin
+    if (strncmp((int8_t*)filename, (int8_t*)"stdin", 5)){
+        // stdin is index0
+        pcb->fd_items[0].file_op_jmp = stdin_table;
+        if(set_active_flag(0, ACTIVE_FLAG))
+            return 0; // return fd
+        else
+            return -1; // failed
+    }
 
-    uint32_t rval;
 
-    return rval;
+    // handle stdout
+    if (strncmp((int8_t*)filename, (int8_t*)"stdout", 6)){
+        // stdout is index1
+        pcb->fd_items[1].file_op_jmp = stdout_table;
+        if (set_active_flag(1, ACTIVE_FLAG))
+            return 1; // return fd
+        else
+            return -1; // failed
+    }
 
+    
+    // check if file exists
+    if (read_dentry_by_name(filename, &tmp_dentry) == -1){
+        return -1;
+    }
+    // dentry info is in tmp_dentry
 
+    // check for open spot in pcb
+    for (i=0; i<MAX_OPEN_FILES; i++){
+        if (i==0 || i==1)
+            continue;
+        if ((pcb->fd_items[i].flags & ACTIVE_FLAG_MASK) == 0) // check if active
+            break;
+    }
+    // i stores open spot 
+
+    
+    // grab fops
+    if(tmp_dentry.type == 0) // dentry type 0 is RTC
+        tmp_f_ops = &rtc_table;
+    else if (tmp_dentry.type == 1) // dentry type 1 is directory
+        tmp_f_ops = &dir_table;
+    else if (tmp_dentry.type == 2) // dentry type 2 is file
+        tmp_f_ops = &file_table;
+    else  // no other supported dentry types
+        return -1;
+
+    // call fopen, trying with asm first
+    asm volatile("pushl	%2;"
+				 "call  *%1;"
+		 		 "movl 	%%eax,%0;"
+		 		 "addl	$4,%%esp;"
+		 		 : "=r"(asm_ret_val)
+		 		 : "g" ((*tmp_f_ops).open), "g" (filename)
+		 		 : "eax");
+
+    if (asm_ret_val == -1)
+        return -1;
+    // if success set struct data - set flag to active (3rd bit (& 4) == 1 )
+    if (!set_active_flag(i, ACTIVE_FLAG))
+        return -1; // failed
+    pcb->fd_items[i].file_op_jmp = *tmp_f_ops;
+    pcb->fd_items[i].inode = tmp_dentry.inode;
+    pcb->fd_items[i].file_position = 0;
+    return i;
 }
+
+int32_t set_active_flag (int32_t fd, int32_t new_status){
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+    uint32_t flags = pcb->fd_items[fd].flags;
+    if (new_status == 1){  // if setting to active
+        if ((flags & ACTIVE_FLAG_MASK) > 0)
+            return 0; 
+        else{
+            flags |= ACTIVE_FLAG_MASK;
+        }
+    }
+    else if (new_status == 0){
+        if ((flags & ACTIVE_FLAG_MASK) == 0)
+            return 0; 
+        else{
+            flags ^= ACTIVE_FLAG_MASK; // ==4 
+        }
+    }
+    return 1; // success
+}
+/*
+ * syscall close
+ *   DESCRIPTION: close a file
+ *   INPUTS: none
+ *   OUTPUTS: None
+ *   RETURN VALUE: None
+ *   Side Effects:
+ * * Unallocates fda entry for fname
+ * * calls fop fclose
+ * * returns fd
+ */
+
 int32_t close (int32_t fd) {
-    return -1;
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+
+    int i = 0, asm_ret_val;
+    // dont let them close stdin/out
+    if(fd == 0 || fd == 1)
+        return -1;
+    
+    // bounds check
+    if(fd < 0 || fd >= MAX_OPEN_FILES)
+        return -1;
+    
+    // dont let them close inactive files
+    if((pcb->fd_items[fd].flags & ACTIVE_FLAG_MASK) == 0)
+        return -1;
+
+
+    // call fclose, handle failed fclose
+    asm volatile("pushl	%2;"
+				 "call  *%1;"
+		 		 "movl 	%%eax,%0;"
+		 		 "addl	$4,%%esp;"
+		 		 : "=r"(asm_ret_val)
+		 		 : "g" (pcb->fd_items[fd].file_op_jmp.close), "g" (fd)
+		 		 : "eax");
+
+    // check if successful 
+    if (asm_ret_val == -1)
+        return -1;
+    
+    // set flag to free
+    if (!set_active_flag(i, INACTIVE_FLAG))
+        return -1; // failed
+    
+    pcb->fd_items[fd].inode = -1;
+    pcb->fd_items[fd].file_position = -1;
+    return 0;
 }
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
     return -1;
