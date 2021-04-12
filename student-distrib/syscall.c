@@ -59,8 +59,9 @@ int32_t execute (const uint8_t* command) {
     if (pid == -1) return -1;
 
     //get pcb and initialize
+    dentry_t dentry;
     pcb_t* pcb = allocate_pcb(pid);
-    int parse = parse_command(command, pcb, pid);
+    int parse = parse_command(command, pcb, pid, &dentry);
 
     //parse command, if bad fail
     if (parse == -1){
@@ -72,8 +73,9 @@ int32_t execute (const uint8_t* command) {
     map_page_pid(pid);
 
     //copy user program to page
-    dentry_t dentry;
-    read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
+    printf("JHHAH %d", dentry.inode);
+    int p = read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
+    printf("hjjjjjj %d",p);
 
     //setup TSS for good context switching
     setup_TSS(pid);
@@ -190,7 +192,7 @@ pcb_t* allocate_pcb(int pid){
  *   INPUTS: command and pcb_pointer
  *   RETURN VALUE: if successful 1, if fail -1
  */
-int parse_command(const uint8_t* command, pcb_t* pcb, int pid) {
+int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry) {
     uint8_t exec_buf[CMD_MAX_LEN];
     int i;
     int j = 0;
@@ -235,6 +237,8 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid) {
     file_read(0, first_4_char, 4);
     if (first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != L || first_4_char[3] != F)
         return -1;
+
+    read_dentry_by_name(exec_buf, dentry);
 
     return 1;
 }

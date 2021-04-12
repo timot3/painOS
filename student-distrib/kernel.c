@@ -13,6 +13,7 @@
 #include "paging.h"
 #include "filesys.h"
 #include "keyboard.h"
+#include "syscall.h"
 
 #define RUN_TESTS
 
@@ -178,7 +179,7 @@ void entry(unsigned long magic, unsigned long addr)
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-    uint8_t progName[32] = "shell\0";
+    uint8_t progName[32] = "testprint\0";
     execute(progName);
 
     /* Spin (nicely, so we don't chew up cycles) */

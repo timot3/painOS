@@ -15,7 +15,7 @@
 #define E 0x45
 #define L 0x4c
 #define F 0x46
-#define BUFFER_START 0x8048000 
+#define BUFFER_START 0x8048000
 #define MAX_FILE_SIZE 0x400000
 
 #define ACTIVE_FLAG_MASK 4
@@ -68,7 +68,7 @@ int unassign_pid(int pid);
 int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
 pcb_t* allocate_pcb(int pid);
-int parse_command(const uint8_t* command, pcb_t* pcb, int pid);
+int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry);
 void setup_TSS(int pid);
 
 #define O_RDONLY         00
