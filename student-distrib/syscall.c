@@ -468,6 +468,14 @@ int32_t open (const uint8_t* filename) {
     return i;
 }
 
+/*
+set_active_flag
+DESCRIPTION: Sets fd entry to the new status passed in.
+iNPUTS: fd -- file descriptor, new_status -- new status to set to
+OUTPUTS: none
+SIDE EFFECTS: changes fd's flag to new status
+RETURNS: 0 on fail, 1 on success.
+*/
 int32_t set_active_flag (int32_t fd, int32_t new_status){
     pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
     uint32_t flags = pcb->fd_items[fd].flags;
@@ -537,18 +545,50 @@ int32_t close (int32_t fd) {
     pcb->fd_items[fd].file_position = -1;
     return 0;
 }
+/*
+getargs
+DESCRIPTION: gets args from buffer
+iNPUTS: buf -- buffer, nbytes -- number of bytes to read
+OUTPUTS: none
+SIDE EFFECTS: none --not yet implemented 
+RETURNS: -1
+*/
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
     return -1;
 
 }
+/*
+vidmap
+DESCRIPTION: not yet implemented
+iNPUTS: not yet implemented
+OUTPUTS: not yet implemented
+SIDE EFFECTS: not yet implemented
+RETURNS: -1
+*/
 int32_t vidmap (uint8_t** screen_start) {
     return -1;
 
 }
+/*
+set_handler
+DESCRIPTION: not yet implemented
+iNPUTS: not yet implemented
+OUTPUTS: not yet implemented
+SIDE EFFECTS: not yet implemented
+RETURNS: -1
+*/
 int32_t set_handler (int32_t signum, void* handler_address) {
     return -1;
 
 }
+/*
+sigreturn 
+DESCRIPTION: not yet implemented
+iNPUTS: not yet implemented
+OUTPUTS: not yet implemented
+SIDE EFFECTS: not yet implemented
+RETURNS: -1
+*/
 int32_t sigreturn (void) {
     return -1;
 

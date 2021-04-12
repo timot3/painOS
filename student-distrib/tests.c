@@ -538,6 +538,102 @@ int test_file_read_exe() {
 }
 
 /* Checkpoint 3 tests */
+
+/* test_bad_input_read
+ * Tests garbage input to the read syscall
+ * Inputs: None
+ * None
+ * Side Effects: None
+ * Coverage: syscalls
+ * Files: syscall.c
+ */
+int test_bad_input_read() {
+	int ret;
+	ret = read(-1, (void*)"frame0.txt", EIGHT_BYTE);
+	ret = read(999, (void*)"frame0.txt", EIGHT_BYTE);
+	if (ret != -1) return FAIL;
+
+	// bad filename
+	ret = read(1, (void*)NULL, EIGHT_BYTE);
+	if (ret != -1) return FAIL;
+
+	// invalid bytes
+	ret = read(1, (void*)"frame0.txt", -1);
+	if (ret != -1) return FAIL;
+
+	return PASS;
+}
+
+/* test_bad_input_write
+ * Tests garbage input to the write syscall
+ * Inputs: None
+ * None
+ * Side Effects: None
+ * Coverage: syscalls
+ * Files: syscall.c
+ */
+int test_bad_input_write() {
+	// bad fd
+	int ret;
+	ret = write(-1, (void*)"frame0.txt", EIGHT_BYTE);
+	ret = write(999, (void*)"frame0.txt", EIGHT_BYTE);
+	if (ret != -1) return FAIL;
+
+	// bad filename
+	ret = write(1, (void*)NULL, EIGHT_BYTE);
+	if (ret != -1) return FAIL;
+
+	// invalid bytes
+	ret = write(1, (void*)"frame0.txt", -1);
+	if (ret != -1) return FAIL;
+
+	return PASS;
+}
+/* test_bad_input_open
+ * Tests garbage input to the open syscall
+ * Inputs: None
+ * None
+ * Side Effects: None
+ * Coverage: syscalls
+ * Files: syscall.c
+ */
+int test_bad_input_open() {
+	// bad filename
+	int ret;
+	// if string > 32 characters
+	ret = open((uint8_t*)"hufsnduiejkbsd, bfliuksjbdjfklsabdjk");
+	if (ret != -1) return FAIL;
+	// if string is null
+	ret = open((uint8_t*)NULL);
+	if (ret != -1) return FAIL;
+	return PASS;
+}
+/* test_bad_input_close
+ * Tests garbage input to the close syscall
+ * Inputs: None
+ * None
+ * Side Effects: None
+ * Coverage: syscalls
+ * Files: syscall.c
+ */
+int test_bad_input_close() {
+	int ret;
+    // dont let them close stdin/out
+	ret = close(0);
+	if (ret != -1) return FAIL;
+
+	ret = close(1);
+	if (ret != -1) return FAIL;
+
+    // bounds check
+	ret = close(-1);
+	if (ret != -1) return FAIL;
+
+	ret = close(9);
+	if (ret != -1) return FAIL;
+
+	return PASS;
+}
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -572,5 +668,12 @@ void launch_tests() {
 
 	// CHECKPOINT 3
 	// execute((uint8_t*)"shell");
+	// execute((uint8_t*)"testprint");
+	execute((uint8_t*)"ls");
+	// TEST_OUTPUT("Test bad input read", test_bad_input_read());
+	// TEST_OUTPUT("Test bad input write", test_bad_input_write());
+	// TEST_OUTPUT("Test bad input open", test_bad_input_open());
+	// TEST_OUTPUT("Test bad input close", test_bad_input_close());
+
 
 }

@@ -28,6 +28,12 @@ int test_read_large();
 int test_file_read_exe();
 
 
+// checkpoint 3 tests
+int test_bad_input_read();
+int test_bad_input_write();
+int test_bad_input_open();
+int test_bad_input_close();
+
 void launch_tests();
 
 
