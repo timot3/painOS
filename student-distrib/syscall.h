@@ -5,6 +5,7 @@
 #include "filesys.h"
 #include "rtc.h"
 #include "paging.h"
+#include "x86_desc.h"
 
 #define CMD_MAX_LEN 32
 #define PROCESS_LIMIT 2
@@ -48,8 +49,6 @@ typedef struct pcb {
     parent_pcb_t parent;
     uint32_t esp;
     uint32_t ebp;
-    uint32_t ss0;
-    uint32_t esp0;
 } pcb_t;
 
 
@@ -72,6 +71,7 @@ int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
 pcb_t* allocate_pcb(int pid);
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid);
+void setup_TSS(pcb_t* pcb);
 
 #define O_RDONLY         00
 #define O_WRONLY         01
