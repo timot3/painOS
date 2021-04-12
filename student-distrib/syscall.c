@@ -49,7 +49,9 @@ int32_t halt (uint8_t status) {
     if (pcb == NULL) return -1;
     // 1.  if base shell, re-execute base shell
     if (pcb->parent.ksp == 0 && pcb->parent.kbp == 0) {
-        execute("shell");
+        // 7 is the length of our string
+        uint8_t shell_cmd[7] = "shell\0";
+        execute(shell_cmd);
     }
     //else:
     //2.  close all file descriptors
@@ -58,7 +60,7 @@ int32_t halt (uint8_t status) {
         // 3rd bit of flag is the "not in use" bit
         // so bitwise anding it with 0x4 == 0b100 will
         // check if file is in use
-        if (curr_fd_item.flags & 0x4 != 0) {
+        if ((curr_fd_item.flags & 0x4) != 0) {
             // mark file as not present
             curr_fd_item.flags ^= 0x4;
             // call close on file
@@ -80,14 +82,13 @@ int32_t halt (uint8_t status) {
 
     // 5.  set tss to point to parent's stack
     // set esp0 to point to base of parent's kernel stack
-    pcb->esp0 = pcb->parent.kbp;
+    tss.esp0 = pcb->parent.kbp;
     // set ss0 to kernel data segment
-    pcb->ss0 = KERNEL_DS;
+    tss.ss0 = KERNEL_DS;
 
     // 6.  swap to saved parent's stack state and return from execute
 
     // must return with value of 256
-
     // ret_status = status;
     return 256;
 
@@ -208,17 +209,19 @@ pcb_t* allocate_pcb(int pid){
     pcb -> fd_items[STDOUT_IDX].flags = 1;
 
     // set parent to null
-    pcb->parent = (parent_pcb_t*)NULL;
+    pcb->parent.ksp = 0;
+    pcb->parent.kbp = 0;
+
 
     pcb -> pid = pid;
 
-    int ksp
-    volatile asm (
+    int ksp;
+    asm volatile (
         "movl %%esp, %0": "=r" (ksp)
     );
 
-    int kbp
-    volatile asm (
+    int kbp;
+    asm volatile (
         "movl %%ebp, %0": "=r" (kbp)
     );
 
@@ -330,11 +333,11 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
     return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
 
-void setup_TSS(int pid){
-//ss0 at kernel data segment
-tss.ss0 = KERNEL_DS;
-//esp0 at base of k stack
-tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
+void setup_TSS(int pid) {
+    //ss0 at kernel data segment
+    tss.ss0 = KERNEL_DS;
+    //esp0 at base of k stack
+    tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
 }
 
 /*

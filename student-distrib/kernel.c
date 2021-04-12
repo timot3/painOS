@@ -13,8 +13,9 @@
 #include "paging.h"
 #include "filesys.h"
 #include "keyboard.h"
+#include "syscall.h"
 
-#define RUN_TESTS
+// #define RUN_TESTS
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -178,6 +179,9 @@ void entry(unsigned long magic, unsigned long addr)
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
+    // 7 is the length of the shell cmd
+    uint8_t shell_cmd[7] = "shell\0";
+    execute(shell_cmd);
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile(".1: hlt; jmp .1;");
