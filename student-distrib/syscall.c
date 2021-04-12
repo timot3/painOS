@@ -92,11 +92,25 @@ int32_t execute (const uint8_t* command) {
     pcb -> parent.ksp = ksp;
     pcb -> parent.kbp = kbp;
 
-    //iret context switch
-    // asm volatile(
-    //
-    //     "iret;"
-    // );
+    //get starting EIP at 24 bytes
+    uint8_t EIPbuf[4];
+    read_data(dentry.inode, 24, EIPbuf, 4);
+    uint32_t EIP = *((uint32_t*)EIPbuf);
+
+    //iret context switch, set EIP, CS, flags, stack address, ss
+    asm volatile(
+        "pushl %0"
+        "pushl %1"
+        "pushfl"
+        "popl %eax"
+        "orl $0x200, %%eax"
+        "pushl %eax"
+        "pushl %2"
+        "pushl %3"
+        "iret;" 
+        :
+        : "g" (USER_DS), "g" (USER_PAGE_BOT), "g" (USER_CS), "g" (EIP)
+    );
 
     return -1;
 }
