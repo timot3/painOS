@@ -1,6 +1,5 @@
 #include "syscall.h"
 #include "filesys.h"
-
 volatile uint8_t ret_status = -1;
 
 file_op_table_t rtc_table = {
@@ -90,9 +89,10 @@ int32_t halt (uint8_t status) {
         "movl %0, %%eax;"
             : 
             : "g" (status)
+            : "eax"
     );
 
-    goto execute_return;
+    asm volatile ("jmp execute_return");
     // must return with value of 256
     // ret_status = status;
     return 256;
@@ -146,7 +146,7 @@ int32_t execute (const uint8_t* command) {
     //iret context switch
     context_switch();
 
-execute_return:
+    asm volatile ("execute_return:");
     return -1;
 }
 
@@ -306,7 +306,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for write-only
-    if (file_item.flags & READ_WRITE_MASK == O_WRONLY) {
+    if ((file_item.flags & READ_WRITE_MASK) == O_WRONLY) {
         printf("This file is write only. You can't read it.\n");
         return -1;
     }
@@ -333,7 +333,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for read-only
-    if (file_item.flags & READ_WRITE_MASK == O_RDONLY) {
+    if ((file_item.flags & READ_WRITE_MASK) == O_RDONLY) {
         printf("This file is read only. You can't write to it.\n");
         return -1;
     }

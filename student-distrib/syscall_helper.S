@@ -24,11 +24,11 @@ syscall_help:
     decl %eax
     call *syscall_table(, %eax, 4)
 
-return_syscall:
     # restore argument registers
     popl %ebx
     popl %ecx
     popl %edx
+    jmp return_syscall
 
 oob_syscall:
     movl $-1, %eax
