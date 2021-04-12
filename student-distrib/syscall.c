@@ -93,7 +93,10 @@ int32_t execute (const uint8_t* command) {
     pcb -> parent.kbp = kbp;
 
     //iret context switch
-    context_switch();
+    asm volatile(
+
+        "iret;"
+    );
 
     return -1;
 }
