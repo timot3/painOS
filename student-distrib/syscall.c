@@ -97,7 +97,7 @@ int32_t execute (const uint8_t* command) {
     read_data(dentry.inode, 24, EIPbuf, 4);
     uint32_t EIP = *((uint32_t*)EIPbuf);
 
-    //iret context switch, set EIP, CS, flags, stack address, ss
+    //iret context switch, set EIP, CS, flags (set interrupt flag manually), user stack address, ss
     asm volatile(
         "pushl %0"
         "pushl %1"
