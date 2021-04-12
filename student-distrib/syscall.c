@@ -81,15 +81,17 @@ int32_t halt (uint8_t status) {
 
     // 5.  set tss to point to parent's stack
     // set esp0 to point to base of parent's kernel stack
-    tss.esp0 = pcb->parent.kbp;
+    tss.esp0 = pcb->parent.ksp;
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
 
     // 6.  swap to saved parent's stack state and return from execute
     asm volatile (
         "movl %0, %%eax;"
+        "movl %1, %%esp;"
+        "movl %2, %%ebp;"
             : 
-            : "g" (status)
+            : "g" (status), "g" (pcb->parent.ksp), "g" (pcb->parent.kbp)
             : "eax"
     );
 
@@ -236,13 +238,13 @@ pcb_t* allocate_pcb(int pid){
     pcb -> fd_items[STDIN_IDX].file_op_jmp = stdin_table;
     pcb -> fd_items[STDIN_IDX].inode = 0;
     pcb -> fd_items[STDIN_IDX].file_position = 0;
-    pcb -> fd_items[STDIN_IDX].flags = 1;
+    pcb -> fd_items[STDIN_IDX].flags = 1 + 4;
 
     //stdout in position 1
     pcb -> fd_items[STDOUT_IDX].file_op_jmp = stdout_table;
     pcb -> fd_items[STDOUT_IDX].inode = 0;
     pcb -> fd_items[STDOUT_IDX].file_position = 0;
-    pcb -> fd_items[STDOUT_IDX].flags = 1;
+    pcb -> fd_items[STDOUT_IDX].flags = 1 + 4;
 
     // set parent to null
     pcb->parent.ksp = 0;

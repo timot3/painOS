@@ -179,7 +179,7 @@ void entry(unsigned long magic, unsigned long addr)
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-    uint8_t progName[32] = "shell";
+    uint8_t progName[32] = "testprint";
     execute(progName);
 
     /* Spin (nicely, so we don't chew up cycles) */
