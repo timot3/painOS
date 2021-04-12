@@ -121,11 +121,27 @@ int32_t execute (const uint8_t* command) {
     dentry_t dentry;
     read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
 
+    //setup TSS for good context switching
     setup_TSS(pid);
 
+    //save current stack state
+    int ksp;
+    asm volatile(
+        "movl %%esp, %0": "=r" (ksp)
+    );
 
+    int kbp;
+    asm volatile(
+        "movl %%ebp, %0": "=r" (kbp)
+    );
 
-return -1;
+    pcb -> parent.ksp = ksp;
+    pcb -> parent.kbp = kbp;
+
+    //iret context switch
+    context_switch();
+
+    return -1;
 }
 
 /*
@@ -214,20 +230,6 @@ pcb_t* allocate_pcb(int pid){
 
 
     pcb -> pid = pid;
-
-    int ksp;
-    asm volatile (
-        "movl %%esp, %0": "=r" (ksp)
-    );
-
-    int kbp;
-    asm volatile (
-        "movl %%ebp, %0": "=r" (kbp)
-    );
-
-    pcb -> parent.ksp = ksp;
-    pcb -> parent.kbp = kbp;
-
     return pcb;
 }
 
