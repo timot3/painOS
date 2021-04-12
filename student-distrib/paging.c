@@ -110,7 +110,7 @@ void map_page_pid(int pid) {
   page_dir[32].rw = 1;
   page_dir[32].us = 1;
   page_dir[32].size = 1;
-  page_dir[32].aligned_address = phys_addr;
+  page_dir[32].aligned_address = phys_addr >> 12;
 
   tlb_flush();
 }

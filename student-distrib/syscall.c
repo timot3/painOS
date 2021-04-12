@@ -45,9 +45,10 @@ int32_t halt (uint8_t status) {
     int i;
     // get current pcb
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    pcb_t* parent = get_pcb_addr(pcb->parent.pid);
     if (pcb == NULL) return -1;
     // 1.  if base shell, re-execute base shell
-    if (pcb->parent.ksp == 0 && pcb->parent.kbp == 0) {
+    if (pcb->pid == parent->pid) {
         // 7 is the length of our string
         execute((uint8_t*)"shell");
     }
@@ -73,7 +74,7 @@ int32_t halt (uint8_t status) {
     pcb->pid = pcb->parent.pid;
 
     // 4.  restore parent's paging and flush the tlb
-
+    map_page_pid(pcb->pid);
     
     // assembly wrapper for tlb flush
     tlb_flush();
@@ -166,7 +167,7 @@ int32_t execute (const uint8_t* command) {
     );
 
     asm volatile ("execute_return:");
-    return -1;
+    return 0;
 }
 
 /*
