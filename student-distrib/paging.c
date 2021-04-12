@@ -108,5 +108,10 @@ void map_page_pid(int pid){
   page_dir[32].us = 1;
   page_dir[32].size = 1;
   page_dir[32].aligned_address = phys_addr;
-  tlb_flush();
+  // tlb_flush();
+  asm volatile("movl %%cr3, %%eax;"
+                "movl %%eax, %%cr3;"
+                :
+                :
+                : "eax", "cc");
 }

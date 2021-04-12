@@ -40,7 +40,7 @@ file_op_table_t stdout_table = {
 
 char pid_arr[PROCESS_LIMIT] = {0, 0};
 
-int32_t curr_pid = 0; 
+int32_t curr_pid = 0;
 
 int32_t halt (uint8_t status) {
     ret_status = status;
@@ -79,7 +79,7 @@ int32_t execute (const uint8_t* command) {
 
 
 
-return -1;
+    return -1;
 }
 
 /*
@@ -110,7 +110,7 @@ int unassign_pid(int pid){
     if (pid_arr[pid] == 1){
         pid_arr[pid] = 0;
         return 1;
-    } 
+    }
     else
         return -1;
 }
@@ -139,13 +139,13 @@ pcb_t* allocate_pcb(int pid){
 
     pcb -> pid = pid;
 
-    int ksp
-    volatile asm (
+    int ksp;
+    asm volatile (
         "movl %%esp, %0": "=r" (ksp)
     );
 
-    int kbp
-    volatile asm (
+    int kbp;
+    asm volatile (
         "movl %%ebp, %0": "=r" (kbp)
     );
 
@@ -161,7 +161,7 @@ pcb_t* allocate_pcb(int pid){
  *   INPUTS: command and pcb_pointer
  *   RETURN VALUE: if successful 1, if fail -1
  */
-int parse_command(const uint8_t* command, pcb_t* pcb, int pid){
+int parse_command(const uint8_t* command, pcb_t* pcb, int pid) {
     uint8_t exec_buf[CMD_MAX_LEN];
     int i;
     int j = 0;
@@ -170,9 +170,12 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid){
 
     for (i = 0; i < TERM_BUF_SIZE; i++) {
         //end of command if newline or null char
-        if (command[i] == '\0' || command[i] == '\n'){
+        if (command[i] == '\0' || command[i] == '\n') {
             if (i == 0)
                 return -1;
+
+            // Add null terminating ending
+            exec_buf[i] = '\0';
             break;
         }
 
@@ -192,7 +195,10 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid){
             j++;
     }
     //check if file exists
-    if (file_open(exec_buf) == -1) 
+    // Clear parts of exec_buf not used -> if not done file_open returns -1
+    for(i = strlen((const int8_t*)exec_buf) + 1; i < CMD_MAX_LEN; i++)
+        exec_buf[i] = 0;
+    if (file_open((const uint8_t*)exec_buf) == -1)
         return -1;
 
     //check that first four characters are Delete, E, L, F
@@ -213,11 +219,11 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
 
 }
 
-void setup_TSS(int pid){
-//ss0 at kernel data segment
-tss.ss0 = KERNEL_DS;
-//esp0 at base of k stack
-tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
+void setup_TSS(int pid) {
+    //ss0 at kernel data segment
+    tss.ss0 = KERNEL_DS;
+    //esp0 at base of k stack
+    tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
 }
 
 /*
@@ -233,11 +239,11 @@ tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
  * * * inode
  * * * file_pos
  * * * flags
- * * calls fop fopen 
+ * * calls fop fopen
  * * returns fd
  */
 int32_t open (const uint8_t* filename) {
-    
+
     pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
     dentry_t tmp_dentry;
     file_op_table_t* tmp_f_ops;
@@ -272,7 +278,7 @@ int32_t open (const uint8_t* filename) {
             return -1; // failed
     }
 
-    
+
     // check if file exists
     if (read_dentry_by_name(filename, &tmp_dentry) == -1){
         return -1;
@@ -286,9 +292,9 @@ int32_t open (const uint8_t* filename) {
         if ((pcb->fd_items[i].flags & ACTIVE_FLAG_MASK) == 0) // check if active
             break;
     }
-    // i stores open spot 
+    // i stores open spot
 
-    
+
     // grab fops
     if(tmp_dentry.type == 0) // dentry type 0 is RTC
         tmp_f_ops = &rtc_table;
@@ -324,16 +330,16 @@ int32_t set_active_flag (int32_t fd, int32_t new_status){
     uint32_t flags = pcb->fd_items[fd].flags;
     if (new_status == 1){  // if setting to active
         if ((flags & ACTIVE_FLAG_MASK) > 0)
-            return 0; 
+            return 0;
         else{
             flags |= ACTIVE_FLAG_MASK;
         }
     }
     else if (new_status == 0){
         if ((flags & ACTIVE_FLAG_MASK) == 0)
-            return 0; 
+            return 0;
         else{
-            flags ^= ACTIVE_FLAG_MASK; // ==4 
+            flags ^= ACTIVE_FLAG_MASK; // ==4
         }
     }
     return 1; // success
@@ -357,11 +363,11 @@ int32_t close (int32_t fd) {
     // dont let them close stdin/out
     if(fd == 0 || fd == 1)
         return -1;
-    
+
     // bounds check
     if(fd < 0 || fd >= MAX_OPEN_FILES)
         return -1;
-    
+
     // dont let them close inactive files
     if((pcb->fd_items[fd].flags & ACTIVE_FLAG_MASK) == 0)
         return -1;
@@ -376,14 +382,14 @@ int32_t close (int32_t fd) {
 		 		 : "g" (pcb->fd_items[fd].file_op_jmp.close), "g" (fd)
 		 		 : "eax");
 
-    // check if successful 
+    // check if successful
     if (asm_ret_val == -1)
         return -1;
-    
+
     // set flag to free
     if (!set_active_flag(i, INACTIVE_FLAG))
         return -1; // failed
-    
+
     pcb->fd_items[fd].inode = -1;
     pcb->fd_items[fd].file_position = -1;
     return 0;

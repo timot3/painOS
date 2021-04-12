@@ -515,7 +515,7 @@ int test_read_large() {
  */
 int test_file_read_exe() {
 	int i;
-	// initialize 8-kb buffer. 
+	// initialize 8-kb buffer.
 	// 8 kb is the largest size of a file in fsdir rn
 	// excluding "fish"
 	uint8_t buf[FOUR_KB * 2];
@@ -525,7 +525,7 @@ int test_file_read_exe() {
 		buf[i] = 0;
 
 	file_open(filename);
-	// read 8kb 
+	// read 8kb
 	file_read(0, buf, FOUR_KB * 2);
 	// use putc because of null chars
 	// display the first 2kb
@@ -571,6 +571,7 @@ void launch_tests() {
 	// TEST_OUTPUT("Test test_file_read", test_file_read()); //works
 	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
 	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //works
-	execute((uint8_t*)"shell");
+	// uint8_t progName[32] = "shell\0";
+	// execute(progName);
 
 }
