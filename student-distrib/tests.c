@@ -569,8 +569,8 @@ void launch_tests() {
 	// TEST_OUTPUT("Test test_file_read", test_file_read()); //works
 	// TEST_OUTPUT("Test test_read_large", test_read_large()); //works
 	// TEST_OUTPUT("Test test_file_read_exe", test_file_read_exe()); //works
-	
+
 	// CHECKPOINT 3
-	execute((uint8_t*)"shell");
+	// execute((uint8_t*)"shell");
 
 }

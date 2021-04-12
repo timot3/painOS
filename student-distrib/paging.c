@@ -1,5 +1,8 @@
 #include "paging.h"
+
+// Assembly functions from enable_paging.S
 extern void edit_paging_flags(int page_dir_addr);
+extern void tlb_flush();
 
 // align with 4KB Chunks
 page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH] __attribute__((aligned(PAGE_DIRECTORY_LENGTH * 4)));
@@ -86,7 +89,7 @@ extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len){
  *   RETURN VALUE: none
  */
 
-extern void get_paging_table(page_table_entry_t *page_table_alt, int len){
+extern void get_paging_table(page_table_entry_t *page_table_alt, int len) {
   int i;
   for(i = 0; i<len; i++)
    {
@@ -101,17 +104,13 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len){
 *   OUTPUTS: maps virtual address to physical address
 *   RETURN VALUE: none
 */
-void map_page_pid(int pid){
+void map_page_pid(int pid) {
   int phys_addr = KERNEL_PAGE + pid * TASK_SIZE;
   page_dir[32].present = 1;
   page_dir[32].rw = 1;
   page_dir[32].us = 1;
   page_dir[32].size = 1;
   page_dir[32].aligned_address = phys_addr;
-  // tlb_flush();
-  asm volatile("movl %%cr3, %%eax;"
-                "movl %%eax, %%cr3;"
-                :
-                :
-                : "eax", "cc");
+
+  tlb_flush();
 }
