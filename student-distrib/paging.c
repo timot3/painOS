@@ -106,7 +106,7 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len) {
 */
 void map_page_pid(int pid) {
   int phys_addr = KERNEL_PAGE + pid * TASK_SIZE;
-  int page_idx = 32 + pid;
+  int page_idx = CORRECT_PAGE + pid;
   page_dir[page_idx].present = 1;
   page_dir[page_idx].rw = 1;
   page_dir[page_idx].us = 1;
