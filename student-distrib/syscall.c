@@ -403,6 +403,7 @@ int32_t open (const uint8_t* filename) {
         return -1;
     }
     // handle stdin
+    // 5--> number of bytes
     if (strncmp((int8_t*)filename, (int8_t*)"stdin", 5)){
         // stdin is index0
         pcb->fd_items[0].file_op_jmp = stdin_table;
@@ -414,6 +415,7 @@ int32_t open (const uint8_t* filename) {
 
 
     // handle stdout
+    // 6 --> number of chars of "stdout"
     if (strncmp((int8_t*)filename, (int8_t*)"stdout", 6)){
         // stdout is index1
         pcb->fd_items[1].file_op_jmp = stdout_table;

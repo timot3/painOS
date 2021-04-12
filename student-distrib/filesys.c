@@ -100,7 +100,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     int i = fd, j;
     int ret = 0;
     dentry_t inputDentry;
-    uint8_t fN[11] = "file_name: ", fT[13] = ", file_type: ", fS[13] = ", file_size: ";
+    uint8_t fN[FILE_NAME_LEN_STR] = "file_name: ", fT[FILE_TYPE_STR] = ", file_type: ", fS[FILE_SIZE_STR] = ", file_size: ";
     int loc = 0;
 
     // Because TA said no to for loop here -> said to look at ls function and
