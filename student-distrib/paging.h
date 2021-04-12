@@ -12,6 +12,7 @@
 #define VIRT_PAGE_NUM 32
 #define TASK_SIZE 0x400000
 #define KERNEL_PAGE 0x800000
+#define CORRECT_PAGE 32
 
 // PDE struct
 typedef struct page_dir_entry
