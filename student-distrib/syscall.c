@@ -75,7 +75,7 @@ int32_t execute (const uint8_t* command) {
     dentry_t dentry;
     read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
 
-    setup_TSS(pcb);
+    setup_TSS(pid);
 
 
 
@@ -213,10 +213,13 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
 
 }
 
-void setup_TSS(pcb_t* pcb){
-tss.ss0 = 
-tss.esp0 = 
+void setup_TSS(int pid){
+//ss0 at kernel data segment
+tss.ss0 = KERNEL_DS;
+//esp0 at base of k stack
+tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
 }
+
 /*
  * syscall open
  *   DESCRIPTION: Opens a file
