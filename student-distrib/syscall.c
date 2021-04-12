@@ -299,7 +299,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for write-only
-    if (file_item.flags == O_WRONLY) {
+    if (file_item.flags & READ_WRITE_MASK == O_WRONLY) {
         printf("This file is write only. You can't read it.\n");
         return -1;
     }
@@ -326,7 +326,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for read-only
-    if (file_item.flags == O_RDONLY) {
+    if (file_item.flags & READ_WRITE_MASK == O_RDONLY) {
         printf("This file is read only. You can't write to it.\n");
         return -1;
     }
