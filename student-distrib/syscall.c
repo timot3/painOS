@@ -172,11 +172,176 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
     return -1;
 
 }
+/*
+ * syscall open
+ *   DESCRIPTION: Opens a file
+ *   INPUTS: none
+ *   OUTPUTS: None
+ *   RETURN VALUE: None
+ *   Side Effects:
+ * * Allocates fda entry for fname
+ * * * find free entry
+ * * * Setup fops
+ * * * inode
+ * * * file_pos
+ * * * flags
+ * * calls fop fopen 
+ * * returns fd
+ */
 int32_t open (const uint8_t* filename) {
-    return -1;
+    
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
+    dentry_t tmp_dentry;
+    file_op_table_t* tmp_f_ops;
+    int i = 0, asm_ret_val;
+    fd_items_t fda[MAX_OPEN_FILES] = pcb->fd_items;
+    // check if valid name
+    // check null
+    if (filename[0] == '\0'){
+        return -1;
+    }
+    // check len
+    if (strlen((int8_t*)filename) > 33){
+        return -1;
+    }
+    // handle stdin
+    if (strncmp((int8_t*)filename, (int8_t*)"stdin", 5)){
+        // stdin is index0
+        fda[0].file_op_jmp = stdin_table;
+        if(set_active_flag(0, ACTIVE_FLAG))
+            return 0; // return fd
+        else
+            return -1; // failed
+    }
+
+
+    // handle stdout
+    if (strncmp((int8_t*)filename, (int8_t*)"stdout", 6)){
+        // stdout is index1
+        fda[1].file_op_jmp = stdin_table;
+        if (set_active_flag(1, ACTIVE_FLAG))
+            return 1; // return fd
+        else
+            return -1; // failed
+    }
+
+    
+    // check if file exists
+    if (read_dentry_by_name(filename, &tmp_dentry) == -1){
+        return -1;
+    }
+    // dentry info is in tmp_dentry
+
+    // check for open spot in pcb
+    for (i=0; i<MAX_OPEN_FILES; i++){
+        if (i==0 || i==1)
+            continue;
+        if (fda[i].flags & ACTIVE_FLAG_MASK == 0) // check if active
+            break;
+    }
+    // i stores open spot 
+
+    
+    // grab fops
+    if(tmp_dentry.type == 0) // dentry type 0 is RTC
+        tmp_f_ops = &rtc_table;
+    else if (tmp_dentry.type == 1) // dentry type 1 is directory
+        tmp_f_ops = &dir_table;
+    else if (tmp_dentry.type == 2) // dentry type 2 is file
+        tmp_f_ops = &file_table;
+    else  // no other supported dentry types
+        return -1;
+
+    // call fopen, trying with asm first
+    asm volatile("pushl	%2;"
+				 "call  %1;"
+		 		 "movl 	%%eax,%0;"
+		 		 "addl	$4,%%esp;"
+		 		 : "=r"(asm_ret_val)
+		 		 : "g" ((*tmp_f_ops).open), "g" (filename)
+		 		 : "eax");
+
+    if (asm_ret_val == -1)
+        return -1;
+    // if success set struct data - set flag to active (3rd bit (& 4) == 1 )
+    if (!set_active_flag(i, ACTIVE_FLAG))
+        return -1; // failed
+    fda[i].file_op_jmp = *tmp_f_ops;
+    fda[i].inode = dentry.inode;
+    fda[i].file_position = 0;
+    return i;
 }
+
+int32_t set_active_flag (int32_t fd, int32_t new_status){
+    fd_items_t fda_item = pcb->fd_items[fd];
+    uint32_t flags = fda_item.flags;
+    if (new_status == 1){  // if setting to active
+        if (flags & ACTIVE_FLAG_MASK > 0)
+            return 0; 
+        else{
+            flags |= ACTIVE_FLAG_MASK;
+        }
+    }
+    else if (new_status == 0){
+        if (flags & ACTIVE_FLAG_MASK == 0)
+            return 0; 
+        else{
+            flags ^= ACTIVE_FLAG_MASK; // ==4 
+        }
+    }
+    return 1; // success
+}
+/*
+ * syscall close
+ *   DESCRIPTION: close a file
+ *   INPUTS: none
+ *   OUTPUTS: None
+ *   RETURN VALUE: None
+ *   Side Effects:
+ * * Unallocates fda entry for fname
+ * * calls fop fclose
+ * * returns fd
+ */
+
 int32_t close (int32_t fd) {
-    return -1;
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
+
+    int i = 0, asm_ret_val;
+    fd_items_t fda[MAX_OPEN_FILES] = pcb->fd_items;
+    // dont let them close stdin/out
+    if(fd == 0 || fd == 1)
+        return -1;
+    
+    // bounds check
+    if(fd < 0 || fd >= MAX_OPEN_FILES)
+        return -1;
+    
+    // dont let them close inactive files
+    if(fda[fd].flags & ACTIVE_FLAG_MASK == 0)
+        return -1;
+
+
+    // call fclose, handle failed fclose
+    asm volatile("pushl	%2;"
+				 "call  %1;"
+		 		 "movl 	%%eax,%0;"
+		 		 "addl	$4,%%esp;"
+		 		 : "=r"(asm_ret_val)
+		 		 : "g" (fda[fd].file_op_jmp.close), "g" (fd)
+		 		 : "eax");
+
+    // check if successful 
+    if (asm_ret_val == -1)
+        return -1;
+    
+    // set flag to free
+    if (!set_active_flag(i, INACTIVE_FLAG))
+        return -1; // failed
+    
+    fda[fd].file_op_jmp = NULL;
+    fda[fd].inode = -1;
+    fda[fd].file_position = -1;
+    return 0;
 }
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
     return -1;
