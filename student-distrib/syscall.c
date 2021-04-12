@@ -99,14 +99,14 @@ int32_t execute (const uint8_t* command) {
 
     //iret context switch, set EIP, CS, flags (set interrupt flag manually), user stack address, ss
     asm volatile(
-        "pushl %0"
-        "pushl %1"
-        "pushfl"
-        "popl %eax"
-        "orl $0x200, %%eax"
-        "pushl %eax"
-        "pushl %2"
-        "pushl %3"
+        "pushl %0;"
+        "pushl %1;"
+        "pushfl;"
+        "popl %%eax;"
+        "orl $0x200, %%eax;"
+        "pushl %%eax;"
+        "pushl %2;"
+        "pushl %3;"
         "iret;" 
         :
         : "g" (USER_DS), "g" (USER_PAGE_BOT), "g" (USER_CS), "g" (EIP)
