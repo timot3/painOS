@@ -63,6 +63,9 @@ typedef struct page_table_entry
 // setting the Control Registers
 extern void paging_init();
 
+// flush the tlb
+extern void tlb_flush(void);
+
 // For test functions, copies paging directory
 extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len);
 // For test functions, copies a paging table

@@ -47,12 +47,12 @@ int32_t halt (uint8_t status) {
     // get current pcb
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     if (pcb == NULL) return -1;
-    // if base shell, re-execute base shell
+    // 1.  if base shell, re-execute base shell
     if (pcb->parent.ksp == 0 && pcb->parent.kbp == 0) {
         execute("shell");
     }
     //else:
-    // close all file descriptors
+    //2.  close all file descriptors
     for (i = 0; i < MAX_OPEN_FILES; i++) {
         fd_items_t curr_fd_item = pcb->fd_items[i];
         // 3rd bit of flag is the "not in use" bit
@@ -65,18 +65,26 @@ int32_t halt (uint8_t status) {
             curr_fd_item.file_op_jmp.close(i);
         }
     }
-    // set up file state for return to parent
+    // 3.  set up file state for return to parent
 
     // unassign current pid
     unassign_pid(pcb->pid);
     // instead assign it to the parent pid
     pcb->pid = pcb->parent.pid;
 
-    // restore parent's paging and flush the tlb
+    // 4.  restore parent's paging and flush the tlb
 
-    // set tss to point to parent's stack
+    
+    // assembly wrapper for tlb flush
+    tlb_flush();
 
-    // swap to saved parent's stack state and return from execute
+    // 5.  set tss to point to parent's stack
+    // set esp0 to point to base of parent's kernel stack
+    pcb->esp0 = pcb->parent.kbp;
+    // set ss0 to kernel data segment
+    pcb->ss0 = KERNEL_DS;
+
+    // 6.  swap to saved parent's stack state and return from execute
 
     // must return with value of 256
 

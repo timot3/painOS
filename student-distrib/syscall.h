@@ -45,7 +45,7 @@ typedef struct pcb {
     fd_items_t fd_items[MAX_OPEN_FILES];
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     uint32_t pid;
-    parent_pcb_t* parent;
+    parent_pcb_t parent;
     uint32_t esp;
     uint32_t ebp;
     uint32_t ss0;
