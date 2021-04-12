@@ -54,7 +54,7 @@ int32_t halt (uint8_t status) {
     }
     //else:
     //2.  close all file descriptors
-    for (i = 0; i < MAX_OPEN_FILES; i++) {
+    for (i = 2; i < MAX_OPEN_FILES; i++) {
         fd_items_t curr_fd_item = pcb->fd_items[i];
         // 3rd bit of flag is the "not in use" bit
         // so bitwise anding it with 0x4 == 0b100 will
@@ -63,7 +63,7 @@ int32_t halt (uint8_t status) {
             // mark file as not present
             curr_fd_item.flags ^= 0x4;
             // call close on file
-          //  curr_fd_item.file_op_jmp.close(i);
+            curr_fd_item.file_op_jmp.close(i);
         }
     }
     // 3.  set up file state for return to parent
@@ -92,7 +92,7 @@ int32_t halt (uint8_t status) {
         "movl %2, %%ebp;"
             : 
             : "g" (status), "g" (pcb->parent.ksp), "g" (pcb->parent.kbp)
-            : "eax"
+            
     );
 
     asm volatile ("jmp execute_return");
