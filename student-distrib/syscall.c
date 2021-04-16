@@ -2,35 +2,35 @@
 #include "filesys.h"
 volatile uint8_t ret_status = -1;
 
-file_op_table_t rtc_table = {
+static file_op_table_t rtc_table = {
     .open = rtc_open,
     .read = rtc_read,
     .write = rtc_write,
     .close = rtc_close
 };
 
-file_op_table_t file_table = {
+static file_op_table_t file_table = {
     .open = file_open,
     .read = file_read,
     .write = file_write,
     .close = file_close
 };
 
-file_op_table_t dir_table = {
+static file_op_table_t dir_table = {
     .open = dir_open,
     .read = dir_read,
     .write = dir_write,
     .close = dir_close
 };
 
-file_op_table_t stdin_table = {
+static file_op_table_t stdin_table = {
     .open = std_bad_call,
     .read = terminal_read,
     .write = std_bad_call,
     .close = std_bad_call
 };
 
-file_op_table_t stdout_table = {
+static file_op_table_t stdout_table = {
     .open = std_bad_call,
     .read = std_bad_call,
     .write = terminal_write,
@@ -54,7 +54,7 @@ int32_t halt (uint8_t status) {
     }
     //else:
     //2.  close all file descriptors
-    for (i = 2; i < MAX_OPEN_FILES; i++) {
+    for (i = 0; i < MAX_OPEN_FILES; i++) {
         fd_items_t curr_fd_item = pcb->fd_items[i];
         // 3rd bit of flag is the "not in use" bit
         // so bitwise anding it with 0x4 == 0b100 will
@@ -63,7 +63,7 @@ int32_t halt (uint8_t status) {
             // mark file as not present
             curr_fd_item.flags ^= 0x4;
             // call close on file
-            curr_fd_item.file_op_jmp.close(i);
+          //  curr_fd_item.file_op_jmp.close(i);
         }
     }
     // 3.  set up file state for return to parent
@@ -81,18 +81,16 @@ int32_t halt (uint8_t status) {
 
     // 5.  set tss to point to parent's stack
     // set esp0 to point to base of parent's kernel stack
-    tss.esp0 = pcb->parent.ksp;
+    tss.esp0 = pcb->parent.kbp;
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
 
     // 6.  swap to saved parent's stack state and return from execute
     asm volatile (
         "movl %0, %%eax;"
-        "movl %1, %%esp;"
-        "movl %2, %%ebp;"
             : 
-            : "g" (status), "g" (pcb->parent.ksp), "g" (pcb->parent.kbp)
-            
+            : "g" (status)
+            : "eax"
     );
 
     asm volatile ("jmp execute_return");
@@ -238,13 +236,13 @@ pcb_t* allocate_pcb(int pid){
     pcb -> fd_items[STDIN_IDX].file_op_jmp = stdin_table;
     pcb -> fd_items[STDIN_IDX].inode = 0;
     pcb -> fd_items[STDIN_IDX].file_position = 0;
-    pcb -> fd_items[STDIN_IDX].flags = 1 + 4;
+    pcb -> fd_items[STDIN_IDX].flags = 1;
 
     //stdout in position 1
     pcb -> fd_items[STDOUT_IDX].file_op_jmp = stdout_table;
     pcb -> fd_items[STDOUT_IDX].inode = 0;
     pcb -> fd_items[STDOUT_IDX].file_position = 0;
-    pcb -> fd_items[STDOUT_IDX].flags = 1 + 4;
+    pcb -> fd_items[STDOUT_IDX].flags = 1;
 
     // set parent to null
     pcb->parent.ksp = 0;
@@ -329,12 +327,6 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
 
-    // check for write-only
-    if ((file_item.flags & READ_WRITE_MASK) == O_WRONLY) {
-        printf("This file is write only. You can't read it.\n");
-        return -1;
-    }
-
     return file_item.file_op_jmp.read(fd, buf, nbytes);
 
 }
@@ -403,7 +395,6 @@ int32_t open (const uint8_t* filename) {
         return -1;
     }
     // handle stdin
-    // 5--> number of bytes
     if (strncmp((int8_t*)filename, (int8_t*)"stdin", 5)){
         // stdin is index0
         pcb->fd_items[0].file_op_jmp = stdin_table;
@@ -415,7 +406,6 @@ int32_t open (const uint8_t* filename) {
 
 
     // handle stdout
-    // 6 --> number of chars of "stdout"
     if (strncmp((int8_t*)filename, (int8_t*)"stdout", 6)){
         // stdout is index1
         pcb->fd_items[1].file_op_jmp = stdout_table;
