@@ -84,7 +84,6 @@ int32_t halt (uint8_t status) {
     tss.esp0 = pcb->parent.kbp;
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
-
     // 6.  swap to saved parent's stack state and return from execute
     asm volatile (
         "movl %0, %%eax;"
@@ -92,6 +91,7 @@ int32_t halt (uint8_t status) {
             : "g" (status)
             : "eax"
     );
+
 
     asm volatile ("jmp execute_return");
     // must return with value of 256
@@ -150,7 +150,6 @@ int32_t execute (const uint8_t* command) {
     uint8_t EIPbuf[4];
     read_data(dentry.inode, 24, EIPbuf, 4);
     uint32_t EIP = *((uint32_t*)EIPbuf);
-
     //iret context switch, set EIP, CS, flags (set interrupt flag manually), user stack address, ss
     asm volatile(
         "pushl %0;"
@@ -326,9 +325,8 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     // get the pcb ptr
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
-
+    sti();
     return file_item.file_op_jmp.read(fd, buf, nbytes);
-
 }
 
 /*
@@ -338,7 +336,6 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
  *   RETURN VALUE: if successful returns 0, if fail -1
  */
 int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
-
     // check for invalid conditions
     if (buf == NULL || nbytes < 0 || fd <= STDIN_IDX || fd > MAX_OPEN_FILES) {
         return -1;
