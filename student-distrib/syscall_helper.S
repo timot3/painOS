@@ -39,7 +39,6 @@ return_syscall:
     popl %edi
     popl %ebp
     # move -1 into eax, then return from int
-    leave
     iret    
 syscall_table:
     .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
