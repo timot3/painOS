@@ -171,7 +171,6 @@ void entry(unsigned long magic, unsigned long addr)
     paging_init();
 
     keyboard_init();
-    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */

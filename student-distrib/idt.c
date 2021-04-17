@@ -221,7 +221,7 @@ void GENERAL_PROTECTION() {
  *   RETURN VALUE: none
  */
 void PAGE_FAULT() {
-    PAIN_HEADER;
+    // PAIN_HEADER;
     printf("-----------PAGE_FAULT--------------\n");
     while(1);
 }
@@ -337,7 +337,7 @@ void initialize_idt() {
 
     // Change values for first 32 items in IDT
     for(i = 0; i < NUM_SYSTEM_INTERRUPTS; i++) {
-        idt[i].reserved3 = 1; // Enable for first 32, use trap gate
+        // idt[i].reserved3 = 1; // Enable for first 32, use trap gate
         idt[i].present   = 1;
 
         // Interrupts 20-31 are intel-reserved per the documentation.

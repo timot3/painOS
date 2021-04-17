@@ -1,6 +1,6 @@
 #include "syscall.h"
 #include "filesys.h"
-volatile uint8_t ret_status = -1;
+volatile int32_t ret_status = -1;
 
 static file_op_table_t rtc_table = {
     .open = rtc_open,
@@ -85,6 +85,7 @@ int32_t halt (uint8_t status) {
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
     // 6.  swap to saved parent's stack state and return from execute
+    ret_status = status;
     asm volatile (
         "movl %0, %%eax;"
             : 
@@ -166,7 +167,7 @@ int32_t execute (const uint8_t* command) {
     );
 
     asm volatile ("execute_return:");
-    return 0;
+    return ret_status;
 }
 
 /*
@@ -325,7 +326,6 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     // get the pcb ptr
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
-    sti();
     return file_item.file_op_jmp.read(fd, buf, nbytes);
 }
 
@@ -536,18 +536,32 @@ int32_t close (int32_t fd) {
     pcb->fd_items[fd].file_position = -1;
     return 0;
 }
+
 /*
 getargs
 DESCRIPTION: gets args from buffer
 iNPUTS: buf -- buffer, nbytes -- number of bytes to read
-OUTPUTS: none
-SIDE EFFECTS: none --not yet implemented 
-RETURNS: -1
+OUTPUTS: puts arguments into user buffer
+RETURNS: -1 if failed, 0 if success
 */
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
-    return -1;
+    // pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    // uint8_t arguments[TERM_BUF_SIZE - CMD_MAX_LEN - 1] = pcb -> argument_buf;
 
+    // int i;
+    // for(i=0; i<nbytes; i++){
+    //     //if no argument exists, fail
+    //     if(i==0 && arguments[i] == '\0')
+    //         return -1;
+    //     buf[i] = arguments[i];
+    //     //after argument has been fully put in buffer, success
+    //     if(arguments[i] == '\0')
+    //         return 0;
+    // }
+    //if argument too big for buffer, fail
+    return -1;
 }
+
 /*
 vidmap
 DESCRIPTION: not yet implemented
@@ -560,25 +574,22 @@ int32_t vidmap (uint8_t** screen_start) {
     return -1;
 
 }
+
 /*
 set_handler
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
+DESCRIPTION: signals not supported :(
+iNPUTS: int32_t signum, void* handler_address
+RETURNS: always fails (return -1) due to no support :(
 */
 int32_t set_handler (int32_t signum, void* handler_address) {
     return -1;
 
 }
+
 /*
-sigreturn 
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
+sigreturn
+DESCRIPTION: signals not supported :(
+RETURNS: always fails (return -1) due to no support :(
 */
 int32_t sigreturn (void) {
     return -1;

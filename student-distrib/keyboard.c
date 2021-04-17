@@ -178,7 +178,6 @@ void keyboard_handler() {
             keyboard_print(byte);
     }
     send_eoi(KB_IRQ);
-    sti();
 }
 
 /*
@@ -220,10 +219,13 @@ void keyboard_print(int byte) {
 
     //get correct newline behavior
     if (c == '\n' || c == '\r'){
+        kb_buffer[term_buf_location] = c;
         terminal_buf_save(terminal_buf);
         term_buf_location = -1;
         term_read_flag = 1;
         reset_buffer();
+        putc(c);
+        return;
     }
     if (term_buf_location >= TERM_BUF_SIZE - 1)
         return;

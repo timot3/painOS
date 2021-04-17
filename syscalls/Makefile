@@ -1,5 +1,5 @@
-CFLAGS += -Wall -nostdlib -ffreestanding
-LDFLAGS += -nostdlib -ffreestanding
+CFLAGS += -Wall -g -nostdlib -ffreestanding
+LDFLAGS += -g -nostdlib -ffreestanding
 CC = gcc
 
 ALL: cat grep hello ls pingpong counter shell sigtest testprint syserr

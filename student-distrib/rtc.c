@@ -23,7 +23,6 @@ void initialize_rtc() {
     outb(RTC_B, RTC_PORT);
     // Write previous value read ORed with 0x40 -> turns on bit 6 of register B
     outb(prev | 0x40, CMOS_PORT);
-    sti();
 
     // Enable interrupt requests for RTC on PIC
     enable_irq(RTC_IRQ);
@@ -50,7 +49,6 @@ void rtc_handler() {
     // - currently don't care about its value
     outb(RTC_C, RTC_PORT);
     inb(CMOS_PORT);
-    sti();
 
     // Send EOI so device knows we're done
     send_eoi(RTC_IRQ);
@@ -92,8 +90,9 @@ int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     interruptFlag = 0;
 
     // Spin until new interrupt occurs
+    sti();
     while(interruptFlag == 0);
-
+    cli();
     return 0;
 }
 
@@ -143,7 +142,6 @@ int32_t set_frequency(uint16_t freq) {
     char prev = inb(CMOS_PORT);
     outb(RTC_A, RTC_PORT);
     outb((prev & 0xF0) | regAVals, CMOS_PORT);
-    sti();
 
     return 0;
 }

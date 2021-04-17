@@ -24,9 +24,6 @@ edit_paging_flags:
 # https://wiki.osdev.org/TLB
 # Flush the transaction lookaside buffer.
 tlb_flush:
-  pushl %ebp
-  movl  %esp, %ebp
 	movl	%cr3,%eax
 	movl	%eax,%cr3
-  leave
   ret
