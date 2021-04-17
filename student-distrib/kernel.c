@@ -180,7 +180,7 @@ void entry(unsigned long magic, unsigned long addr)
 #endif
     
     /* Execute the first program ("shell") ... */
-    uint8_t progName[32] = "hello";
+    uint8_t progName[32] = "shell";
     execute(progName);
 
     /* Spin (nicely, so we don't chew up cycles) */

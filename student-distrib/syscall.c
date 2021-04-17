@@ -244,8 +244,8 @@ pcb_t* allocate_pcb(int pid){
     pcb -> fd_items[STDOUT_IDX].flags = 1;
 
     // set parent to null
-    pcb->parent.ksp = 0;
-    pcb->parent.kbp = 0;
+    // pcb->parent.ksp = 0;
+    // pcb->parent.kbp = 0;
 
 
     pcb -> pid = pid;

@@ -47,7 +47,6 @@ int32_t terminal_buf_save(unsigned char* buf) {
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     // set last char to newline
     term_read_flag = 0;
-
     while(term_read_flag == 0);
 
     int i;
@@ -56,7 +55,7 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
         smallBuf = TERM_BUF_SIZE;
     else
         smallBuf = nbytes;
-    for(i=0; i<(nbytes); i++)
+    for(i=0; i<smallBuf; i++)
         ((uint8_t*)buf)[i] = terminal_buf[i];
     ((uint8_t*)buf)[smallBuf - 1] = '\n';
     return 0;
