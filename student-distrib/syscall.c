@@ -574,25 +574,22 @@ int32_t vidmap (uint8_t** screen_start) {
     return -1;
 
 }
+
 /*
 set_handler
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
+DESCRIPTION: signals not supported :(
+iNPUTS: int32_t signum, void* handler_address
+RETURNS: always fails (return -1) due to no support :(
 */
 int32_t set_handler (int32_t signum, void* handler_address) {
     return -1;
 
 }
+
 /*
-sigreturn 
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
+sigreturn
+DESCRIPTION: signals not supported :(
+RETURNS: always fails (return -1) due to no support :(
 */
 int32_t sigreturn (void) {
     return -1;
