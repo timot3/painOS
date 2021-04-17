@@ -536,18 +536,32 @@ int32_t close (int32_t fd) {
     pcb->fd_items[fd].file_position = -1;
     return 0;
 }
+
 /*
 getargs
 DESCRIPTION: gets args from buffer
 iNPUTS: buf -- buffer, nbytes -- number of bytes to read
-OUTPUTS: none
-SIDE EFFECTS: none --not yet implemented 
-RETURNS: -1
+OUTPUTS: puts arguments into user buffer
+RETURNS: -1 if failed, 0 if success
 */
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
-    return -1;
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    uint8_t arguments[TERM_BUF_SIZE - CMD_MAX_LEN - 1] = pcb -> argument_buf;
 
+    int i;
+    for(i=0; i<nbytes; i++){
+        //if no argument exists, fail
+        if(i==0 && arguments[i] == '\0')
+            return -1;
+        buf[i] = arguments[i];
+        //after argument has been fully put in buffer, success
+        if(arguments[i] == '\0')
+            return 0;
+    }
+    //if argument too big for buffer, fail
+    return -1;
 }
+
 /*
 vidmap
 DESCRIPTION: not yet implemented
