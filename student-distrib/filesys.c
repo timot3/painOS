@@ -14,7 +14,7 @@ int32_t file_open(const uint8_t *filename) {
     // read dentry by name
     int32_t ret, j;
     dentry_t dentry;
-    ret =  read_dentry_by_name(filename, &dentry);
+    ret = read_dentry_by_name(filename, &dentry);
 
     // Copy name to global dentry
     for(j = 0; j < MAX_FILENAME_LEN; j++) {
@@ -40,14 +40,15 @@ int32_t file_open(const uint8_t *filename) {
 int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
     // Get latest PCB and read data from it
 	pcb_t *currPCB = get_latest_pcb();
-	int ret = read_data(currPCB->fd_items[fd].inode, currPCB->fd_items[fd].file_position, buf, nbytes);
 
-    // Ensure read data didn't fail
-    if(ret == -1)
-        return -1;
+	int ret = read_data(currPCB->fd_items[fd].inode, currPCB->fd_items[fd].file_position, buf, nbytes);
 
     // Update file position
 	currPCB->fd_items[fd].file_position += ret;
+
+	// Ensure read data didn't fail
+	if(ret == -1)
+		return 0;
 
 	return ret;
 }
@@ -92,8 +93,8 @@ int32_t file_close(int32_t fd) {
  */
 int32_t dir_open(const uint8_t *filename) {
     // name == "."
-    //return read_dentry_by_name(filename, 0); //fails for some reason
-	return 0;
+	dentry_t dentry;
+    return read_dentry_by_name(filename, &dentry); //fails for some reason
 }
 
 /*
@@ -124,9 +125,9 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     // Copy filename to input buffer
     for(i = 0; i < MAX_FILENAME_LEN; i++) {
         // Return once end of string found
+		((uint8_t*)buf)[i] = inputDentry.fname[i];
         if(inputDentry.fname[i] == '\0')
             return i;
-        ((uint8_t*)buf)[i] = inputDentry.fname[i];
     }
 
     return i;
@@ -169,8 +170,8 @@ int32_t dir_close(int32_t fd) {
  *   RETURN VALUE: Return -1 if file not found, 0 otherwise
  */
 int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
-    // inits
-    int i, j, cont = 0;
+	// inits
+	uint32_t i, j, cont = 0;
 
     // for each dir entry, search to see if the filename matches
     for(i = 0; i < boot_blk->n_dir_entries; i++) {
@@ -178,6 +179,10 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
         cont = 0;
         // check each character
         for(j = 0; j < MAX_FILENAME_LEN; j++) {
+			// Break and null character
+			if(fname[j] == '\0' && (boot_blk->dir_entries)[i].fname[j] == '\0')
+				break;
+
             if(fname[j] != (boot_blk->dir_entries)[i].fname[j]) {
                 cont = 1;
                 break;
@@ -188,13 +193,11 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
         if(cont) continue;
 
         // otherwise set the global vars and return 0
-        dentry_t currDentry = boot_blk->dir_entries[i];
-        for(j = 0; j < MAX_FILENAME_LEN; j++) {
-            dentry->fname[j] = currDentry.fname[j];
-        }
+        for(j = 0; j < MAX_FILENAME_LEN; j++)
+            dentry->fname[j] = boot_blk->dir_entries[i].fname[j];
 
-        dentry->type = currDentry.type;
-        dentry->inode = currDentry.inode;
+        dentry->type = boot_blk->dir_entries[i].type;
+        dentry->inode = boot_blk->dir_entries[i].inode;
 
         // current_inode  = (inode_t *)(boot_blk + ((dentry->inode + 1)*FOUR_KB));
         return 0;
