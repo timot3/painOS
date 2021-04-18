@@ -453,7 +453,6 @@ int32_t open (const uint8_t* filename) {
 
 
     // check if file exists
-    printf("FN: %s\n", fname);
     if (read_dentry_by_name(fname, &tmp_dentry) == -1)
         return -1;
     // dentry info is in tmp_dentry
@@ -611,7 +610,7 @@ int32_t vidmap (uint8_t** screen_start) {
     //bound testing
     if ((int)screen_start > USER_PAGE_BOT || (int)screen_start < USER_PAGE_TOP)
         return -1;
-    
+
     return 0;
 
 }
