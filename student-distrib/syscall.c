@@ -37,7 +37,7 @@ static file_op_table_t stdout_table = {
     .close = std_bad_call
 };
 
-char pid_arr[PROCESS_LIMIT] = {0, 0};
+char pid_arr[PROCESS_LIMIT] = {0, 0, 0};
 
 int32_t curr_pid = 0;
 
@@ -302,12 +302,13 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
         //put characters into correct buffer depending on exec status
         if (command[i] != ' ' && exec_status == 1)
             exec_buf[i] = command[i];
-        //argument buffer is space padded
-        if (exec_status == 2)
+        //argument buffer is space stripped
+        if (command[i] != ' ' && exec_status == 2){
             pcb -> argument_buf[j] = command[i];
+            pcb -> argument_buf[j+1] = '\0';
             j++;
+        }
     }
-
     //check if file exists
     // Clear parts of exec_buf not used -> if not done file_open returns -1
     for(i = strlen((const int8_t*)exec_buf) + 1; i < CMD_MAX_LEN; i++)
@@ -585,7 +586,6 @@ RETURNS: -1 if failed, 0 if success
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     uint8_t *arguments = pcb -> argument_buf;
-
     int i;
     for(i=0; i<nbytes; i++){
         //if no argument exists, fail
