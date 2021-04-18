@@ -104,7 +104,7 @@ int32_t dir_open(const uint8_t *filename) {
  *           *buf - buffer to copy info to
  *            nbytes - size of buffer
  *   OUTPUTS: Prints contents of directory
- *   RETURN VALUE: Number of bytes copied to buffer, -1 if unable to find dentry
+ *   RETURN VALUE: Number of bytes copied to buffer, 0 if unable to find dentry
  */
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     // Get correct PCB
@@ -116,7 +116,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
 
     // Return if file doesn't exist
     if(ret == -1)
-        return -1;
+        return 0;
 
     // Increment file position
     currPCB->fd_items[fd].file_position++;
