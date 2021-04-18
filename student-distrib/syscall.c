@@ -93,8 +93,8 @@ int32_t halt (uint8_t status) {
     //         : "g" (status)
     //         : "eax"
     // );
-    
-    
+
+
     // asm volatile ("jmp execute_return");
 
     // must return with value of 256

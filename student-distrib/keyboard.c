@@ -196,9 +196,9 @@ void keyboard_print(int byte) {
         return;
     }
     //correct correct scancode table depending on shift/tab
-    else if (cap_flag == 1 && shift_flag == 1) 
+    else if (cap_flag == 1 && shift_flag == 1)
         c = scan_code_shift_caps[byte];
-    else if (cap_flag == 1 && shift_flag == 0) 
+    else if (cap_flag == 1 && shift_flag == 0)
         c = scan_code_caps[byte];
     else if (cap_flag == 0 && shift_flag == 1)
         c = scan_code_shift[byte];
@@ -221,7 +221,7 @@ void keyboard_print(int byte) {
     if (c == '\n' || c == '\r'){
         kb_buffer[term_buf_location] = c;
         terminal_buf_save(terminal_buf);
-        term_buf_location = -1;
+        term_buf_location = 0;
         term_read_flag = 1;
         reset_buffer();
         putc(c);
@@ -232,5 +232,5 @@ void keyboard_print(int byte) {
 
     putc(c);
     kb_buffer[term_buf_location] = c;
-    term_buf_location++; 
+    term_buf_location++;
 }
