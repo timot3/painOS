@@ -249,13 +249,13 @@ pcb_t* allocate_pcb(int pid){
 
     //stdin in position 0
     pcb -> fd_items[STDIN_IDX].file_op_jmp = stdin_table;
-    // pcb -> fd_items[STDIN_IDX].inode = 0;
+    pcb -> fd_items[STDIN_IDX].inode = 0; //TODO
     pcb -> fd_items[STDIN_IDX].file_position = 0;
     pcb -> fd_items[STDIN_IDX].flags = 1;
 
     //stdout in position 1
     pcb -> fd_items[STDOUT_IDX].file_op_jmp = stdout_table;
-    // pcb -> fd_items[STDOUT_IDX].inode = 0;
+    pcb -> fd_items[STDOUT_IDX].inode = 0; // TODO
     pcb -> fd_items[STDOUT_IDX].file_position = 0;
     pcb -> fd_items[STDOUT_IDX].flags = 1;
 
@@ -277,35 +277,25 @@ pcb_t* allocate_pcb(int pid){
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry) {
     uint8_t exec_buf[CMD_MAX_LEN];
     int i;
-    int j = 0;
-    //exec status stages 0 = nothing, 1 = started, 2 = completed
-    uint8_t exec_status = 0;
 
-    for (i = 0; i < TERM_BUF_SIZE; i++) {
-        //end of command if newline or null char
-        if (command[i] == '\0' || command[i] == '\n') {
-            if (i == 0)
-                return -1;
+    int loc = 0;
 
-            // Add null terminating ending
-            exec_buf[i] = '\0';
+    for(i = 0; i < TERM_BUF_SIZE - CMD_MAX_LEN - 1; i++)
+        pcb -> argument_buf[i] = 0;
+
+    while(command[loc] != '\0' && command[loc] != '\n' && command[loc] != ' ') {
+        exec_buf[loc] = command[loc];
+        loc++;
+    }
+
+    exec_buf[loc] = '\0';
+
+    for(i = loc; i < 128; i++) {
+        if(command[i] == '\0' || command[i] == '\n')
             break;
-        }
-
-        //at first non-space, char exec starts
-        if (command[i] != ' ' && exec_status == 0)
-            exec_status = 1;
-        //after first space after exec starts, exec ends
-        else if (command[i] == ' ' && exec_status == 1)
-            exec_status = 2;
-
-        //put characters into correct buffer depending on exec status
-        if (command[i] != ' ' && exec_status == 1)
-            exec_buf[i] = command[i];
-        //argument buffer is space padded
-        if (exec_status == 2)
-            pcb -> argument_buf[j] = command[i];
-            j++;
+        if(command[i] == ' ')
+            continue;
+        pcb -> argument_buf[i-loc-1]=command[i];
     }
 
     //check if file exists
@@ -341,6 +331,10 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
         return -1;
     }
 
+    int i;
+    for(i = 0; i < nbytes; i++)
+        ((uint8_t*)buf)[i] = 0;
+
     // get the pcb ptr
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
@@ -364,10 +358,8 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for read-only
-    if ((file_item.flags & READ_WRITE_MASK) == O_RDONLY) {
-        printf("This file is read only. You can't write to it.\n");
+    if ((file_item.flags & READ_WRITE_MASK) == O_RDONLY)
         return -1;
-    }
 
     return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
@@ -492,7 +484,7 @@ int32_t open (const uint8_t* filename) {
     if (!set_active_flag(i, ACTIVE_FLAG))
         return -1; // failed
     pcb->fd_items[i].file_op_jmp = *tmp_f_ops;
-    // pcb->fd_items[i].inode = tmp_dentry.inode;
+    pcb->fd_items[i].inode = tmp_dentry.inode; //TODO
     pcb->fd_items[i].file_position = 0;
     return i;
 }
@@ -539,7 +531,7 @@ int32_t set_active_flag (int32_t fd, int32_t new_status){
 int32_t close (int32_t fd) {
     pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
 
-    int i = 0, asm_ret_val;
+    int asm_ret_val;
     // dont let them close stdin/out
     if(fd == 0 || fd == 1)
         return -1;
@@ -549,8 +541,10 @@ int32_t close (int32_t fd) {
         return -1;
 
     // dont let them close inactive files
-    if((pcb->fd_items[fd].flags & ACTIVE_FLAG_MASK) == 0)
-        return -1;
+    // if((pcb->fd_items[fd].flags & ACTIVE_FLAG_MASK) == 0) {
+    //     printf("urdfgbj");
+    //     return -1;
+    // }
 
 
     // call fclose, handle failed fclose
@@ -567,8 +561,10 @@ int32_t close (int32_t fd) {
         return -1;
 
     // set flag to free
-    if (!set_active_flag(i, INACTIVE_FLAG))
-        return -1; // failed
+    // if (!set_active_flag(i, INACTIVE_FLAG)) {
+    //     printf("vjnskjdht");
+    //     return -1; // failed
+    // }
 
     pcb->fd_items[fd].inode = -1;
     pcb->fd_items[fd].file_position = -1;
@@ -583,18 +579,25 @@ OUTPUTS: puts arguments into user buffer
 RETURNS: -1 if failed, 0 if success
 */
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
-    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    pcb_t* pcb = get_latest_pcb();
     uint8_t *arguments = pcb -> argument_buf;
 
     int i;
+
+    for(i = 0; i < nbytes;i++)
+        buf[i]=0;
+
     for(i=0; i<nbytes; i++){
         //if no argument exists, fail
         if(i==0 && arguments[i] == '\0')
             return -1;
+
         buf[i] = arguments[i];
         //after argument has been fully put in buffer, success
-        if(arguments[i] == '\0')
+        if(arguments[i] == '\0') {
+            buf[i]='\0';
             return 0;
+        }
     }
     //if argument too big for buffer, fail
     return -1;
