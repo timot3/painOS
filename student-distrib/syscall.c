@@ -582,14 +582,16 @@ int32_t getargs (uint8_t* buf, int32_t nbytes) {
 
 /*
 vidmap
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
+DESCRIPTION: maps video memory into user space
+INPUTS: vid mem location
+OUTPUTS: 0 if success, -1 if failed
 */
 int32_t vidmap (uint8_t** screen_start) {
-    return -1;
+    //bound testing
+    if ((int)screen_start > USER_PAGE_BOT || (int)screen_start < USER_PAGE_TOP)
+        return -1;
+    
+    return 0;
 
 }
 
