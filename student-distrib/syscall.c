@@ -402,39 +402,60 @@ int32_t open (const uint8_t* filename) {
     int i = 0, asm_ret_val;
     // check if valid name
     // check null
-    if (filename[0] == '\0'){
+    if (filename[0] == '\0')
         return -1;
-    }
+
     // check len
-    if (strlen((int8_t*)filename) > 33){
+    if (strlen((int8_t*)filename) > 33)
         return -1;
-    }
+
+    // Copy filename to buffer we can edit
+    int startOffset = 0;
+    uint8_t fname[32];
+    for(i = 0; i < 32; i++)
+        fname[i] = filename[i];
+
+    while(fname[startOffset] != '\0')
+        startOffset++;
+
+    // Clear all values after \0 in filename
+    for(i = startOffset; i < 32; i++)
+        fname[i] = 0;
+
     // handle stdin
-    if (strncmp((int8_t*)filename, (int8_t*)"stdin", 5)){
+    if (strncmp((int8_t*)fname, (int8_t*)"stdin", 5)) {
         // stdin is index0
         pcb->fd_items[0].file_op_jmp = stdin_table;
-        if(set_active_flag(0, ACTIVE_FLAG))
-            return 0; // return fd
-        else
-            return -1; // failed
+        // if(set_active_flag(0, ACTIVE_FLAG)) {
+        //     printf("RET 0");
+        //     return 0; // return fd
+        // }
+        // else {
+        //     printf("RET -13");
+        //     return -1; // failed
+        // }
     }
 
 
     // handle stdout
-    if (strncmp((int8_t*)filename, (int8_t*)"stdout", 6)){
+    if (strncmp((int8_t*)fname, (int8_t*)"stdout", 6)) {
         // stdout is index1
         pcb->fd_items[1].file_op_jmp = stdout_table;
-        if (set_active_flag(1, ACTIVE_FLAG))
-            return 1; // return fd
-        else
-            return -1; // failed
+        // if (set_active_flag(1, ACTIVE_FLAG)) {
+        //     printf("RET 1");
+        //     return 1; // return fd
+        // }
+        // else {
+        //     printf("RET -156");
+        //     return -1; // failed
+        // }
     }
 
 
     // check if file exists
-    if (read_dentry_by_name(filename, &tmp_dentry) == -1){
+    printf("FN: %s\n", fname);
+    if (read_dentry_by_name(fname, &tmp_dentry) == -1)
         return -1;
-    }
     // dentry info is in tmp_dentry
 
     // check for open spot in pcb
@@ -454,7 +475,7 @@ int32_t open (const uint8_t* filename) {
         tmp_f_ops = &dir_table;
     else if (tmp_dentry.type == 2) // dentry type 2 is file
         tmp_f_ops = &file_table;
-    else  // no other supported dentry types
+    else // no other supported dentry types
         return -1;
 
     // call fopen, trying with asm first
