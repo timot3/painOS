@@ -276,7 +276,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
  */
 void filesys_init(void *fs) {
     boot_blk = (boot_blk_t *)fs; // pointer?
-    printf("n_dir_entries: %d | n_inodes: %d",
+    printf("n_dir_entries: %d | n_inodes: %d\n",
            boot_blk->n_dir_entries,
            boot_blk->n_inodes);
 }

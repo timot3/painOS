@@ -21,6 +21,9 @@
 #define USER_PAGE_TOP 0x7FFFFFC
 #define USER_PAGE_BOT 0x83FFFFC
 
+#define VIDMAP_TOP 0x0 // placeholder so it compiles
+#define VIDMAP_BOT // placeholder so it compiles
+
 #define ACTIVE_FLAG_MASK 4
 #define ACTIVE_FLAG 1
 #define INACTIVE_FLAG 0
@@ -51,6 +54,7 @@ typedef struct pcb {
     uint32_t pid;
     parent_pcb_t parent;
     uint32_t esp0;
+    uint8_t** vidmap_addr;
 } pcb_t;
 
 
