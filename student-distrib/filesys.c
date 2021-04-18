@@ -1,8 +1,9 @@
 #include "filesys.h"
+#include "syscall.h"
 
 static boot_blk_t *boot_blk;
 static uint32_t file_progress;
-static dentry_t current_dentry;
+// static dentry_t current_dentry;
 /*
  * file_open
  *   DESCRIPTION: Opens file, stores found dentry in global current_dentry variable
@@ -32,14 +33,18 @@ int32_t file_open(const uint8_t *filename) {
 /*
  * file_read
  *   DESCRIPTION: Reads data of the currently open file
- *   INPUTS: fd - file descriptor (not currently used)
+ *   INPUTS: fd - file descriptor
  *           *buf - buffer to store returned data
  *           nbytes - size of given buffer
  *   OUTPUTS: none
  *   RETURN VALUE: Amount of bytes read
  */
 int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
-    return read_data(current_dentry.inode, 0, buf, nbytes); // 0 when done, otherwise nbytes read
+	pcb_t *currPCB = get_latest_pcb();
+	int ret = read_data(currPCB->fd_items[fd].inode, currPCB->fd_items[fd].file_position, buf, nbytes);
+	currPCB->fd_items[fd].file_position += ret;
+
+	return ret;
 }
 
 /*

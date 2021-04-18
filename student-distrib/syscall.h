@@ -71,6 +71,7 @@ int assign_pid(void);
 int unassign_pid(int pid);
 int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
+pcb_t* get_latest_pcb();
 pcb_t* allocate_pcb(int pid);
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry);
 void setup_TSS(int pid);

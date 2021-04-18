@@ -47,6 +47,7 @@ typedef struct boot_blk {
     dentry_t dir_entries[MAX_DIR_ENTRIES];
 } boot_blk_t; // 4 KB
 
+dentry_t current_dentry;
 
 // Functions for working with files
 int32_t file_open(const uint8_t* filename);

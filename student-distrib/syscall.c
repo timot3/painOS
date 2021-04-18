@@ -128,7 +128,7 @@ int32_t execute (const uint8_t* command) {
     int parse = parse_command(command, pcb, pid, &dentry);
 
     //parse command, if bad fail
-    if (parse == -1){
+    if (parse == -1) {
         unassign_pid(pid);
         return -1;
     }
@@ -138,10 +138,7 @@ int32_t execute (const uint8_t* command) {
     tlb_flush();
 
     //copy user program to page
-
     read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
-    // pcb->esp0 = tss.esp0;
-
 
     //setup TSS for good context switching
     setup_TSS(pid);
@@ -189,7 +186,7 @@ int32_t execute (const uint8_t* command) {
  *   INPUTS: none
  *   RETURN VALUE: assigned process value or -1 if processes are full
  */
-int assign_pid(void){
+int assign_pid(void) {
     int i;
     for(i=0; i<PROCESS_LIMIT; i++){
         if(pid_arr[i]==0){
@@ -235,6 +232,11 @@ int get_latest_pid(){
 pcb_t* get_pcb_addr(int pid) {
     return (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
 }
+
+pcb_t* get_latest_pcb() {
+    return get_pcb_addr(get_latest_pid());
+}
+
 /*
  * allocate_pcb
  *   DESCRIPTION: get pointer to pcb location and initialize stdin and stdout
@@ -247,13 +249,13 @@ pcb_t* allocate_pcb(int pid){
 
     //stdin in position 0
     pcb -> fd_items[STDIN_IDX].file_op_jmp = stdin_table;
-    pcb -> fd_items[STDIN_IDX].inode = 0;
+    // pcb -> fd_items[STDIN_IDX].inode = 0;
     pcb -> fd_items[STDIN_IDX].file_position = 0;
     pcb -> fd_items[STDIN_IDX].flags = 1;
 
     //stdout in position 1
     pcb -> fd_items[STDOUT_IDX].file_op_jmp = stdout_table;
-    pcb -> fd_items[STDOUT_IDX].inode = 0;
+    // pcb -> fd_items[STDOUT_IDX].inode = 0;
     pcb -> fd_items[STDOUT_IDX].file_position = 0;
     pcb -> fd_items[STDOUT_IDX].flags = 1;
 
@@ -305,6 +307,7 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
             pcb -> argument_buf[j] = command[i];
             j++;
     }
+
     //check if file exists
     // Clear parts of exec_buf not used -> if not done file_open returns -1
     for(i = strlen((const int8_t*)exec_buf) + 1; i < CMD_MAX_LEN; i++)
@@ -312,9 +315,11 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
     if (file_open((const uint8_t*)exec_buf) == -1)
         return -1;
 
+    pcb->fd_items[get_latest_pid()].inode = current_dentry.inode;
+
     //check that first four characters are Delete, E, L, F
     uint8_t first_4_char[4];
-    file_read(0, first_4_char, 4);
+    file_read(get_latest_pid(), first_4_char, 4);
     if (first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != L || first_4_char[3] != F)
         return -1;
 
@@ -467,7 +472,7 @@ int32_t open (const uint8_t* filename) {
     if (!set_active_flag(i, ACTIVE_FLAG))
         return -1; // failed
     pcb->fd_items[i].file_op_jmp = *tmp_f_ops;
-    pcb->fd_items[i].inode = tmp_dentry.inode;
+    // pcb->fd_items[i].inode = tmp_dentry.inode;
     pcb->fd_items[i].file_position = 0;
     return i;
 }
