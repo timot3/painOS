@@ -75,29 +75,39 @@ int32_t halt (uint8_t status) {
 
     // 4.  restore parent's paging and flush the tlb
     map_page_pid(pcb->pid);
-    
+
     // assembly wrapper for tlb flush
     tlb_flush();
-
     // 5.  set tss to point to parent's stack
     // set esp0 to point to base of parent's kernel stack
-    tss.esp0 = pcb->parent.kbp;
+    //tss.esp0 = pcb->parent.kbp;
+    tss.esp0 = pcb->esp0;
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
     // 6.  swap to saved parent's stack state and return from execute
     ret_status = status;
-    asm volatile (
-        "movl %0, %%eax;"
-            : 
-            : "g" (status)
-            : "eax"
-    );
+    // asm volatile (
+    //     "movl %0, %%eax;"
+    //         :
+    //         : "g" (status)
+    //         : "eax"
+    // );
+    //
+    //
+    // asm volatile ("jmp execute_return");
 
-
-    asm volatile ("jmp execute_return");
     // must return with value of 256
     // ret_status = status;
-    return 256;
+
+    asm volatile("movl %0, %%esp;"
+                "movl %1, %%ebp;"
+            :
+            : "g" (pcb->parent.ksp), "g" (pcb->parent.kbp)
+    );
+
+    asm volatile ("jmp execute_return");
+
+    return 0;
 
 }
 /*
@@ -128,6 +138,7 @@ int32_t execute (const uint8_t* command) {
     //copy user program to page
 
     read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
+    pcb->esp0 = tss.esp0;
 
 
     //setup TSS for good context switching
@@ -161,7 +172,7 @@ int32_t execute (const uint8_t* command) {
         "pushl %%eax;"
         "pushl %2;"
         "pushl %3;"
-        "iret;" 
+        "iret;"
         :
         : "g" (USER_DS), "g" (USER_PAGE_BOT), "g" (USER_CS), "g" (EIP)
     );
@@ -358,7 +369,7 @@ void setup_TSS(int pid) {
     //ss0 at kernel data segment
     tss.ss0 = KERNEL_DS;
     //esp0 at base of k stack
-    tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
+    tss.esp0 = KERNEL_PAGE_BOT - (KERNEL_STACK_SIZE * pid);
 }
 
 /*

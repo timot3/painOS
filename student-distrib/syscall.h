@@ -18,7 +18,7 @@
 #define BUFFER_START 0x8048000
 #define MAX_FILE_SIZE 0x400000
 //0x8000000 - 4
-#define USER_PAGE_BOT 0x7FFFFC 
+#define USER_PAGE_BOT 0x7FFFFC
 
 #define ACTIVE_FLAG_MASK 4
 #define ACTIVE_FLAG 1
@@ -49,6 +49,7 @@ typedef struct pcb {
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     uint32_t pid;
     parent_pcb_t parent;
+    uint32_t esp0;
 } pcb_t;
 
 
