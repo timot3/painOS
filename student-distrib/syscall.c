@@ -584,33 +584,35 @@ OUTPUTS: puts arguments into user buffer
 RETURNS: -1 if failed, 0 if success
 */
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
-    // pcb_t* pcb = get_pcb_addr(get_latest_pid());
-    // uint8_t arguments[TERM_BUF_SIZE - CMD_MAX_LEN - 1] = pcb -> argument_buf;
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    uint8_t *arguments = pcb -> argument_buf;
 
-    // int i;
-    // for(i=0; i<nbytes; i++){
-    //     //if no argument exists, fail
-    //     if(i==0 && arguments[i] == '\0')
-    //         return -1;
-    //     buf[i] = arguments[i];
-    //     //after argument has been fully put in buffer, success
-    //     if(arguments[i] == '\0')
-    //         return 0;
-    // }
+    int i;
+    for(i=0; i<nbytes; i++){
+        //if no argument exists, fail
+        if(i==0 && arguments[i] == '\0')
+            return -1;
+        buf[i] = arguments[i];
+        //after argument has been fully put in buffer, success
+        if(arguments[i] == '\0')
+            return 0;
+    }
     //if argument too big for buffer, fail
     return -1;
 }
 
 /*
 vidmap
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
+DESCRIPTION: maps video memory into user space
+INPUTS: vid mem location
+OUTPUTS: 0 if success, -1 if failed
 */
 int32_t vidmap (uint8_t** screen_start) {
-    return -1;
+    //bound testing
+    if ((int)screen_start > USER_PAGE_BOT || (int)screen_start < USER_PAGE_TOP)
+        return -1;
+    
+    return 0;
 
 }
 
