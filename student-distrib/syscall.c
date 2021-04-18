@@ -45,11 +45,11 @@ int32_t halt (uint8_t status) {
     int i;
     // get current pcb
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
-    pcb_t* parent = get_pcb_addr(pcb->parent.pid);
     if (pcb == NULL) return -1;
+
+    pcb_t* parent = get_pcb_addr(pcb->parent.pid);
     // 1.  if base shell, re-execute base shell
     if (pcb->pid == parent->pid) {
-        // 7 is the length of our string
         execute((uint8_t*)"shell");
     }
     //else:
@@ -62,6 +62,7 @@ int32_t halt (uint8_t status) {
         if ((curr_fd_item.flags & 0x4) != 0) {
             // mark file as not present
             curr_fd_item.flags ^= 0x4;
+            curr_fd_item.file_op_jmp.close(i);
             // call close on file
           //  curr_fd_item.file_op_jmp.close(i);
         }
@@ -80,8 +81,8 @@ int32_t halt (uint8_t status) {
     tlb_flush();
     // 5.  set tss to point to parent's stack
     // set esp0 to point to base of parent's kernel stack
-    //tss.esp0 = pcb->parent.kbp;
-    tss.esp0 = pcb->esp0;
+    tss.esp0 = pcb->parent.kbp;
+    // tss.esp0 = pcb->esp0;
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
     // 6.  swap to saved parent's stack state and return from execute
@@ -92,23 +93,23 @@ int32_t halt (uint8_t status) {
     //         : "g" (status)
     //         : "eax"
     // );
-    //
-    //
+    
+    
     // asm volatile ("jmp execute_return");
 
     // must return with value of 256
     // ret_status = status;
 
     asm volatile("movl %0, %%esp;"
-                "movl %1, %%ebp;"
+                 "popl %%ebp;"
+                 "movl %1, %%eax;"
+                 "ret"
             :
-            : "g" (pcb->parent.ksp), "g" (pcb->parent.kbp)
+            : "g" (pcb->parent.kbp), "g"(status)
     );
 
-    asm volatile ("jmp execute_return");
 
     return 0;
-
 }
 /*
  * execute
@@ -134,11 +135,12 @@ int32_t execute (const uint8_t* command) {
 
     //set up page
     map_page_pid(pid);
+    tlb_flush();
 
     //copy user program to page
 
     read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
-    pcb->esp0 = tss.esp0;
+    // pcb->esp0 = tss.esp0;
 
 
     //setup TSS for good context switching

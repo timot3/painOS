@@ -30,7 +30,7 @@ void paging_init()
     page_dir[i].val = 0; // clear contents
     // set to rw
     page_dir[i].rw = 0;
-    page_dir[i].us = 1;
+    page_dir[i].us = 0;
   }
 
   for (i = 0; i < PAGE_TABLE_LENGTH; i++)
@@ -38,7 +38,7 @@ void paging_init()
     page_table[i].val = 0; // clear contents
     // set to rw
     page_table[i].rw = 0;
-    page_table[i].us = 1;
+    page_table[i].us = 0;
     // set address
     page_table[i].aligned_address = i;
   }
@@ -106,7 +106,7 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len) {
 */
 void map_page_pid(int pid) {
   int phys_addr = KERNEL_PAGE + pid * TASK_SIZE;
-  int page_idx = CORRECT_PAGE + pid;
+  int page_idx = CORRECT_PAGE;
   page_dir[page_idx].present = 1;
   page_dir[page_idx].rw = 1;
   page_dir[page_idx].us = 1;
