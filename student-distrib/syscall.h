@@ -8,7 +8,7 @@
 #include "x86_desc.h"
 
 #define CMD_MAX_LEN 32
-#define PROCESS_LIMIT 2
+#define PROCESS_LIMIT 100
 #define KERNEL_PAGE_BOT 0x800000
 #define KERNEL_STACK_SIZE 8192
 #define DELETE 0x7F
@@ -18,7 +18,11 @@
 #define BUFFER_START 0x8048000
 #define MAX_FILE_SIZE 0x400000
 //0x8000000 - 4
-#define USER_PAGE_BOT 0x7FFFFC 
+#define USER_PAGE_TOP 0x7FFFFFC
+#define USER_PAGE_BOT 0x83FFFFC
+#define VIDMAP_LOC 0x19
+#define VIDMAP_TOP 0x0 // placeholder so it compiles
+#define VIDMAP_BOT // placeholder so it compiles
 
 #define ACTIVE_FLAG_MASK 4
 #define ACTIVE_FLAG 1
@@ -49,6 +53,8 @@ typedef struct pcb {
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     uint32_t pid;
     parent_pcb_t parent;
+    uint32_t esp0;
+    uint8_t** vidmap_addr;
 } pcb_t;
 
 
@@ -69,6 +75,7 @@ int assign_pid(void);
 int unassign_pid(int pid);
 int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
+pcb_t* get_latest_pcb();
 pcb_t* allocate_pcb(int pid);
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry);
 void setup_TSS(int pid);

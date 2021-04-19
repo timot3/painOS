@@ -34,6 +34,7 @@ int32_t terminal_buf_save(unsigned char* buf) {
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
         buf[i] = kb_buffer[i];
+    // buf[TERM_BUF_SIZE - 1] = '\n';
     return 0;
 }
 
@@ -47,8 +48,10 @@ int32_t terminal_buf_save(unsigned char* buf) {
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     // set last char to newline
     term_read_flag = 0;
+    sti();
 
     while(term_read_flag == 0);
+    cli();
 
     int i;
     int smallBuf;
@@ -56,10 +59,14 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
         smallBuf = TERM_BUF_SIZE;
     else
         smallBuf = nbytes;
-    for(i=0; i<(nbytes); i++)
+    for(i=0; i<smallBuf; i++) {
         ((uint8_t*)buf)[i] = terminal_buf[i];
-    ((uint8_t*)buf)[smallBuf - 1] = '\n';
-    return 0;
+        if (((uint8_t*)buf)[i] == '\n') {
+            break;
+        }
+    }
+
+    return i;
 }
 
 /*
@@ -74,12 +81,8 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
  */
 int32_t terminal_write(int32_t fd, const void *buf, int32_t nbytes) {
     int i;
-    int smallBuf;
-    if (nbytes > TERM_BUF_SIZE)
-        smallBuf = TERM_BUF_SIZE;
-    else
-        smallBuf = nbytes;
-    for(i=0; i<smallBuf; i++) {
+
+    for(i=0; i < nbytes; i++) {
         if(((uint8_t*)buf)[i] != NULL)
             putc(((uint8_t*)buf)[i]);
     }

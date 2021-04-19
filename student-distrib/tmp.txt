@@ -1,0 +1,21 @@
+make: Warning: File `Makefile.dep' has modification time 1.8 s in the future
+gcc  -nostdinc -g  -c -o boot.o boot.S
+gcc  -nostdinc -g  -c -o asmWrap.o asmWrap.S
+gcc  -nostdinc -g  -c -o enable_paging.o enable_paging.S
+gcc  -nostdinc -g  -c -o syscall_helper.o syscall_helper.S
+gcc  -nostdinc -g  -c -o x86_desc.o x86_desc.S
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o filesys.o filesys.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o i8259.o i8259.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o idt.o idt.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o kernel.o kernel.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o keyboard.o keyboard.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o lib.o lib.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o paging.o paging.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o rtc.o rtc.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o syscall.o syscall.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o terminal.o terminal.c
+gcc -Wall -fno-builtin -fno-stack-protector -nostdlib -nostdinc -g  -c -o tests.o tests.c
+rm -f bootimg
+gcc -nostdlib -static boot.o asmWrap.o enable_paging.o syscall_helper.o x86_desc.o filesys.o i8259.o idt.o kernel.o keyboard.o lib.o paging.o rtc.o syscall.o terminal.o tests.o -Ttext=0x400000 -o bootimg
+sudo ./debug.sh
+make: warning:  Clock skew detected.  Your build may be incomplete.

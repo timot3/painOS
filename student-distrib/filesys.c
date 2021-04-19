@@ -1,8 +1,8 @@
 #include "filesys.h"
+#include "syscall.h"
 
 static boot_blk_t *boot_blk;
-static uint32_t file_progress;
-static dentry_t current_dentry;
+
 /*
  * file_open
  *   DESCRIPTION: Opens file, stores found dentry in global current_dentry variable
@@ -14,8 +14,7 @@ int32_t file_open(const uint8_t *filename) {
     // read dentry by name
     int32_t ret, j;
     dentry_t dentry;
-    file_progress = 0;
-    ret =  read_dentry_by_name(filename, &dentry);
+    ret = read_dentry_by_name(filename, &dentry);
 
     // Copy name to global dentry
     for(j = 0; j < MAX_FILENAME_LEN; j++) {
@@ -32,14 +31,26 @@ int32_t file_open(const uint8_t *filename) {
 /*
  * file_read
  *   DESCRIPTION: Reads data of the currently open file
- *   INPUTS: fd - file descriptor (not currently used)
+ *   INPUTS: fd - file descriptor
  *           *buf - buffer to store returned data
  *           nbytes - size of given buffer
  *   OUTPUTS: none
  *   RETURN VALUE: Amount of bytes read
  */
 int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
-    return read_data(current_dentry.inode, 0, buf, nbytes); // 0 when done, otherwise nbytes read
+    // Get latest PCB and read data from it
+	pcb_t *currPCB = get_latest_pcb();
+
+	int ret = read_data(currPCB->fd_items[fd].inode, currPCB->fd_items[fd].file_position, buf, nbytes);
+
+    // Update file position
+	currPCB->fd_items[fd].file_position += ret;
+
+	// Ensure read data didn't fail
+	if(ret == -1)
+		return 0;
+
+	return ret;
 }
 
 /*
@@ -69,7 +80,6 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes) {
  */
 int32_t file_close(int32_t fd) {
     // reset current data and data entry
-    file_progress  = 0;
     // undo open
     return 0;
 }
@@ -83,7 +93,8 @@ int32_t file_close(int32_t fd) {
  */
 int32_t dir_open(const uint8_t *filename) {
     // name == "."
-    return read_dentry_by_name(filename, 0);
+	dentry_t dentry;
+    return read_dentry_by_name(filename, &dentry); //fails for some reason
 }
 
 /*
@@ -94,132 +105,32 @@ int32_t dir_open(const uint8_t *filename) {
  *           *buf - buffer to copy info to
  *            nbytes - size of buffer
  *   OUTPUTS: Prints contents of directory
- *   RETURN VALUE: Always returns 0
+ *   RETURN VALUE: Number of bytes copied to buffer, 0 if unable to find dentry
  */
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
-    int i = fd, j;
-    int ret = 0;
+    // Get correct PCB
+    pcb_t *currPCB = get_latest_pcb();
     dentry_t inputDentry;
-    uint8_t fN[FILE_NAME_LEN_STR] = "file_name: ", fT[FILE_TYPE_STR] = ", file_type: ", fS[FILE_SIZE_STR] = ", file_size: ";
-    int loc = 0;
 
-    // Because TA said no to for loop here -> said to look at ls function and
-    // base this function off of that
-    // Read items in directory
-    ret = read_dentry_by_index(i, &inputDentry);
+    // Read dentry
+    int ret = read_dentry_by_index(currPCB->fd_items[fd].file_position, &inputDentry), i;
+
+    // Return if file doesn't exist
     if(ret == -1)
-        return -1;
-
-    // Copy "file_name: " string to buffer
-    for(j = 0; j < 11; j++) {
-        // Return if buffer is now full
-        if(loc > nbytes) {
-            // Add NULL character at very end of buffer
-            ((uint8_t*)buf)[loc - 1] = '\0';
-            return 0;
-        }
-
-        ((uint8_t*)buf)[loc] = fN[j];
-        loc++;
-    }
-
-    // Copy filename to buffer
-    for(j = 0; j < MAX_FILENAME_LEN; j++) {
-        // Return if buffer is now full
-        if(loc > nbytes) {
-            // Add NULL character at very end of buffer
-            ((uint8_t*)buf)[loc - 1] = '\0';
-            return 0;
-        }
-
-        // Don't send NULl characters, change them to spaces
-        if(inputDentry.fname[j] == 0)
-            ((uint8_t*)buf)[loc] = ' ';
-        else
-            ((uint8_t*)buf)[loc] = inputDentry.fname[j];
-        loc++;
-    }
-
-    // Copy ", file_type: " string to buffer
-    for(j = 0; j < 13; j++) {
-        // Return if buffer is now full
-        if(loc > nbytes) {
-            // Add NULL character at very end of buffer
-            ((uint8_t*)buf)[loc - 1] = '\0';
-            return 0;
-        }
-
-        ((uint8_t*)buf)[loc] = fT[j];
-        loc++;
-    }
-
-    // Convert dentry type int to string
-    uint8_t intBuff[10];
-    itoa(inputDentry.type, (int8_t*)intBuff, 10);
-
-    // Copy type to buffer
-    for(j = 0; j < 10; j++) {
-        // Return if buffer is now full
-        if(loc > nbytes) {
-            // Add NULL character at very end of buffer
-            ((uint8_t*)buf)[loc - 1] = '\0';
-            return 0;
-        }
-
-        // Stop copying if NULL character reached
-        if(intBuff[j] == 0)
-            break;
-        ((uint8_t*)buf)[loc] = intBuff[j];
-        loc++;
-    }
-
-    // Copy ", file_size: " string to buffer
-    for(j = 0; j < 13; j++) {
-        // Return if buffer is now full
-        if(loc > nbytes) {
-            // Add NULL character at very end of buffer
-            ((uint8_t*)buf)[loc - 1] = '\0';
-            return 0;
-        }
-
-        ((uint8_t*)buf)[loc] = fS[j];
-        loc++;
-    }
-
-    // Convert dentry size int to string
-    uint8_t intBuff2[10];
-    itoa(((inode_t*)(inputDentry.inode + boot_blk + 1))->len, (int8_t*)intBuff2, 10);
-
-    // Copy size to buffer
-    for(j = 0; j < 10; j++) {
-        // Return if buffer is now full
-        if(loc > nbytes) {
-            // Add NULL character at very end of buffer
-            ((uint8_t*)buf)[loc - 1] = '\0';
-            return 0;
-        }
-
-        // Stop copying if NULL character reached
-        if(intBuff2[j] == 0)
-            break;
-        ((uint8_t*)buf)[loc] = intBuff2[j];
-        loc++;
-    }
-
-    // Add newline at end of each entry
-    ((uint8_t*)buf)[loc] = '\n';
-    loc++;
-
-    if(loc > nbytes) {
-        // Add NULL character at very end of buffer
-        ((uint8_t*)buf)[loc - 1] = '\0';
         return 0;
+
+    // Increment file position
+    currPCB->fd_items[fd].file_position++;
+
+    // Copy filename to input buffer
+    for(i = 0; i < MAX_FILENAME_LEN; i++) {
+        // Return once end of string found
+		((uint8_t*)buf)[i] = inputDentry.fname[i];
+        if(inputDentry.fname[i] == '\0')
+            return i;
     }
 
-    // Add NULL character at very end of buffer
-    ((uint8_t*)buf)[loc] = '\0';
-
-    return 0;
+    return i;
 }
 
 /*
@@ -247,9 +158,6 @@ int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes) {
  *   RETURN VALUE: Always returns 0
  */
 int32_t dir_close(int32_t fd) {
-    // reset the current file and file data entry.
-    file_progress  = 0;
-    // pcb
     return 0;
 }
 
@@ -262,8 +170,8 @@ int32_t dir_close(int32_t fd) {
  *   RETURN VALUE: Return -1 if file not found, 0 otherwise
  */
 int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
-    // inits
-    int i, j, cont = 0;
+	// inits
+	uint32_t i, j, cont = 0;
 
     // for each dir entry, search to see if the filename matches
     for(i = 0; i < boot_blk->n_dir_entries; i++) {
@@ -271,6 +179,10 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
         cont = 0;
         // check each character
         for(j = 0; j < MAX_FILENAME_LEN; j++) {
+			// Break and null character
+			if(fname[j] == '\0' && (boot_blk->dir_entries)[i].fname[j] == '\0')
+				break;
+
             if(fname[j] != (boot_blk->dir_entries)[i].fname[j]) {
                 cont = 1;
                 break;
@@ -281,16 +193,13 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
         if(cont) continue;
 
         // otherwise set the global vars and return 0
-        dentry_t currDentry = boot_blk->dir_entries[i];
-        for(j = 0; j < MAX_FILENAME_LEN; j++) {
-            dentry->fname[j] = currDentry.fname[j];
-        }
+        for(j = 0; j < MAX_FILENAME_LEN; j++)
+            dentry->fname[j] = boot_blk->dir_entries[i].fname[j];
 
-        dentry->type = currDentry.type;
-        dentry->inode = currDentry.inode;
+        dentry->type = boot_blk->dir_entries[i].type;
+        dentry->inode = boot_blk->dir_entries[i].inode;
 
         // current_inode  = (inode_t *)(boot_blk + ((dentry->inode + 1)*FOUR_KB));
-        file_progress  = 0;
         return 0;
     }
 
@@ -370,7 +279,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
  */
 void filesys_init(void *fs) {
     boot_blk = (boot_blk_t *)fs; // pointer?
-    printf("n_dir_entries: %d | n_inodes: %d",
+    printf("n_dir_entries: %d | n_inodes: %d\n",
            boot_blk->n_dir_entries,
            boot_blk->n_inodes);
 }

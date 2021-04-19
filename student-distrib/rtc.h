@@ -17,6 +17,7 @@
 #define RTC_IRQ 0x8
 
 // default RTC frequency is 2Hz
+// 16 makes fish look like mp1 though
 #define RTC_DEFAULT_FREQUENCY 2
 
 // Functions currently required for RTC stuff

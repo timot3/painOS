@@ -1,160 +1,189 @@
 #include "syscall.h"
 #include "filesys.h"
-volatile uint8_t ret_status = -1;
+volatile uint32_t ret_status = 0;
 
-file_op_table_t rtc_table = {
-    .open = rtc_open,
-    .read = rtc_read,
+// file ops jump tables
+static file_op_table_t rtc_table = {
+    .open  = rtc_open,
+    .read  = rtc_read,
     .write = rtc_write,
     .close = rtc_close
 };
 
-file_op_table_t file_table = {
-    .open = file_open,
-    .read = file_read,
+static file_op_table_t file_table = {
+    .open  = file_open,
+    .read  = file_read,
     .write = file_write,
     .close = file_close
 };
 
-file_op_table_t dir_table = {
-    .open = dir_open,
-    .read = dir_read,
+static file_op_table_t dir_table = {
+    .open  = dir_open,
+    .read  = dir_read,
     .write = dir_write,
     .close = dir_close
 };
 
-file_op_table_t stdin_table = {
-    .open = std_bad_call,
-    .read = terminal_read,
+static file_op_table_t stdin_table = {
+    .open  = std_bad_call,
+    .read  = terminal_read,
     .write = std_bad_call,
     .close = std_bad_call
 };
 
-file_op_table_t stdout_table = {
-    .open = std_bad_call,
-    .read = std_bad_call,
+static file_op_table_t stdout_table = {
+    .open  = std_bad_call,
+    .read  = std_bad_call,
     .write = terminal_write,
     .close = std_bad_call
 };
 
-char pid_arr[PROCESS_LIMIT] = {0, 0};
+static file_op_table_t bad_table = {
+    .open  = std_bad_call,
+    .read  = std_bad_call,
+    .write = std_bad_call,
+    .close = std_bad_call
+};
 
+// arbitrary length for now
+char pid_arr[PROCESS_LIMIT] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+// global var to keep track of current pid
 int32_t curr_pid = 0;
 
-int32_t halt (uint8_t status) {
-    int i;
+/*
+ * halt
+ *   DESCRIPTION: halts the currently running process
+ *   INPUTS: status -- status to halt with
+ *   RETURN VALUE: status or -1
+ */
+int32_t halt(uint8_t status) {
+    int i, process_status;
+
     // get current pcb
-    pcb_t* pcb = get_pcb_addr(get_latest_pid());
-    pcb_t* parent = get_pcb_addr(pcb->parent.pid);
-    if (pcb == NULL) return -1;
+    pcb_t *pcb = get_pcb_addr(get_latest_pid());
+
+    if(pcb == NULL) return -1;
+
+    // pcb_t *parent = get_pcb_addr(pcb->parent.pid);
+
+    // 2.  close all file descriptors
+    unassign_pid(pcb->pid);
+
+    for(i = STDOUT_IDX + 1; i < MAX_OPEN_FILES; i++) {
+        close(i);
+
+        pcb->fd_items[i].file_op_jmp = bad_table;
+        pcb->fd_items[i].flags       = 0;
+    }
+
     // 1.  if base shell, re-execute base shell
-    if (pcb->pid == parent->pid) {
-        // 7 is the length of our string
-        execute((uint8_t*)"shell");
-    }
-    //else:
-    //2.  close all file descriptors
-    for (i = 2; i < MAX_OPEN_FILES; i++) {
-        fd_items_t curr_fd_item = pcb->fd_items[i];
-        // 3rd bit of flag is the "not in use" bit
-        // so bitwise anding it with 0x4 == 0b100 will
-        // check if file is in use
-        if ((curr_fd_item.flags & 0x4) != 0) {
-            // mark file as not present
-            curr_fd_item.flags ^= 0x4;
-            // call close on file
-            curr_fd_item.file_op_jmp.close(i);
-        }
-    }
+    if(pcb->pid == 0) execute((uint8_t *)"shell");
+
     // 3.  set up file state for return to parent
 
     // unassign current pid
-    unassign_pid(pcb->pid);
     // instead assign it to the parent pid
-    pcb->pid = pcb->parent.pid;
+    process_status = pcb->pid;
+    pcb->pid       = pcb->parent.pid;
 
     // 4.  restore parent's paging and flush the tlb
-    map_page_pid(pcb->pid);
-    
     // assembly wrapper for tlb flush
-    tlb_flush();
+    map_page_pid(pcb->pid);
 
     // 5.  set tss to point to parent's stack
     // set esp0 to point to base of parent's kernel stack
     tss.esp0 = pcb->parent.ksp;
+
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
 
     // 6.  swap to saved parent's stack state and return from execute
-    asm volatile (
-        "movl %0, %%eax;"
-        "movl %1, %%esp;"
-        "movl %2, %%ebp;"
-            : 
-            : "g" (status), "g" (pcb->parent.ksp), "g" (pcb->parent.kbp)
-            
-    );
+    ret_status = status;
 
-    asm volatile ("jmp execute_return");
-    // must return with value of 256
-    // ret_status = status;
-    return 256;
+    // printf("Process %d exited with code = %d\n", process_status, status);
+    asm volatile ("movl %0, %%esp;"
+                  "popl %%ebp;"
+                  "movl %1, %%eax;"
+                  "ret"
+                  :
+                  : "g" (pcb->parent.kbp), "g" (status)
+                  );
 
+
+    return 0;
 }
+
 /*
  * execute
- *   DESCRIPTION: executs the command, lots of helper functions see them for more details
+ *   DESCRIPTION: executs the command, lots of helper functions see them for
+ *more details
  *   INPUTS: command
  *   RETURN VALUE:
  */
-int32_t execute (const uint8_t* command) {
-    //get pid if none avaialbe fail
+int32_t execute(const uint8_t *command) {
+    // get pid if none avaialbe fail
     int pid = assign_pid();
-    if (pid == -1) return -1;
 
-    //get pcb and initialize
+    if(pid == -1) return -1;
+
+    // get pcb and initialize
     dentry_t dentry;
-    pcb_t* pcb = allocate_pcb(pid);
-    int parse = parse_command(command, pcb, pid, &dentry);
+    pcb_t *pcb = allocate_pcb(pid);
+    int parse  = parse_command(command, pcb, pid, &dentry);
 
-    //parse command, if bad fail
-    if (parse == -1){
+    // parse command, if bad fail
+    if(parse == -1) {
         unassign_pid(pid);
         return -1;
     }
 
-    //set up page
+    // set up page
     map_page_pid(pid);
+    tlb_flush();
 
-    //copy user program to page
+    // copy user program to page
+    read_data(dentry.inode, 0, (uint8_t *)BUFFER_START, MAX_FILE_SIZE);
 
-    read_data(dentry.inode, 0, (uint8_t*)BUFFER_START, MAX_FILE_SIZE);
-
-
-    //setup TSS for good context switching
+    // setup TSS for good context switching
     setup_TSS(pid);
 
-    //save current stack state
+    // save current stack state
     int ksp;
-    asm volatile(
-        "movl %%esp, %0": "=r" (ksp)
+
+    asm volatile (
+        "movl %%esp, %0" : "=r" (ksp)
     );
 
     int kbp;
-    asm volatile(
-        "movl %%ebp, %0": "=r" (kbp)
+
+    asm volatile (
+        "movl %%ebp, %0" : "=r" (kbp)
     );
 
-    pcb -> parent.ksp = ksp;
-    pcb -> parent.kbp = kbp;
+    pcb->parent.ksp = ksp;
+    pcb->parent.kbp = kbp;
 
-    //get starting EIP at 24 bytes
+    // get starting EIP at 24 bytes
     uint8_t EIPbuf[4];
-    read_data(dentry.inode, 24, EIPbuf, 4);
-    uint32_t EIP = *((uint32_t*)EIPbuf);
 
-    //iret context switch, set EIP, CS, flags (set interrupt flag manually), user stack address, ss
-    asm volatile(
+    read_data(dentry.inode, 24, EIPbuf, 4);
+    uint32_t EIP = *((uint32_t *)EIPbuf);
+
+    // iret context switch, set EIP, CS, flags (set interrupt flag manually),
+    // user stack address, ss
+    asm volatile (
         "pushl %0;"
         "pushl %1;"
         "pushfl;"
@@ -163,13 +192,12 @@ int32_t execute (const uint8_t* command) {
         "pushl %%eax;"
         "pushl %2;"
         "pushl %3;"
-        "iret;" 
+        "iret;"
         :
         : "g" (USER_DS), "g" (USER_PAGE_BOT), "g" (USER_CS), "g" (EIP)
     );
 
-    asm volatile ("execute_return:");
-    return 0;
+    return ret_status;
 }
 
 /*
@@ -178,12 +206,13 @@ int32_t execute (const uint8_t* command) {
  *   INPUTS: none
  *   RETURN VALUE: assigned process value or -1 if processes are full
  */
-int assign_pid(void){
+int assign_pid(void) {
     int i;
-    for(i=0; i<PROCESS_LIMIT; i++){
-        if(pid_arr[i]==0){
+
+    for(i = 0; i < PROCESS_LIMIT; i++) {
+        if(pid_arr[i] == 0) {
             pid_arr[i] = 1;
-            curr_pid = i;
+            curr_pid   = i;
             return i;
         }
     }
@@ -196,13 +225,13 @@ int assign_pid(void){
  *   INPUTS: pid you want unassigned
  *   RETURN VALUE: 1 if success, -1 if pid is already unassigned
  */
-int unassign_pid(int pid){
-    if (pid_arr[pid] == 1){
+int unassign_pid(int pid) {
+    if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
         return 1;
     }
-    else
-        return -1;
+
+    return -1;
 }
 
 /*
@@ -211,7 +240,7 @@ int unassign_pid(int pid){
  *   INPUTS: none
  *   RETURN VALUE: idx of most recently used pid or -1 if none
  */
-int get_latest_pid(){
+int get_latest_pid() {
     return curr_pid;
 }
 
@@ -222,90 +251,112 @@ int get_latest_pid(){
  *   RETURN VALUE: pcb location
  */
 pcb_t* get_pcb_addr(int pid) {
-    return (pcb_t*)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
+    return (pcb_t *)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
 }
+
+pcb_t* get_latest_pcb() {
+    return get_pcb_addr(get_latest_pid());
+}
+
 /*
  * allocate_pcb
  *   DESCRIPTION: get pointer to pcb location and initialize stdin and stdout
  *   INPUTS: pid of pcb that you want
  *   RETURN VALUE: pcb location
  */
-pcb_t* allocate_pcb(int pid){
-    //pcb is located at top of kernel stack (which is at bottom of kernel page) for process
-    pcb_t* pcb = get_pcb_addr(pid);
+pcb_t* allocate_pcb(int pid) {
+    // pcb is located at top of kernel stack (which is at bottom of kernel page)
+    // for process
+    pcb_t *pcb = get_pcb_addr(pid);
 
-    //stdin in position 0
-    pcb -> fd_items[STDIN_IDX].file_op_jmp = stdin_table;
-    pcb -> fd_items[STDIN_IDX].inode = 0;
-    pcb -> fd_items[STDIN_IDX].file_position = 0;
-    pcb -> fd_items[STDIN_IDX].flags = 1 + 4;
+    // stdin in position 0
+    pcb->fd_items[STDIN_IDX].file_op_jmp   = stdin_table;
+    pcb->fd_items[STDIN_IDX].inode         = 0;
+    pcb->fd_items[STDIN_IDX].file_position = 0;
+    pcb->fd_items[STDIN_IDX].flags         = 1;
 
-    //stdout in position 1
-    pcb -> fd_items[STDOUT_IDX].file_op_jmp = stdout_table;
-    pcb -> fd_items[STDOUT_IDX].inode = 0;
-    pcb -> fd_items[STDOUT_IDX].file_position = 0;
-    pcb -> fd_items[STDOUT_IDX].flags = 1 + 4;
+    // stdout in position 1
+    pcb->fd_items[STDOUT_IDX].file_op_jmp   = stdout_table;
+    pcb->fd_items[STDOUT_IDX].inode         = 0;
+    pcb->fd_items[STDOUT_IDX].file_position = 0;
+    pcb->fd_items[STDOUT_IDX].flags         = 1;
 
     // set parent to null
     pcb->parent.ksp = 0;
     pcb->parent.kbp = 0;
 
+    pcb->fd_items[pid].file_position = 0;
 
-    pcb -> pid = pid;
+    pcb->pid = pid;
     return pcb;
 }
 
 /*
  * parse_command
- *   DESCRIPTION: helper function parse execute function ,move arguments to pcb for safekeeping
+ *   DESCRIPTION: helper function parse execute function ,move arguments to pcb
+ *for safekeeping
  *   INPUTS: command and pcb_pointer
  *   RETURN VALUE: if successful 1, if fail -1
  */
-int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry) {
+int parse_command(const uint8_t *command, pcb_t *pcb, int pid, dentry_t *dentry) {
     uint8_t exec_buf[CMD_MAX_LEN];
     int i;
-    int j = 0;
-    //exec status stages 0 = nothing, 1 = started, 2 = completed
-    uint8_t exec_status = 0;
 
-    for (i = 0; i < TERM_BUF_SIZE; i++) {
-        //end of command if newline or null char
-        if (command[i] == '\0' || command[i] == '\n') {
-            if (i == 0)
-                return -1;
+    int com_loc  = 0;
+    int exec_loc = 0;
+    int arg_loc  = 0;
 
-            // Add null terminating ending
-            exec_buf[i] = '\0';
-            break;
+    // clear buffer
+    memset(pcb->argument_buf, 0, TERM_BUF_SIZE - CMD_MAX_LEN - 1);
+
+    uint8_t char_seen_flag = 0;
+
+    // parse the executable name until null terminator or newline
+    while(command[com_loc] != '\0' && command[com_loc] != '\n') {
+        // search for the space after the command
+        if((command[com_loc] == ' ') && (char_seen_flag == 1)) break;
+        // ignore leading spaces
+        else if(command[com_loc] != ' ') {
+            char_seen_flag     = 1;
+            exec_buf[exec_loc] = command[com_loc];
+            exec_loc++;
         }
-
-        //at first non-space, char exec starts
-        if (command[i] != ' ' && exec_status == 0)
-            exec_status = 1;
-        //after first space after exec starts, exec ends
-        else if (command[i] == ' ' && exec_status == 1)
-            exec_status = 2;
-
-        //put characters into correct buffer depending on exec status
-        if (command[i] != ' ' && exec_status == 1)
-            exec_buf[i] = command[i];
-        //argument buffer is space padded
-        if (exec_status == 2)
-            pcb -> argument_buf[j] = command[i];
-            j++;
+        com_loc++;
     }
-    //check if file exists
-    // Clear parts of exec_buf not used -> if not done file_open returns -1
-    for(i = strlen((const int8_t*)exec_buf) + 1; i < CMD_MAX_LEN; i++)
-        exec_buf[i] = 0;
-    if (file_open((const uint8_t*)exec_buf) == -1)
-        return -1;
 
-    //check that first four characters are Delete, E, L, F
+    // null terminate the buffer
+    exec_buf[com_loc] = '\0';
+    char_seen_flag    = 0;
+
+    // parse the arguments
+    while(command[com_loc] != '\0' && command[com_loc] != '\n') {
+        // space at the end
+        if((command[com_loc] == ' ') && (char_seen_flag == 1)) break;
+        // ignore spaces
+        else if(command[com_loc] != ' ') {
+            char_seen_flag             = 1;
+            pcb->argument_buf[arg_loc] = command[com_loc];
+            arg_loc++;
+        }
+        com_loc++;
+    }
+
+    // check if file exists
+    // Clear parts of exec_buf not used -> if not done file_open returns -1
+    for(i = strlen((const int8_t *)exec_buf) + 1; i < CMD_MAX_LEN;
+        i++) exec_buf[i] = 0;
+
+    if(file_open((const uint8_t *)exec_buf) == -1) return -1;
+
+    pcb->fd_items[get_latest_pid()].inode = current_dentry.inode;
+
+    // check that first four characters are Delete, E, L, F
     uint8_t first_4_char[4];
-    file_read(0, first_4_char, 4);
-    if (first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != L || first_4_char[3] != F)
-        return -1;
+
+    file_read(get_latest_pid(), first_4_char, 4);
+
+    if((first_4_char[0] != DELETE) || (first_4_char[1] != E) ||
+       (first_4_char[2] != L) || (first_4_char[3] != F)) return -1;
 
     read_dentry_by_name(exec_buf, dentry);
 
@@ -315,61 +366,58 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
 /*
  * read
  *   DESCRIPTION: opens file at given fd for reading into the buffer
- *   INPUTS: file descriptor idx (fd), buffer to read into (buf), number of bytes to read (nbytes)
+ *   INPUTS: file descriptor idx (fd), buffer to read into (buf), number of
+ *bytes to read (nbytes)
  *   RETURN VALUE: if successful returns amount of bytes read, if fail -1
  */
-int32_t read (int32_t fd, void* buf, int32_t nbytes) {
-
+int32_t read(int32_t fd, void *buf, int32_t nbytes) {
     // check for invalid conditions
-    if (buf == NULL || nbytes < 0 || fd < 0 || fd == STDOUT_IDX || fd > MAX_OPEN_FILES) {
-        return -1;
-    }
+    if((buf == NULL) || (nbytes < 0) || (fd < 0) || (fd == STDOUT_IDX) ||
+       (fd > MAX_OPEN_FILES)) return -1;
 
-    // get the pcb ptr
-    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    pcb_t *pcb           = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
 
-    // check for write-only
-    if ((file_item.flags & READ_WRITE_MASK) == O_WRONLY) {
-        printf("This file is write only. You can't read it.\n");
-        return -1;
-    }
+    // make sure file is open for reading
+    if((fd > STDOUT_IDX) &&
+       ((file_item.flags & ACTIVE_FLAG_MASK) == 0)) return -1;
 
+    int i;
+
+    for(i = 0; i < nbytes; i++) ((uint8_t *)buf)[i] = 0;
+
+    // get the pcb ptr
     return file_item.file_op_jmp.read(fd, buf, nbytes);
-
 }
 
 /*
  * write
  *   DESCRIPTION: writes into the passed in buffer
- *   INPUTS: file descriptor idx (fd), buffer to read into (buf), number of bytes to write (nbytes)
+ *   INPUTS: file descriptor idx (fd), buffer to read into (buf), number of
+ *bytes to write (nbytes)
  *   RETURN VALUE: if successful returns 0, if fail -1
  */
-int32_t write (int32_t fd, const void* buf, int32_t nbytes) {
-
+int32_t write(int32_t fd, const void *buf, int32_t nbytes) {
     // check for invalid conditions
-    if (buf == NULL || nbytes < 0 || fd <= STDIN_IDX || fd > MAX_OPEN_FILES) {
-        return -1;
-    }
+    if((buf == NULL) || (nbytes < 0) || (fd <= STDIN_IDX) ||
+       (fd > MAX_OPEN_FILES)) return -1;
 
     // get the pcb ptr
-    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    pcb_t *pcb           = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for read-only
-    if ((file_item.flags & READ_WRITE_MASK) == O_RDONLY) {
-        printf("This file is read only. You can't write to it.\n");
-        return -1;
-    }
+    if((file_item.flags & READ_WRITE_MASK) == O_RDONLY) return -1;
 
     return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
 
 void setup_TSS(int pid) {
-    //ss0 at kernel data segment
+    // ss0 at kernel data segment
     tss.ss0 = KERNEL_DS;
-    //esp0 at base of k stack
-    tss.esp0 = KERNEL_PAGE_BOT - KERNEL_STACK_SIZE * pid;
+
+    // esp0 at base of k stack
+    tss.esp0 = KERNEL_PAGE_BOT - (KERNEL_STACK_SIZE * pid);
 }
 
 /*
@@ -388,117 +436,112 @@ void setup_TSS(int pid) {
  * * calls fop fopen
  * * returns fd
  */
-int32_t open (const uint8_t* filename) {
-    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+int32_t open(const uint8_t *filename) {
+    pcb_t *pcb = (pcb_t *)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
     dentry_t tmp_dentry;
-    file_op_table_t* tmp_f_ops;
-    int i = 0, asm_ret_val;
+    file_op_table_t *tmp_f_ops;
+    int i = 0;
+
     // check if valid name
     // check null
-    if (filename[0] == '\0'){
-        return -1;
-    }
-    // check len
-    if (strlen((int8_t*)filename) > 33){
-        return -1;
-    }
-    // handle stdin
-    // 5--> number of bytes
-    if (strncmp((int8_t*)filename, (int8_t*)"stdin", 5)){
-        // stdin is index0
-        pcb->fd_items[0].file_op_jmp = stdin_table;
-        if(set_active_flag(0, ACTIVE_FLAG))
-            return 0; // return fd
-        else
-            return -1; // failed
-    }
+    if(filename[0] == '\0') return -1;
 
+    // check len
+    if(strlen((int8_t *)filename) > 33) return -1;
+
+    // Copy filename to buffer we can edit
+    int startOffset = 0;
+    uint8_t fname[32];
+
+    for(i = 0; i < 32; i++) fname[i] = filename[i];
+
+    while(fname[startOffset] != '\0') startOffset++;
+
+    // Clear all values after \0 in filename
+    for(i = startOffset; i < 32; i++) fname[i] = 0;
+
+    // handle stdin
+    // stdin is index0, 5 = len of "stdin"
+    if(strncmp((int8_t *)fname, (int8_t *)"stdin", 5))
+        pcb->fd_items[0].file_op_jmp = stdin_table;
 
     // handle stdout
-    // 6 --> number of chars of "stdout"
-    if (strncmp((int8_t*)filename, (int8_t*)"stdout", 6)){
-        // stdout is index1
+    // stdout is index1, 6 = len of "stdout"
+    if(strncmp((int8_t *)fname, (int8_t *)"stdout", 6))
         pcb->fd_items[1].file_op_jmp = stdout_table;
-        if (set_active_flag(1, ACTIVE_FLAG))
-            return 1; // return fd
-        else
-            return -1; // failed
-    }
-
 
     // check if file exists
-    if (read_dentry_by_name(filename, &tmp_dentry) == -1){
+    if(read_dentry_by_name(fname, &tmp_dentry) == -1)
         return -1;
-    }
+
     // dentry info is in tmp_dentry
 
     // check for open spot in pcb
-    for (i=0; i<MAX_OPEN_FILES; i++){
-        if (i==0 || i==1)
-            continue;
-        if ((pcb->fd_items[i].flags & ACTIVE_FLAG_MASK) == 0) // check if active
+    for(i = 0; i < MAX_OPEN_FILES; i++) {
+        if((i == 0) || (i == 1)) continue;
+
+        if((pcb->fd_items[i].flags & ACTIVE_FLAG_MASK) == 0) // check if active
             break;
     }
+
+    if(i == MAX_OPEN_FILES)
+        return -1;
+
     // i stores open spot
 
-
     // grab fops
-    if(tmp_dentry.type == 0) // dentry type 0 is RTC
+    if(tmp_dentry.type == 0)      // dentry type 0 is RTC
         tmp_f_ops = &rtc_table;
-    else if (tmp_dentry.type == 1) // dentry type 1 is directory
+    else if(tmp_dentry.type == 1) // dentry type 1 is directory
         tmp_f_ops = &dir_table;
-    else if (tmp_dentry.type == 2) // dentry type 2 is file
+    else if(tmp_dentry.type == 2) // dentry type 2 is file
         tmp_f_ops = &file_table;
-    else  // no other supported dentry types
+    else                          // no other supported dentry types
         return -1;
 
-    // call fopen, trying with asm first
-    asm volatile("pushl	%2;"
-				 "call  *%1;"
-		 		 "movl 	%%eax,%0;"
-		 		 "addl	$4,%%esp;"
-		 		 : "=r"(asm_ret_val)
-		 		 : "g" ((*tmp_f_ops).open), "g" (filename)
-		 		 : "eax");
-
-    if (asm_ret_val == -1)
-        return -1;
     // if success set struct data - set flag to active (3rd bit (& 4) == 1 )
-    if (!set_active_flag(i, ACTIVE_FLAG))
-        return -1; // failed
-    pcb->fd_items[i].file_op_jmp = *tmp_f_ops;
-    pcb->fd_items[i].inode = tmp_dentry.inode;
+    if(!set_active_flag(i, ACTIVE_FLAG)) return -1;    // failed
+
+    pcb->fd_items[i].file_op_jmp   = *tmp_f_ops;
+    pcb->fd_items[i].inode         = tmp_dentry.inode; // TODO
     pcb->fd_items[i].file_position = 0;
+    int ret = pcb->fd_items[i].file_op_jmp.open(fname);
+
+    if(ret == -1)
+        return -1;
+
     return i;
 }
 
 /*
-set_active_flag
-DESCRIPTION: Sets fd entry to the new status passed in.
-iNPUTS: fd -- file descriptor, new_status -- new status to set to
-OUTPUTS: none
-SIDE EFFECTS: changes fd's flag to new status
-RETURNS: 0 on fail, 1 on success.
-*/
-int32_t set_active_flag (int32_t fd, int32_t new_status){
-    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+ * set_active_flag
+ * DESCRIPTION: Sets fd entry to the new status passed in.
+ * INPUTS: fd -- file descriptor, new_status -- new status to set to
+ * OUTPUTS: none
+ * SIDE EFFECTS: changes fd's flag to new status
+ * RETURNS: 0 on fail, 1 on success.
+ */
+int32_t set_active_flag(int32_t fd, int32_t new_status) {
+    //
+    pcb_t *pcb = get_pcb_addr(get_latest_pid());
     uint32_t flags = pcb->fd_items[fd].flags;
-    if (new_status == 1){  // if setting to active
-        if ((flags & ACTIVE_FLAG_MASK) > 0)
-            return 0;
-        else{
+
+    if(new_status == 1) { // if setting to active
+        if((flags & ACTIVE_FLAG_MASK) > 0) return 0;
+        else {
             flags |= ACTIVE_FLAG_MASK;
         }
     }
-    else if (new_status == 0){
-        if ((flags & ACTIVE_FLAG_MASK) == 0)
-            return 0;
-        else{
+    else if(new_status == 0) { // if setting to inactive
+        if((flags & ACTIVE_FLAG_MASK) == 0) return 0;
+        else {
             flags ^= ACTIVE_FLAG_MASK; // ==4
         }
     }
+    pcb->fd_items[fd].flags = flags;
     return 1; // success
 }
+
 /*
  * syscall close
  *   DESCRIPTION: close a file
@@ -510,90 +553,94 @@ int32_t set_active_flag (int32_t fd, int32_t new_status){
  * * calls fop fclose
  * * returns fd
  */
+int32_t close(int32_t fd) {
+    pcb_t *pcb =
+        (pcb_t *)(KERNEL_PAGE_BOT - (get_latest_pid() + 1) * KERNEL_STACK_SIZE);
 
-int32_t close (int32_t fd) {
-    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
-
-    int i = 0, asm_ret_val;
+    // int asm_ret_val;
     // dont let them close stdin/out
-    if(fd == 0 || fd == 1)
-        return -1;
+    if((fd == 0) || (fd == 1)) return -1;
 
     // bounds check
-    if(fd < 0 || fd >= MAX_OPEN_FILES)
-        return -1;
-
-    // dont let them close inactive files
-    if((pcb->fd_items[fd].flags & ACTIVE_FLAG_MASK) == 0)
-        return -1;
-
-
-    // call fclose, handle failed fclose
-    asm volatile("pushl	%2;"
-				 "call  *%1;"
-		 		 "movl 	%%eax,%0;"
-		 		 "addl	$4,%%esp;"
-		 		 : "=r"(asm_ret_val)
-		 		 : "g" (pcb->fd_items[fd].file_op_jmp.close), "g" (fd)
-		 		 : "eax");
-
-    // check if successful
-    if (asm_ret_val == -1)
-        return -1;
+    if((fd < 0) || (fd >= MAX_OPEN_FILES)) return -1;
 
     // set flag to free
-    if (!set_active_flag(i, INACTIVE_FLAG))
+    if(!set_active_flag(fd, INACTIVE_FLAG))
         return -1; // failed
 
-    pcb->fd_items[fd].inode = -1;
-    pcb->fd_items[fd].file_position = -1;
+    int ret = pcb->fd_items[fd].file_op_jmp.close(fd);
+
+    if(ret == -1) return -1;
+
+    pcb->fd_items[fd].inode         = 0;
+    pcb->fd_items[fd].file_position = 0;
     return 0;
 }
-/*
-getargs
-DESCRIPTION: gets args from buffer
-iNPUTS: buf -- buffer, nbytes -- number of bytes to read
-OUTPUTS: none
-SIDE EFFECTS: none --not yet implemented 
-RETURNS: -1
-*/
-int32_t getargs (uint8_t* buf, int32_t nbytes) {
-    return -1;
 
+/*
+ * getargs
+ * DESCRIPTION: gets args from buffer
+ * iNPUTS: buf -- buffer, nbytes -- number of bytes to read
+ * OUTPUTS: puts arguments into user buffer
+ * RETURNS: -1 if failed, 0 if success
+ */
+int32_t getargs(uint8_t *buf, int32_t nbytes) {
+    pcb_t *pcb         = get_latest_pcb();
+    uint8_t *arguments = pcb->argument_buf;
+    int i;
+
+    // clear buffer
+    memset(buf, 0, nbytes);
+
+    for(i = 0; i < nbytes; i++) {
+        // if no argument exists, fail
+        if((i == 0) && (arguments[i] == '\0')) return -1;
+
+        buf[i] = arguments[i];
+
+        // after argument has been fully put in buffer, success
+        if(arguments[i] == '\0') {
+            buf[i] = '\0';
+            return 0;
+        }
+    }
+
+    // if argument too big for buffer, fail
+    return -1;
 }
-/*
-vidmap
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
-*/
-int32_t vidmap (uint8_t** screen_start) {
-    return -1;
 
+/*
+ * vidmap
+ * DESCRIPTION: maps video memory into user space
+ * INPUTS: vid mem location
+ * OUTPUTS: 0 if success, -1 if failed
+ */
+int32_t vidmap(uint8_t **screen_start) {
+    // bound testing
+    if(((int)screen_start > USER_PAGE_BOT) ||
+       ((int)screen_start < USER_PAGE_TOP)) return -1;
+
+    map_page_vid(VIDMAP_LOC);
+    *screen_start = (uint8_t *)(VIDMAP_LOC * MAX_FILE_SIZE);
+
+    return 0;
 }
-/*
-set_handler
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
-*/
-int32_t set_handler (int32_t signum, void* handler_address) {
-    return -1;
 
+/*
+ * set_handler
+ * DESCRIPTION: signals not supported :(
+ * INPUTS: int32_t signum, void* handler_address
+ * RETURNS: always fails (return -1) due to no support :(
+ */
+int32_t set_handler(int32_t signum, void *handler_address) {
+    return -1;
 }
-/*
-sigreturn 
-DESCRIPTION: not yet implemented
-iNPUTS: not yet implemented
-OUTPUTS: not yet implemented
-SIDE EFFECTS: not yet implemented
-RETURNS: -1
-*/
-int32_t sigreturn (void) {
-    return -1;
 
+/*
+   sigreturn
+   DESCRIPTION: signals not supported :(
+   RETURNS: always fails (return -1) due to no support :(
+ */
+int32_t sigreturn(void) {
+    return -1;
 }

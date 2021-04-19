@@ -26,7 +26,6 @@ void clear(void) {
     screen_x = 0;
     screen_y = 0;
     update_cursor(screen_x, screen_y);
-    sti();
 }
 
 /* void clear_row(int row);

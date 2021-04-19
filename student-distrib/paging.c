@@ -7,7 +7,7 @@ extern void tlb_flush();
 // align with 4KB Chunks
 page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH] __attribute__((aligned(PAGE_DIRECTORY_LENGTH * 4)));
 page_table_entry_t page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
-
+page_table_entry_t vid_page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
 /*
  * paging_init
  *   DESCRIPTION: Initializes the paging
@@ -30,7 +30,7 @@ void paging_init()
     page_dir[i].val = 0; // clear contents
     // set to rw
     page_dir[i].rw = 0;
-    page_dir[i].us = 1;
+    page_dir[i].us = 0;
   }
 
   for (i = 0; i < PAGE_TABLE_LENGTH; i++)
@@ -38,7 +38,7 @@ void paging_init()
     page_table[i].val = 0; // clear contents
     // set to rw
     page_table[i].rw = 0;
-    page_table[i].us = 1;
+    page_table[i].us = 0;
     // set address
     page_table[i].aligned_address = i;
   }
@@ -60,8 +60,6 @@ void paging_init()
   page_table[VID_MEM].present = 1;
   page_table[VID_MEM].cache_disable = 1;
 
-
-  // WHY DOES THIS AND ONLY THIS WORK?
   edit_paging_flags((int)page_dir);
 }
 
@@ -106,7 +104,7 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len) {
 */
 void map_page_pid(int pid) {
   int phys_addr = KERNEL_PAGE + pid * TASK_SIZE;
-  int page_idx = CORRECT_PAGE + pid;
+  int page_idx = CORRECT_PAGE;
   page_dir[page_idx].present = 1;
   page_dir[page_idx].rw = 1;
   page_dir[page_idx].us = 1;
@@ -115,3 +113,27 @@ void map_page_pid(int pid) {
 
   tlb_flush();
 }
+
+/*
+* map_page_vid
+*   DESCRIPTION: map virtual address for vid mem to physical address based on pid https://wiki.osdev.org/Paging#Enabling
+*   INPUTS: virtual address
+*   OUTPUTS: maps virtual address to physical address
+*   SIDE EFFECTS: Flushes TLB
+*   RETURN VALUE: none
+*/
+void map_page_vid(int virt_addr) {
+  page_dir[virt_addr].present = 1;
+  page_dir[virt_addr].rw = 1;
+  page_dir[virt_addr].us = 1;
+  // page_dir[page_idx].size = 1;
+  page_dir[virt_addr].aligned_address =  ((int) &vid_page_table) >> 12;
+
+  vid_page_table[0].present = 1;
+  vid_page_table[0].rw = 1;
+  vid_page_table[0].us = 1; // user space video mem
+  vid_page_table[0].aligned_address = VID_MEM;
+
+  tlb_flush();
+}
+
