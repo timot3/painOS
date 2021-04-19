@@ -404,12 +404,17 @@ int32_t open (const uint8_t* filename) {
     int i = 0, asm_ret_val;
     // check if valid name
     // check null
-    if (filename[0] == '\0')
+    // printf("FNAME:%s\n", filename);
+    if (filename[0] == '\0') {
+        // printf("FIRS\n");
         return -1;
+    }
 
     // check len
-    if (strlen((int8_t*)filename) > 33)
+    if (strlen((int8_t*)filename) > 33) {
+        // printf("SEOCND\n");
         return -1;
+    }
 
     // Copy filename to buffer we can edit
     int startOffset = 0;
@@ -455,8 +460,10 @@ int32_t open (const uint8_t* filename) {
 
 
     // check if file exists
-    if (read_dentry_by_name(fname, &tmp_dentry) == -1)
+    if (read_dentry_by_name(fname, &tmp_dentry) == -1) {
+        // printf("THIRD\n");
         return -1;
+    }
     // dentry info is in tmp_dentry
 
     // check for open spot in pcb
@@ -476,26 +483,33 @@ int32_t open (const uint8_t* filename) {
         tmp_f_ops = &dir_table;
     else if (tmp_dentry.type == 2) // dentry type 2 is file
         tmp_f_ops = &file_table;
-    else // no other supported dentry types
+    else {// no other supported dentry types
+        // printf("FROTH\n");
         return -1;
+    }
 
     // call fopen, trying with asm first
-    asm volatile("pushl	%2;"
-				 "call  *%1;"
-		 		 "movl 	%%eax,%0;"
-		 		 "addl	$4,%%esp;"
-		 		 : "=r"(asm_ret_val)
-		 		 : "g" ((*tmp_f_ops).open), "g" (filename)
-		 		 : "eax");
-
-    if (asm_ret_val == -1)
-        return -1;
+    // asm volatile("pushl	%2;"
+	// 			 "call  *%1;"
+	// 	 		 "movl 	%%eax,%0;"
+	// 	 		 "addl	$4,%%esp;"
+	// 	 		 : "=r"(asm_ret_val)
+	// 	 		 : "g" ((*tmp_f_ops).open), "g" (filename)
+	// 	 		 : "eax");
+    // if (asm_ret_val == -1)
+    //     return -1;
     // if success set struct data - set flag to active (3rd bit (& 4) == 1 )
-    if (!set_active_flag(i, ACTIVE_FLAG))
-        return -1; // failed
+    // if (!set_active_flag(i, ACTIVE_FLAG))
+    //     return -1; // failed
     pcb->fd_items[i].file_op_jmp = *tmp_f_ops;
     pcb->fd_items[i].inode = tmp_dentry.inode; //TODO
     pcb->fd_items[i].file_position = 0;
+    int ret = pcb->fd_items[i].file_op_jmp.open(fname);
+    if(ret == -1) {
+        // printf("FIFTH\n");
+        return -1;
+    }
+    // printf("RET: %d\n", i);
     return i;
 }
 
@@ -558,23 +572,27 @@ int32_t close (int32_t fd) {
 
 
     // call fclose, handle failed fclose
-    asm volatile("pushl	%2;"
-				 "call  *%1;"
-		 		 "movl 	%%eax,%0;"
-		 		 "addl	$4,%%esp;"
-		 		 : "=r"(asm_ret_val)
-		 		 : "g" (pcb->fd_items[fd].file_op_jmp.close), "g" (fd)
-		 		 : "eax");
-
-    // check if successful
-    if (asm_ret_val == -1)
-        return -1;
+    // asm volatile("pushl	%2;"
+	// 			 "call  *%1;"
+	// 	 		 "movl 	%%eax,%0;"
+	// 	 		 "addl	$4,%%esp;"
+	// 	 		 : "=r"(asm_ret_val)
+	// 	 		 : "g" (pcb->fd_items[fd].file_op_jmp.close), "g" (fd)
+	// 	 		 : "eax");
+    //
+    // // check if successful
+    // if (asm_ret_val == -1)
+    //     return -1;
 
     // set flag to free
     // if (!set_active_flag(i, INACTIVE_FLAG)) {
     //     printf("vjnskjdht");
     //     return -1; // failed
     // }
+
+    int ret = pcb->fd_items[fd].file_op_jmp.close(fd);
+    if(ret == -1)
+        return -1;
 
     pcb->fd_items[fd].inode = -1;
     pcb->fd_items[fd].file_position = -1;
