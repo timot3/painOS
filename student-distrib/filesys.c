@@ -16,6 +16,9 @@ int32_t file_open(const uint8_t *filename) {
     dentry_t dentry;
     ret = read_dentry_by_name(filename, &dentry);
 
+	if(ret == -1)
+		return -1;
+
     // Copy name to global dentry
     for(j = 0; j < MAX_FILENAME_LEN; j++) {
         current_dentry.fname[j] = dentry.fname[j];

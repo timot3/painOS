@@ -134,7 +134,7 @@ int32_t halt(uint8_t status) {
  */
 int32_t execute(const uint8_t *command) {
     // get pid if none avaialbe fail
-    int pid = assign_pid();
+    int pid = assign_pid(), i;
 
     if(pid == -1) return -1;
 
@@ -146,12 +146,17 @@ int32_t execute(const uint8_t *command) {
     // parse command, if bad fail
     if(parse == -1) {
         unassign_pid(pid);
+        for(i = STDOUT_IDX + 1; i < MAX_OPEN_FILES; i++) {
+            close(i);
+
+            pcb->fd_items[i].file_op_jmp = bad_table;
+            pcb->fd_items[i].flags       = 0;
+        }
         return -1;
     }
 
     // set up page
     map_page_pid(pid);
-    tlb_flush();
 
     // copy user program to page
     read_data(dentry.inode, 0, (uint8_t *)BUFFER_START, MAX_FILE_SIZE);
@@ -228,6 +233,7 @@ int assign_pid(void) {
 int unassign_pid(int pid) {
     if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
+        curr_pid = 0;
         return 1;
     }
 
@@ -343,8 +349,7 @@ int parse_command(const uint8_t *command, pcb_t *pcb, int pid, dentry_t *dentry)
 
     // check if file exists
     // Clear parts of exec_buf not used -> if not done file_open returns -1
-    for(i = strlen((const int8_t *)exec_buf) + 1; i < CMD_MAX_LEN;
-        i++) exec_buf[i] = 0;
+    for(i = strlen((const int8_t *)exec_buf) + 1; i < CMD_MAX_LEN; i++) exec_buf[i] = 0;
 
     if(file_open((const uint8_t *)exec_buf) == -1) return -1;
 
