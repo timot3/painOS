@@ -614,8 +614,8 @@ int32_t getargs (uint8_t* buf, int32_t nbytes) {
     uint8_t *arguments = pcb -> argument_buf;
     int i;
 
-    for(i = 0; i < nbytes;i++)
-        buf[i]=0;
+    //clear buffer
+    memset(buf, 0, nbytes);
 
     for(i=0; i<nbytes; i++){
         //if no argument exists, fail
