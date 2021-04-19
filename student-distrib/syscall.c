@@ -1,6 +1,6 @@
 #include "syscall.h"
 #include "filesys.h"
-volatile int32_t ret_status = -1;
+volatile uint32_t ret_status = 0;
 
 static file_op_table_t rtc_table = {
     .open = rtc_open,
@@ -37,6 +37,13 @@ static file_op_table_t stdout_table = {
     .close = std_bad_call
 };
 
+static file_op_table_t bad_table = {
+    .open = std_bad_call,
+    .read = std_bad_call,
+    .write = std_bad_call,
+    .close = std_bad_call
+};
+
 char pid_arr[PROCESS_LIMIT] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -60,8 +67,12 @@ int32_t halt (uint8_t status) {
 
     pcb_t* parent = get_pcb_addr(pcb->parent.pid);
     //2.  close all file descriptors
+    unassign_pid(pcb->pid);
     for (i = STDOUT_IDX + 1; i < MAX_OPEN_FILES; i++) {
         close(i);
+
+        pcb->fd_items[i].file_op_jmp = bad_table;
+        pcb->fd_items[i].flags = 0;
     }
 
     // 1.  if base shell, re-execute base shell
@@ -73,7 +84,6 @@ int32_t halt (uint8_t status) {
     // 3.  set up file state for return to parent
 
     // unassign current pid
-    unassign_pid(pcb->pid);
     // instead assign it to the parent pid
     pcb->pid = pcb->parent.pid;
 
@@ -81,11 +91,11 @@ int32_t halt (uint8_t status) {
     map_page_pid(pcb->pid);
 
     // assembly wrapper for tlb flush
-    tlb_flush();
+    //tlb_flush();
     // 5.  set tss to point to parent's stack
     // set esp0 to point to base of parent's kernel stack
-    tss.esp0 = pcb->parent.kbp;
-    // tss.esp0 = pcb->esp0;
+    tss.esp0 = pcb->parent.ksp;
+    // tss.esp0 = parent->esp0;
     // set ss0 to kernel data segment
     tss.ss0 = KERNEL_DS;
     // 6.  swap to saved parent's stack state and return from execute
@@ -264,8 +274,8 @@ pcb_t* allocate_pcb(int pid){
     pcb -> fd_items[STDOUT_IDX].flags = 1;
 
     // set parent to null
-    // pcb->parent.ksp = 0;
-    // pcb->parent.kbp = 0;
+    pcb->parent.ksp = 0;
+    pcb->parent.kbp = 0;
 
 
     pcb -> pid = pid;
@@ -314,12 +324,12 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
         }
         com_loc++;
     }
-    
+
     //check if file exists
     // Clear parts of exec_buf not used -> if not done file_open returns -1
     for(i = strlen((const int8_t*)exec_buf) + 1; i < CMD_MAX_LEN; i++)
         exec_buf[i] = 0;
-    if (file_open((const uint8_t*)exec_buf) == -1)
+    if(file_open((const uint8_t*)exec_buf) == -1)
         return -1;
 
     pcb->fd_items[get_latest_pid()].inode = current_dentry.inode;
@@ -327,7 +337,7 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
     //check that first four characters are Delete, E, L, F
     uint8_t first_4_char[4];
     file_read(get_latest_pid(), first_4_char, 4);
-    if (first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != L || first_4_char[3] != F)
+    if(first_4_char[0] != DELETE || first_4_char[1] != E || first_4_char[2] != L || first_4_char[3] != F)
         return -1;
 
     read_dentry_by_name(exec_buf, dentry);
@@ -418,17 +428,12 @@ int32_t open (const uint8_t* filename) {
     int i = 0;
     // check if valid name
     // check null
-    // printf("FNAME:%s\n", filename);
-    if (filename[0] == '\0') {
-        // printf("FIRS\n");
+    if (filename[0] == '\0')
         return -1;
-    }
 
     // check len
-    if (strlen((int8_t*)filename) > 33) {
-        // printf("SEOCND\n");
+    if (strlen((int8_t*)filename) > 33)
         return -1;
-    }
 
     // Copy filename to buffer we can edit
     int startOffset = 0;
@@ -447,37 +452,19 @@ int32_t open (const uint8_t* filename) {
     if (strncmp((int8_t*)fname, (int8_t*)"stdin", 5)) {
         // stdin is index0
         pcb->fd_items[0].file_op_jmp = stdin_table;
-        // if(set_active_flag(0, ACTIVE_FLAG)) {
-        //     printf("RET 0");
-        //     return 0; // return fd
-        // }
-        // else {
-        //     printf("RET -13");
-        //     return -1; // failed
-        // }
     }
-
 
     // handle stdout
     if (strncmp((int8_t*)fname, (int8_t*)"stdout", 6)) {
         // stdout is index1
         pcb->fd_items[1].file_op_jmp = stdout_table;
-        // if (set_active_flag(1, ACTIVE_FLAG)) {
-        //     printf("RET 1");
-        //     return 1; // return fd
-        // }
-        // else {
-        //     printf("RET -156");
-        //     return -1; // failed
-        // }
     }
 
 
     // check if file exists
-    if (read_dentry_by_name(fname, &tmp_dentry) == -1) {
-        // printf("THIRD\n");
+    if (read_dentry_by_name(fname, &tmp_dentry) == -1)
         return -1;
-    }
+
     // dentry info is in tmp_dentry
 
     // check for open spot in pcb
@@ -500,21 +487,9 @@ int32_t open (const uint8_t* filename) {
         tmp_f_ops = &dir_table;
     else if (tmp_dentry.type == 2) // dentry type 2 is file
         tmp_f_ops = &file_table;
-    else {// no other supported dentry types
-        // printf("FROTH\n");
+    else // no other supported dentry types
         return -1;
-    }
 
-    // call fopen, trying with asm first
-    // asm volatile("pushl	%2;"
-	// 			 "call  *%1;"
-	// 	 		 "movl 	%%eax,%0;"
-	// 	 		 "addl	$4,%%esp;"
-	// 	 		 : "=r"(asm_ret_val)
-	// 	 		 : "g" ((*tmp_f_ops).open), "g" (filename)
-	// 	 		 : "eax");
-    // if (asm_ret_val == -1)
-    //     return -1;
     // if success set struct data - set flag to active (3rd bit (& 4) == 1 )
     if (!set_active_flag(i, ACTIVE_FLAG))
         return -1; // failed
@@ -522,11 +497,9 @@ int32_t open (const uint8_t* filename) {
     pcb->fd_items[i].inode = tmp_dentry.inode; //TODO
     pcb->fd_items[i].file_position = 0;
     int ret = pcb->fd_items[i].file_op_jmp.open(fname);
-    if(ret == -1) {
-        // printf("FIFTH\n");
+    if(ret == -1)
         return -1;
-    }
-    // printf("RET: %d\n", i);
+
     return i;
 }
 
@@ -611,8 +584,8 @@ int32_t close (int32_t fd) {
     if(ret == -1)
         return -1;
 
-    pcb->fd_items[fd].inode = -1;
-    pcb->fd_items[fd].file_position = -1;
+    pcb->fd_items[fd].inode = 0;
+    pcb->fd_items[fd].file_position = 0;
     return 0;
 }
 
