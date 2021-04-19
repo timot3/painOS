@@ -111,6 +111,7 @@ int32_t halt (uint8_t status) {
     // must return with value of 256
     // ret_status = status;
 
+    printf("Process exited with code = %d\n", status);
     asm volatile("movl %0, %%esp;"
                  "popl %%ebp;"
                  "movl %1, %%eax;"
@@ -341,13 +342,19 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
         return -1;
     }
 
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    fd_items_t file_item = pcb->fd_items[fd];
+
+    if (file_item.flags & ACTIVE_FLAG_MASK == 0) {
+        return -1;
+    }
+
     int i;
     for(i = 0; i < nbytes; i++)
         ((uint8_t*)buf)[i] = 0;
 
     // get the pcb ptr
-    pcb_t* pcb = get_pcb_addr(get_latest_pid());
-    fd_items_t file_item = pcb->fd_items[fd];
+
     return file_item.file_op_jmp.read(fd, buf, nbytes);
 }
 
@@ -554,7 +561,7 @@ int32_t set_active_flag (int32_t fd, int32_t new_status){
  */
 
 int32_t close (int32_t fd) {
-    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+    pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (get_latest_pid() + 1) * KERNEL_STACK_SIZE);
 
     // int asm_ret_val;
     // dont let them close stdin/out
@@ -640,7 +647,9 @@ int32_t vidmap (uint8_t** screen_start) {
     //bound testing
     if ((int)screen_start > USER_PAGE_BOT || (int)screen_start < USER_PAGE_TOP)
         return -1;
-
+    pcb_t* pcb = get_pcb_addr(get_latest_pid());
+    // *screen_start = ;
+    // pcb->vidmap_addr = screen_start;
     return 0;
 
 }
