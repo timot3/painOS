@@ -59,25 +59,17 @@ int32_t halt (uint8_t status) {
     if (pcb == NULL) return -1;
 
     pcb_t* parent = get_pcb_addr(pcb->parent.pid);
-    // 1.  if base shell, re-execute base shell
-    if (pcb->pid == parent->pid) {
-        execute((uint8_t*)"shell");
-    }
-    //else:
     //2.  close all file descriptors
-    for (i = 0; i < MAX_OPEN_FILES; i++) {
-        fd_items_t curr_fd_item = pcb->fd_items[i];
-        // 3rd bit of flag is the "not in use" bit
-        // so bitwise anding it with 0x4 == 0b100 will
-        // check if file is in use
-        if ((curr_fd_item.flags & 0x4) != 0) {
-            // mark file as not present
-            curr_fd_item.flags ^= 0x4;
-            curr_fd_item.file_op_jmp.close(i);
-            // call close on file
-          //  curr_fd_item.file_op_jmp.close(i);
-        }
+    for (i = STDOUT_IDX + 1; i < MAX_OPEN_FILES; i++) {
+        close(i);
     }
+
+    // 1.  if base shell, re-execute base shell
+    if (pcb->pid == 0) {
+        execute((uint8_t*)"shell");
+        // return 0;
+    }
+    //e
     // 3.  set up file state for return to parent
 
     // unassign current pid
