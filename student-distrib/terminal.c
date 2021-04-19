@@ -81,12 +81,8 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
  */
 int32_t terminal_write(int32_t fd, const void *buf, int32_t nbytes) {
     int i;
-    int smallBuf;
-    if (nbytes > TERM_BUF_SIZE)
-        smallBuf = TERM_BUF_SIZE;
-    else
-        smallBuf = nbytes;
-    for(i=0; i<smallBuf; i++) {
+
+    for(i=0; i < nbytes; i++) {
         if(((uint8_t*)buf)[i] != NULL)
             putc(((uint8_t*)buf)[i]);
     }

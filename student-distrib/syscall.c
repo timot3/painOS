@@ -480,6 +480,9 @@ int32_t open (const uint8_t* filename) {
         if ((pcb->fd_items[i].flags & ACTIVE_FLAG_MASK) == 0) // check if active
             break;
     }
+    if (i==MAX_OPEN_FILES){
+        return -1;
+    }
     // i stores open spot
 
 
