@@ -8,7 +8,7 @@
 #include "x86_desc.h"
 
 #define CMD_MAX_LEN 32
-#define PROCESS_LIMIT 100
+#define PROCESS_LIMIT 7
 #define KERNEL_PAGE_BOT 0x800000
 #define KERNEL_STACK_SIZE 8192
 #define DELETE 0x7F
