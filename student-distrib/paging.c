@@ -114,6 +114,14 @@ void map_page_pid(int pid) {
   tlb_flush();
 }
 
+/*
+* map_page_vid
+*   DESCRIPTION: map virtual address for vid mem to physical address based on pid https://wiki.osdev.org/Paging#Enabling
+*   INPUTS: virtual address
+*   OUTPUTS: maps virtual address to physical address
+*   SIDE EFFECTS: Flushes TLB
+*   RETURN VALUE: none
+*/
 void map_page_vid(int virt_addr) {
   page_dir[virt_addr].present = 1;
   page_dir[virt_addr].rw = 1;

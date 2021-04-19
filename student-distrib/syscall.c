@@ -2,6 +2,7 @@
 #include "filesys.h"
 volatile uint32_t ret_status = 0;
 
+// file ops jump tables
 static file_op_table_t rtc_table = {
     .open  = rtc_open,
     .read  = rtc_read,
@@ -44,6 +45,7 @@ static file_op_table_t bad_table = {
     .close = std_bad_call
 };
 
+// arbitrary length for now
 char pid_arr[PROCESS_LIMIT] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -57,8 +59,15 @@ char pid_arr[PROCESS_LIMIT] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
+// global var to keep track of current pid
 int32_t curr_pid = 0;
 
+/*
+ * halt
+ *   DESCRIPTION: halts the currently running process
+ *   INPUTS: status -- status to halt with
+ *   RETURN VALUE: status or -1
+ */
 int32_t halt(uint8_t status) {
     int i, process_status;
 
@@ -67,7 +76,7 @@ int32_t halt(uint8_t status) {
 
     if(pcb == NULL) return -1;
 
-    pcb_t *parent = get_pcb_addr(pcb->parent.pid);
+    // pcb_t *parent = get_pcb_addr(pcb->parent.pid);
 
     // 2.  close all file descriptors
     unassign_pid(pcb->pid);
@@ -302,8 +311,11 @@ int parse_command(const uint8_t *command, pcb_t *pcb, int pid, dentry_t *dentry)
 
     uint8_t char_seen_flag = 0;
 
+    // parse the executable name until null terminator or newline
     while(command[com_loc] != '\0' && command[com_loc] != '\n') {
+        // search for the space after the command
         if((command[com_loc] == ' ') && (char_seen_flag == 1)) break;
+        // ignore leading spaces
         else if(command[com_loc] != ' ') {
             char_seen_flag     = 1;
             exec_buf[exec_loc] = command[com_loc];
@@ -312,11 +324,15 @@ int parse_command(const uint8_t *command, pcb_t *pcb, int pid, dentry_t *dentry)
         com_loc++;
     }
 
+    // null terminate the buffer
     exec_buf[com_loc] = '\0';
     char_seen_flag    = 0;
 
+    // parse the arguments
     while(command[com_loc] != '\0' && command[com_loc] != '\n') {
+        // space at the end
         if((command[com_loc] == ' ') && (char_seen_flag == 1)) break;
+        // ignore spaces
         else if(command[com_loc] != ' ') {
             char_seen_flag             = 1;
             pcb->argument_buf[arg_loc] = command[com_loc];
@@ -498,16 +514,16 @@ int32_t open(const uint8_t *filename) {
 }
 
 /*
-   set_active_flag
-   DESCRIPTION: Sets fd entry to the new status passed in.
-   iNPUTS: fd -- file descriptor, new_status -- new status to set to
-   OUTPUTS: none
-   SIDE EFFECTS: changes fd's flag to new status
-   RETURNS: 0 on fail, 1 on success.
+ * set_active_flag
+ * DESCRIPTION: Sets fd entry to the new status passed in.
+ * INPUTS: fd -- file descriptor, new_status -- new status to set to
+ * OUTPUTS: none
+ * SIDE EFFECTS: changes fd's flag to new status
+ * RETURNS: 0 on fail, 1 on success.
  */
 int32_t set_active_flag(int32_t fd, int32_t new_status) {
-    pcb_t *pcb =
-        (pcb_t *)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+    //
+    pcb_t *pcb = get_pcb_addr(get_latest_pid());
     uint32_t flags = pcb->fd_items[fd].flags;
 
     if(new_status == 1) { // if setting to active
@@ -516,7 +532,7 @@ int32_t set_active_flag(int32_t fd, int32_t new_status) {
             flags |= ACTIVE_FLAG_MASK;
         }
     }
-    else if(new_status == 0) {
+    else if(new_status == 0) { // if setting to inactive
         if((flags & ACTIVE_FLAG_MASK) == 0) return 0;
         else {
             flags ^= ACTIVE_FLAG_MASK; // ==4
@@ -562,11 +578,11 @@ int32_t close(int32_t fd) {
 }
 
 /*
-   getargs
-   DESCRIPTION: gets args from buffer
-   iNPUTS: buf -- buffer, nbytes -- number of bytes to read
-   OUTPUTS: puts arguments into user buffer
-   RETURNS: -1 if failed, 0 if success
+ * getargs
+ * DESCRIPTION: gets args from buffer
+ * iNPUTS: buf -- buffer, nbytes -- number of bytes to read
+ * OUTPUTS: puts arguments into user buffer
+ * RETURNS: -1 if failed, 0 if success
  */
 int32_t getargs(uint8_t *buf, int32_t nbytes) {
     pcb_t *pcb         = get_latest_pcb();
@@ -594,10 +610,10 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
 }
 
 /*
-   vidmap
-   DESCRIPTION: maps video memory into user space
-   INPUTS: vid mem location
-   OUTPUTS: 0 if success, -1 if failed
+ * vidmap
+ * DESCRIPTION: maps video memory into user space
+ * INPUTS: vid mem location
+ * OUTPUTS: 0 if success, -1 if failed
  */
 int32_t vidmap(uint8_t **screen_start) {
     // bound testing
@@ -611,10 +627,10 @@ int32_t vidmap(uint8_t **screen_start) {
 }
 
 /*
-   set_handler
-   DESCRIPTION: signals not supported :(
-   iNPUTS: int32_t signum, void* handler_address
-   RETURNS: always fails (return -1) due to no support :(
+ * set_handler
+ * DESCRIPTION: signals not supported :(
+ * INPUTS: int32_t signum, void* handler_address
+ * RETURNS: always fails (return -1) due to no support :(
  */
 int32_t set_handler(int32_t signum, void *handler_address) {
     return -1;
