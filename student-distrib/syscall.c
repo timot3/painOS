@@ -290,7 +290,9 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
     uint8_t exec_buf[CMD_MAX_LEN];
     int i;
 
-    int loc = 0;
+    int com_loc = 0;
+    int exec_loc = 0;
+    int arg_loc = 0;
 
     //clear buffer
     memset(pcb -> argument_buf, 0, TERM_BUF_SIZE - CMD_MAX_LEN - 1);
