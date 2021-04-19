@@ -292,8 +292,8 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
 
     int loc = 0;
 
-    for(i = 0; i < TERM_BUF_SIZE - CMD_MAX_LEN - 1; i++)
-        pcb -> argument_buf[i] = 0;
+    //clear buffer
+    memset(pcb -> argument_buf, 0, TERM_BUF_SIZE - CMD_MAX_LEN - 1);
 
     while(command[loc] != '\0' && command[loc] != '\n' && command[loc] != ' ') {
         exec_buf[loc] = command[loc];
@@ -622,8 +622,8 @@ int32_t getargs (uint8_t* buf, int32_t nbytes) {
     uint8_t *arguments = pcb -> argument_buf;
     int i;
 
-    for(i = 0; i < nbytes;i++)
-        buf[i]=0;
+    //clear buffer
+    memset(buf, 0, nbytes);
 
     for(i=0; i<nbytes; i++){
         //if no argument exists, fail
