@@ -260,6 +260,12 @@ pcb_t* get_pcb_addr(int pid) {
     return (pcb_t *)(KERNEL_PAGE_BOT - (pid + 1) * KERNEL_STACK_SIZE);
 }
 
+/*
+ * get_latest_pcb
+ *   DESCRIPTION: get pointer to most recently assigned pid pcb location
+ *   INPUTS: none
+ *   RETURN VALUE: idx of most recently used pid or -1 if none
+ */
 pcb_t* get_latest_pcb() {
     return get_pcb_addr(get_latest_pid());
 }
@@ -417,6 +423,12 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes) {
     return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
 
+/*
+ * setup_TSS
+ *   DESCRIPTION: alters ss0 and esp0 of TSS
+ *   INPUTS: pid value to set
+ *   RETURN VALUE: none
+ */
 void setup_TSS(int pid) {
     // ss0 at kernel data segment
     tss.ss0 = KERNEL_DS;
