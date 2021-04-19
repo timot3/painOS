@@ -20,7 +20,7 @@
 //0x8000000 - 4
 #define USER_PAGE_TOP 0x7FFFFFC
 #define USER_PAGE_BOT 0x83FFFFC
-
+#define VIDMAP_LOC 0x19
 #define VIDMAP_TOP 0x0 // placeholder so it compiles
 #define VIDMAP_BOT // placeholder so it compiles
 

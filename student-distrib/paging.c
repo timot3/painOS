@@ -7,7 +7,7 @@ extern void tlb_flush();
 // align with 4KB Chunks
 page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH] __attribute__((aligned(PAGE_DIRECTORY_LENGTH * 4)));
 page_table_entry_t page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
-
+page_table_entry_t vid_page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
 /*
  * paging_init
  *   DESCRIPTION: Initializes the paging
@@ -60,8 +60,6 @@ void paging_init()
   page_table[VID_MEM].present = 1;
   page_table[VID_MEM].cache_disable = 1;
 
-
-  // WHY DOES THIS AND ONLY THIS WORK?
   edit_paging_flags((int)page_dir);
 }
 
@@ -115,3 +113,19 @@ void map_page_pid(int pid) {
 
   tlb_flush();
 }
+
+void map_page_vid(int virt_addr) {
+  page_dir[virt_addr].present = 1;
+  page_dir[virt_addr].rw = 1;
+  page_dir[virt_addr].us = 1;
+  // page_dir[page_idx].size = 1;
+  page_dir[virt_addr].aligned_address =  ((int) &vid_page_table) >> 12;
+
+  vid_page_table[0].present = 1;
+  vid_page_table[0].rw = 1;
+  vid_page_table[0].us = 1; // user space video mem
+  vid_page_table[0].aligned_address = VID_MEM;
+
+  tlb_flush();
+}
+

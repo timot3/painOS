@@ -651,9 +651,10 @@ int32_t vidmap (uint8_t** screen_start) {
     //bound testing
     if ((int)screen_start > USER_PAGE_BOT || (int)screen_start < USER_PAGE_TOP)
         return -1;
-    pcb_t* pcb = get_pcb_addr(get_latest_pid());
-    // *screen_start = ;
-    // pcb->vidmap_addr = screen_start;
+
+    map_page_vid(VIDMAP_LOC);
+    *screen_start = (uint8_t*)(VIDMAP_LOC*MAX_FILE_SIZE);
+
     return 0;
 
 }

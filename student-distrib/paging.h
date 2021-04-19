@@ -74,4 +74,6 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len);
 
 void map_page_pid(int pid);
 
+void map_page_vid(int virt_addr);
+
 #endif /* PAGING_H */
