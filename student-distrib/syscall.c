@@ -295,20 +295,32 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
     //clear buffer
     memset(pcb -> argument_buf, 0, TERM_BUF_SIZE - CMD_MAX_LEN - 1);
 
-    while(command[loc] != '\0' && command[loc] != '\n' && command[loc] != ' ') {
-        exec_buf[loc] = command[loc];
-        loc++;
-    }
-
-    exec_buf[loc] = '\0';
-
-    for(i = loc; i < 128; i++) {
-        if(command[i] == '\0' || command[i] == '\n')
+    uint8_t char_seen_flag = 0;
+    while(command[com_loc] != '\0' && command[com_loc] != '\n') {
+        if (command[com_loc] == ' ' && char_seen_flag==1)
             break;
-        if(command[i] == ' ')
-            continue;
-        pcb -> argument_buf[i-loc-1]=command[i];
+        else if (command[com_loc] != ' '){
+            char_seen_flag = 1;
+            exec_buf[exec_loc] = command[com_loc];
+            exec_loc++;
+        }
+        com_loc++;
     }
+
+    exec_buf[com_loc] = '\0';
+    char_seen_flag = 0;
+
+    while(command[com_loc] != '\0' && command[com_loc] != '\n'){
+        if (command[com_loc] == ' ' && char_seen_flag==1)
+            break;
+        else if (command[com_loc] != ' '){
+            char_seen_flag = 1;
+            pcb -> argument_buf[arg_loc] = command[com_loc];
+            arg_loc++;
+        }
+        com_loc++;
+    }
+    
     //check if file exists
     // Clear parts of exec_buf not used -> if not done file_open returns -1
     for(i = strlen((const int8_t*)exec_buf) + 1; i < CMD_MAX_LEN; i++)
