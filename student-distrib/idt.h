@@ -5,6 +5,7 @@
 #define KB_NUM 0x21
 #define SYSCALL_NUM 0x80
 #define NUM_SYSTEM_INTERRUPTS 32
+#define EXIT_STATUS ((uint8_t)256)
 
 // Generic IDT handler function
 void idt_error();

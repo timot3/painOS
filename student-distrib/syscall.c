@@ -111,7 +111,7 @@ int32_t halt (uint8_t status) {
     // must return with value of 256
     // ret_status = status;
 
-    printf("Process exited with code = %d\n", status);
+    printf("Process %d exited with code = %d\n", pcb->pid, status);
     asm volatile("movl %0, %%esp;"
                  "popl %%ebp;"
                  "movl %1, %%eax;"
@@ -345,7 +345,8 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) {
     pcb_t* pcb = get_pcb_addr(get_latest_pid());
     fd_items_t file_item = pcb->fd_items[fd];
 
-    if (file_item.flags & ACTIVE_FLAG_MASK == 0) {
+    // make sure file is open for reading
+    if (fd > STDOUT_IDX && (file_item.flags & ACTIVE_FLAG_MASK) == 0) {
         return -1;
     }
 
@@ -408,7 +409,7 @@ int32_t open (const uint8_t* filename) {
     pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
     dentry_t tmp_dentry;
     file_op_table_t* tmp_f_ops;
-    int i = 0, asm_ret_val;
+    int i = 0;
     // check if valid name
     // check null
     // printf("FNAME:%s\n", filename);
