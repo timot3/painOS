@@ -499,8 +499,8 @@ int32_t open (const uint8_t* filename) {
     // if (asm_ret_val == -1)
     //     return -1;
     // if success set struct data - set flag to active (3rd bit (& 4) == 1 )
-    // if (!set_active_flag(i, ACTIVE_FLAG))
-    //     return -1; // failed
+    if (!set_active_flag(i, ACTIVE_FLAG))
+        return -1; // failed
     pcb->fd_items[i].file_op_jmp = *tmp_f_ops;
     pcb->fd_items[i].inode = tmp_dentry.inode; //TODO
     pcb->fd_items[i].file_position = 0;
@@ -538,6 +538,7 @@ int32_t set_active_flag (int32_t fd, int32_t new_status){
             flags ^= ACTIVE_FLAG_MASK; // ==4
         }
     }
+    pcb->fd_items[fd].flags = flags;
     return 1; // success
 }
 /*
@@ -555,7 +556,7 @@ int32_t set_active_flag (int32_t fd, int32_t new_status){
 int32_t close (int32_t fd) {
     pcb_t* pcb = (pcb_t*)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
 
-    int asm_ret_val;
+    // int asm_ret_val;
     // dont let them close stdin/out
     if(fd == 0 || fd == 1)
         return -1;
@@ -585,10 +586,9 @@ int32_t close (int32_t fd) {
     //     return -1;
 
     // set flag to free
-    // if (!set_active_flag(i, INACTIVE_FLAG)) {
-    //     printf("vjnskjdht");
-    //     return -1; // failed
-    // }
+    if (!set_active_flag(fd, INACTIVE_FLAG)) {
+        return -1; // failed
+    }
 
     int ret = pcb->fd_items[fd].file_op_jmp.close(fd);
     if(ret == -1)
