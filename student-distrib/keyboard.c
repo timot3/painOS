@@ -3,28 +3,21 @@
 #include "i8259.h"
 #include "terminal.h"
 
-/* 0's in order stand in for nothing, escape, enter
-capslock, F1 - F10, numberlock, scrolllock
-200's in order stand for left-shift pressed, right-shift pressed
-201 stands for caps-lock pressed
-202 stands for left-ctrl pressed
-203's in order stand for left-shift released, right-shift released
-204 stands for left-ctrl released
-205 stands for left-alt pressed
-https://wiki.osdev.org/PS/2_Keyboard */
+/*https://wiki.osdev.org/PS/2_Keyboard */
 unsigned char scan_code_1[256] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', CTRL_PRESS,
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
     '\'', '`', SHIFT_PRESS, '\\', 'z', 'x', 'c', 'v', 'b', 'n',
-    'm', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'm', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -37,13 +30,14 @@ unsigned char scan_code_shift[256] = {
     'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', CTRL_PRESS,
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
     '"', '~', SHIFT_PRESS, '|', 'Z', 'X', 'C', 'V', 'B', 'N',
-    'M', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'M', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -56,13 +50,14 @@ unsigned char scan_code_caps[256] = {
     'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n', CTRL_PRESS,
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';',
     '\'', '`', SHIFT_PRESS, '\\', 'Z', 'X', 'C', 'V', 'B', 'N',
-    'M', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'M', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -74,13 +69,14 @@ unsigned char scan_code_shift_caps[256] = {
     't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\n', CTRL_PRESS,
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':',
     '"', '~', SHIFT_PRESS, '|', 'z', 'x', 'c', 'v', 'b', 'n',
-    'm', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'm', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -121,6 +117,17 @@ char shift_flag = 0;
 char cap_flag = 0;
 char ctrl_flag = 0;
 char alt_flag = 0;
+char f1_flag = 0;
+char f2_flag = 0;
+char f3_flag = 0;
+char f4_flag = 0;
+char f5_flag = 0;
+char f6_flag = 0;
+char f7_flag = 0;
+char f8_flag = 0;
+char f9_flag = 0;
+char f10_flag = 0;
+
 
 
 
