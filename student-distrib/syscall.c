@@ -102,7 +102,7 @@ int32_t halt(uint8_t status) {
     // 6.  swap to saved parent's stack state and return from execute
     ret_status = status;
 
-    // printf("Process %d exited with code = %d\n", process_status, status);
+    printf("Process %d exited with code = %d\n", process_status, status);
     asm volatile ("movl %0, %%esp;"
                   "popl %%ebp;"
                   "movl %1, %%eax;"
