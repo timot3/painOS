@@ -72,7 +72,7 @@ int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);
 
 int assign_pid(void);
-int unassign_pid(int pid);
+int unassign_pid(int pid, int parentPid);
 int get_latest_pid();
 pcb_t* get_pcb_addr(int pid);
 pcb_t* get_latest_pcb();

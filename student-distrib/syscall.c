@@ -67,10 +67,9 @@ int32_t halt(uint8_t status) {
 
     if(pcb == NULL) return -1;
 
-    // pcb_t *parent = get_pcb_addr(pcb->parent.pid);
-
     // 2.  close all file descriptors
-    unassign_pid(pcb->pid);
+
+    unassign_pid(pcb->pid, pcb->parent.pid);
 
     for(i = STDOUT_IDX + 1; i < MAX_OPEN_FILES; i++) {
         close(i);
@@ -136,7 +135,7 @@ int32_t execute(const uint8_t *command) {
 
     // parse command, if bad fail
     if(parse == -1) {
-        unassign_pid(pid);
+        unassign_pid(pid, pcb->parent.pid);
         for(i = STDOUT_IDX + 1; i < MAX_OPEN_FILES; i++) {
             close(i);
 
@@ -218,13 +217,13 @@ int assign_pid(void) {
 /*
  * unassign_pid
  *   DESCRIPTION: helper function, unassigns the pid specified
- *   INPUTS: pid you want unassigned
+ *   INPUTS: pid you want unassigned, parent_pid the pid of the parent
  *   RETURN VALUE: 1 if success, -1 if pid is already unassigned
  */
-int unassign_pid(int pid) {
+int unassign_pid(int pid, int parent_pid) {
     if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
-        curr_pid = 0;
+        curr_pid = parent_pid;
         return 1;
     }
 
@@ -284,9 +283,10 @@ pcb_t* allocate_pcb(int pid) {
     pcb->fd_items[STDOUT_IDX].file_position = 0;
     pcb->fd_items[STDOUT_IDX].flags         = 1;
 
-    // set parent to null
+    // set parent to initial values
     pcb->parent.ksp = 0;
     pcb->parent.kbp = 0;
+    pcb->parent.pid = (pid > 0) ? pid - 1 : 0;
 
     pcb->fd_items[pid].file_position = 0;
 
