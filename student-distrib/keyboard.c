@@ -175,6 +175,46 @@ void keyboard_handler() {
         case CTRL_RELEASE:
             ctrl_flag = ctrl_flag ^ 1;
             break;
+        case F1_PRESS:
+        case F1_RELEASE:
+            f1_flag = f1_flag ^ 1;
+            break;
+        case F2_PRESS:
+        case F2_RELEASE:
+            f2_flag = f2_flag ^ 1;
+            break;
+        case F3_PRESS:
+        case F3_RELEASE:
+            f3_flag = f3_flag ^ 1;
+            break;
+        case F4_PRESS:
+        case F4_RELEASE:
+            f4_flag = f4_flag ^ 1;
+            break;
+        case F5_PRESS:
+        case F5_RELEASE:
+            f5_flag = f5_flag ^ 1;
+            break;
+        case F6_PRESS:
+        case F6_RELEASE:
+            f6_flag = f6_flag ^ 1;
+            break;
+        case F7_PRESS:
+        case F7_RELEASE:
+            f7_flag = f7_flag ^ 1;
+            break;
+        case F8_PRESS:
+        case F8_RELEASE:
+            f8_flag = f8_flag ^ 1;
+            break;
+        case F9_PRESS:
+        case F9_RELEASE:
+            f9_flag = f9_flag ^ 1;
+            break;
+        case F10_PRESS:
+        case F10_RELEASE:
+            f10_flag = f10_flag ^ 1;
+            break;
         //tabs = 4 spaces
         case '\t':
             for(i=0; i<4; i++){
