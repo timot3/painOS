@@ -97,3 +97,18 @@ int32_t terminal_write(int32_t fd, const void *buf, int32_t nbytes) {
 int32_t std_bad_call(){
     return -1;
 }
+
+/*
+ * terminal_switch
+ *   DESCRIPTION: sets up the terminal switching
+ */
+void terminal_switch(int fNumber){
+    printf("Switching to terminal ");
+    if (fNumber == 10){
+        putc(fNumber + NUM_TO_ASCII - 9);
+        putc(fNumber + NUM_TO_ASCII - 10);
+    }
+    else
+        putc(fNumber + NUM_TO_ASCII);
+    printf("\n");
+}
