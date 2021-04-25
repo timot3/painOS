@@ -117,19 +117,6 @@ char shift_flag = 0;
 char cap_flag = 0;
 char ctrl_flag = 0;
 char alt_flag = 0;
-char f1_flag = 0;
-char f2_flag = 0;
-char f3_flag = 0;
-char f4_flag = 0;
-char f5_flag = 0;
-char f6_flag = 0;
-char f7_flag = 0;
-char f8_flag = 0;
-char f9_flag = 0;
-char f10_flag = 0;
-
-
-
 
 /*
  * keyboard_init
@@ -175,46 +162,6 @@ void keyboard_handler() {
         case CTRL_RELEASE:
             ctrl_flag = ctrl_flag ^ 1;
             break;
-        case F1_PRESS:
-        case F1_RELEASE:
-            f1_flag = f1_flag ^ 1;
-            break;
-        case F2_PRESS:
-        case F2_RELEASE:
-            f2_flag = f2_flag ^ 1;
-            break;
-        case F3_PRESS:
-        case F3_RELEASE:
-            f3_flag = f3_flag ^ 1;
-            break;
-        case F4_PRESS:
-        case F4_RELEASE:
-            f4_flag = f4_flag ^ 1;
-            break;
-        case F5_PRESS:
-        case F5_RELEASE:
-            f5_flag = f5_flag ^ 1;
-            break;
-        case F6_PRESS:
-        case F6_RELEASE:
-            f6_flag = f6_flag ^ 1;
-            break;
-        case F7_PRESS:
-        case F7_RELEASE:
-            f7_flag = f7_flag ^ 1;
-            break;
-        case F8_PRESS:
-        case F8_RELEASE:
-            f8_flag = f8_flag ^ 1;
-            break;
-        case F9_PRESS:
-        case F9_RELEASE:
-            f9_flag = f9_flag ^ 1;
-            break;
-        case F10_PRESS:
-        case F10_RELEASE:
-            f10_flag = f10_flag ^ 1;
-            break;
         //tabs = 4 spaces
         case '\t':
             for(i=0; i<4; i++){
@@ -242,6 +189,27 @@ void keyboard_print(int byte) {
         terminal_write(0, kb_buffer, 128);
         return;
     }
+    //switch to correct terminal given alt + F#
+    else if (alt_flag == 1 && scan_code_1[byte] == F1_PRESS)
+        terminal_switch(1);
+    else if (alt_flag == 1 && scan_code_1[byte] == F2_PRESS)
+        terminal_switch(2);
+    else if (alt_flag == 1 && scan_code_1[byte] == F3_PRESS)
+        terminal_switch(3);
+    else if (alt_flag == 1 && scan_code_1[byte] == F4_PRESS)
+        terminal_switch(4);
+    else if (alt_flag == 1 && scan_code_1[byte] == F5_PRESS)
+        terminal_switch(5);
+    else if (alt_flag == 1 && scan_code_1[byte] == F6_PRESS)
+        terminal_switch(6);
+    else if (alt_flag == 1 && scan_code_1[byte] == F7_PRESS)
+        terminal_switch(7);
+    else if (alt_flag == 1 && scan_code_1[byte] == F8_PRESS)
+        terminal_switch(8);
+    else if (alt_flag == 1 && scan_code_1[byte] == F9_PRESS)
+        terminal_switch(9);
+    else if (alt_flag == 1 && scan_code_1[byte] == F10_PRESS)
+        terminal_switch(10);
     //correct correct scancode table depending on shift/tab
     else if (cap_flag == 1 && shift_flag == 1)
         c = scan_code_shift_caps[byte];
