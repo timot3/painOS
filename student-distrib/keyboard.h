@@ -21,17 +21,6 @@
 #define F8_PRESS 214
 #define F9_PRESS 215
 #define F10_PRESS 216
-#define F1_RELEASE 217
-#define F2_RELEASE 218
-#define F3_RELEASE 219
-#define F4_RELEASE 220
-#define F5_RELEASE 221
-#define F6_RELEASE 222
-#define F7_RELEASE 223
-#define F8_RELEASE 224
-#define F9_RELEASE 225
-#define F10_RELEASE 226
-
 
 #define ASCII_L 108
 #define KB_SPACE 57
@@ -43,6 +32,7 @@ void keyboard_handler();
 void keyboard_print(int byte);
 
 unsigned char kb_buffer[128];
+unsigned char *true_buffer;
 volatile int term_read_flag;
 
 #endif /* KEYBOARD_H */
