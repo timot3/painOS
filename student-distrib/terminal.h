@@ -5,6 +5,7 @@
 
 #define VGA_WIDTH 80
 #define TERM_BUF_SIZE 128
+#define NUM_TO_ASCII 48
 
 int32_t terminal_open(const uint8_t *filename);
 int32_t terminal_close(int32_t fd);
