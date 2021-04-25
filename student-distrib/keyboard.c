@@ -116,10 +116,97 @@ unsigned char kb_buffer3[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
+unsigned char kb_buffer4[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer5[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer6[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer7[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer8[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer9[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer10[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
 unsigned char *true_buffer = kb_buffer;
 
 // current location in the terminal buffer
-int term_buf_location = 0;
+int term_buf_1 = 0;
+int term_buf_2 = 0;
+int term_buf_3 = 0;
+int term_buf_4 = 0;
+int term_buf_5 = 0;
+int term_buf_6 = 0;
+int term_buf_7 = 0;
+int term_buf_8 = 0;
+int term_buf_9 = 0;
+int term_buf_10 = 0;
+int *term_buf_location = &term_buf_1;
 
 /*
  * reset_buffer
@@ -216,53 +303,66 @@ void keyboard_print(int byte) {
     else if (alt_flag == 1 && scan_code_1[byte] == F1_PRESS){
         terminal_switch(1);
         true_buffer = kb_buffer;
+        term_buf_location = &term_buf_1;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F2_PRESS){
         terminal_switch(2);
         true_buffer = kb_buffer2;
+        term_buf_location = &term_buf_2;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F3_PRESS){
         terminal_switch(3);
         true_buffer = kb_buffer3;
+        term_buf_location = &term_buf_3;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F4_PRESS){
         terminal_switch(4);
-        true_buffer = kb_buffer;
+        true_buffer = kb_buffer4;
+        term_buf_location = &term_buf_4;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F5_PRESS){
         terminal_switch(5);
-        true_buffer = kb_buffer;
+        true_buffer = kb_buffer5;
+        term_buf_location = &term_buf_5;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F6_PRESS){
         terminal_switch(6);
-        true_buffer = kb_buffer;
+        true_buffer = kb_buffer6;
+        term_buf_location = &term_buf_6;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F7_PRESS){
         terminal_switch(7);
-        true_buffer = kb_buffer;
+        true_buffer = kb_buffer7;
+        term_buf_location = &term_buf_7;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F8_PRESS){
         terminal_switch(8);
-        true_buffer = kb_buffer;
+        true_buffer = kb_buffer8;
+        term_buf_location = &term_buf_8;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F9_PRESS){
         terminal_switch(9);
-        true_buffer = kb_buffer;
+        true_buffer = kb_buffer9;
+        term_buf_location = &term_buf_9;
         return;
     }
     else if (alt_flag == 1 && scan_code_1[byte] == F10_PRESS){
         terminal_switch(10);
-        true_buffer = kb_buffer;
+        true_buffer = kb_buffer10;
+        term_buf_location = &term_buf_10;
         return;
     }
+    //dont print out garbage F# input
+    else if (scan_code_1[byte] >= F1_PRESS && scan_code_1[byte] <= F10_PRESS)
+        return;
     //correct correct scancode table depending on shift/tab
     else if (cap_flag == 1 && shift_flag == 1)
         c = scan_code_shift_caps[byte];
@@ -275,30 +375,30 @@ void keyboard_print(int byte) {
 
     //get correct backspace behavior
     if (scan_code_1[byte] == '\b'){
-        if(term_buf_location > 0){
+        if(*term_buf_location > 0){
             delete();
             // reset current char in keyboard buffer
             // decrement current buffer location
-            term_buf_location--;
-            true_buffer[term_buf_location] = 0;
+            (*term_buf_location)--;
+            true_buffer[*term_buf_location] = 0;
         }
         return;
     }
 
     //get correct newline behavior
     if (c == '\n' || c == '\r'){
-        true_buffer[term_buf_location] = c;
+        true_buffer[*term_buf_location] = c;
         terminal_buf_save(terminal_buf);
-        term_buf_location = 0;
+        *term_buf_location = 0;
         term_read_flag = 1;
         reset_buffer();
         putc(c);
         return;
     }
-    if (term_buf_location >= TERM_BUF_SIZE - 1)
+    if (*term_buf_location >= TERM_BUF_SIZE - 1)
         return;
 
     putc(c);
-    true_buffer[term_buf_location] = c;
-    term_buf_location++;
+    true_buffer[*term_buf_location] = c;
+    (*term_buf_location)++;
 }
