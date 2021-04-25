@@ -33,7 +33,7 @@ int32_t terminal_close(int32_t fd) {
 int32_t terminal_buf_save(unsigned char* buf) {
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
-        buf[i] = kb_buffer[i];
+        buf[i] = true_buffer[i];
     // buf[TERM_BUF_SIZE - 1] = '\n';
     return 0;
 }
@@ -47,6 +47,8 @@ int32_t terminal_buf_save(unsigned char* buf) {
  */
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     // set last char to newline
+    memset(terminal_buf, 0, TERM_BUF_SIZE);
+    memset(buf, 0, nbytes);
     term_read_flag = 0;
     sti();
 
@@ -103,6 +105,7 @@ int32_t std_bad_call(){
  *   DESCRIPTION: sets up the terminal switching
  */
 void terminal_switch(int fNumber){
+    printf("\n");
     printf("Switching to terminal ");
     if (fNumber == 10){
         putc(fNumber + NUM_TO_ASCII - 9);
