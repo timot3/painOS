@@ -16,7 +16,7 @@ unsigned char scan_code_1[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -36,7 +36,7 @@ unsigned char scan_code_shift[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -56,7 +56,7 @@ unsigned char scan_code_caps[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -75,7 +75,7 @@ unsigned char scan_code_shift_caps[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, F1_RELEASE, F2_RELEASE, F3_RELEASE, F4_RELEASE, F5_RELEASE, F6_RELEASE, F7_RELEASE, F8_RELEASE, F9_RELEASE, F10_RELEASE,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -94,6 +94,29 @@ unsigned char kb_buffer[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
+unsigned char kb_buffer2[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer3[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char *true_buffer = kb_buffer;
 
 // current location in the terminal buffer
 int term_buf_location = 0;
@@ -108,7 +131,7 @@ int term_buf_location = 0;
 void reset_buffer(){
     int i;
     for (i=0; i<127; i++){
-        kb_buffer[i] = 0;
+        true_buffer[i] = 0;
     }
 }
 
@@ -186,30 +209,60 @@ void keyboard_print(int byte) {
     //ctrl+L = clear
     if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L){
         clear();
-        terminal_write(0, kb_buffer, 128);
+        terminal_write(0, true_buffer, 128);
         return;
     }
     //switch to correct terminal given alt + F#
-    else if (alt_flag == 1 && scan_code_1[byte] == F1_PRESS)
+    else if (alt_flag == 1 && scan_code_1[byte] == F1_PRESS){
         terminal_switch(1);
-    else if (alt_flag == 1 && scan_code_1[byte] == F2_PRESS)
+        true_buffer = kb_buffer;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F2_PRESS){
         terminal_switch(2);
-    else if (alt_flag == 1 && scan_code_1[byte] == F3_PRESS)
+        true_buffer = kb_buffer2;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F3_PRESS){
         terminal_switch(3);
-    else if (alt_flag == 1 && scan_code_1[byte] == F4_PRESS)
+        true_buffer = kb_buffer3;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F4_PRESS){
         terminal_switch(4);
-    else if (alt_flag == 1 && scan_code_1[byte] == F5_PRESS)
+        true_buffer = kb_buffer;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F5_PRESS){
         terminal_switch(5);
-    else if (alt_flag == 1 && scan_code_1[byte] == F6_PRESS)
+        true_buffer = kb_buffer;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F6_PRESS){
         terminal_switch(6);
-    else if (alt_flag == 1 && scan_code_1[byte] == F7_PRESS)
+        true_buffer = kb_buffer;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F7_PRESS){
         terminal_switch(7);
-    else if (alt_flag == 1 && scan_code_1[byte] == F8_PRESS)
+        true_buffer = kb_buffer;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F8_PRESS){
         terminal_switch(8);
-    else if (alt_flag == 1 && scan_code_1[byte] == F9_PRESS)
+        true_buffer = kb_buffer;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F9_PRESS){
         terminal_switch(9);
-    else if (alt_flag == 1 && scan_code_1[byte] == F10_PRESS)
+        true_buffer = kb_buffer;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F10_PRESS){
         terminal_switch(10);
+        true_buffer = kb_buffer;
+        return;
+    }
     //correct correct scancode table depending on shift/tab
     else if (cap_flag == 1 && shift_flag == 1)
         c = scan_code_shift_caps[byte];
@@ -227,14 +280,14 @@ void keyboard_print(int byte) {
             // reset current char in keyboard buffer
             // decrement current buffer location
             term_buf_location--;
-            kb_buffer[term_buf_location] = 0;
+            true_buffer[term_buf_location] = 0;
         }
         return;
     }
 
     //get correct newline behavior
     if (c == '\n' || c == '\r'){
-        kb_buffer[term_buf_location] = c;
+        true_buffer[term_buf_location] = c;
         terminal_buf_save(terminal_buf);
         term_buf_location = 0;
         term_read_flag = 1;
@@ -246,6 +299,6 @@ void keyboard_print(int byte) {
         return;
 
     putc(c);
-    kb_buffer[term_buf_location] = c;
+    true_buffer[term_buf_location] = c;
     term_buf_location++;
 }
