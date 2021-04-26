@@ -11,6 +11,9 @@
 static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
+char cursor_array[7] = {
+    0, 0, 0, 0, 0, 0, 0
+};
 
 /* void clear(void);
  * Inputs: void
@@ -263,10 +266,13 @@ void putc(uint8_t c) {
 }
 
 void switch_screen(uint8_t oldDisplay, uint8_t newDisplay){
+    cursor_array[oldDisplay] = screen_x;
+    screen_x = cursor_array[newDisplay];
     char* oldTermLoc = (char*)(VIDEO + oldDisplay*TERM_DISPLAY_SIZE);
     char* newTermLoc = (char*)(VIDEO + newDisplay*TERM_DISPLAY_SIZE);
     memcpy(oldTermLoc, video_mem, TERM_DISPLAY_SIZE);
     memcpy(video_mem, newTermLoc, TERM_DISPLAY_SIZE);
+    update_cursor(screen_x, TERM_BOT);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
