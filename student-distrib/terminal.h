@@ -15,6 +15,9 @@ int32_t terminal_write(int32_t fd, const void *buf, int32_t nbytes);
 
 int32_t std_bad_call();
 
+void terminal_switch(uint8_t fNumber);
+void display_switch(uint8_t newDisplay);
+
 unsigned char terminal_buf[128];
 
 #endif /* TERMINAL_H */
