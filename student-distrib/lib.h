@@ -13,6 +13,7 @@
 #define CursorAddLow 0x0F
 //term display is 80x25 = 4000
 #define TERM_DISPLAY_SIZE 4000
+#define TERM_BOT 24
 
 int32_t printf(int8_t *format, ...);
 void delete();
