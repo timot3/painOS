@@ -160,39 +160,6 @@ unsigned char kb_buffer7[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-unsigned char kb_buffer8[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-unsigned char kb_buffer9[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-unsigned char kb_buffer10[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
 unsigned char *true_buffer = kb_buffer;
 
 // current location in the terminal buffer
@@ -203,9 +170,6 @@ int term_buf_4 = 0;
 int term_buf_5 = 0;
 int term_buf_6 = 0;
 int term_buf_7 = 0;
-int term_buf_8 = 0;
-int term_buf_9 = 0;
-int term_buf_10 = 0;
 int *term_buf_location = &term_buf_1;
 
 /*
@@ -340,24 +304,6 @@ void keyboard_print(int byte) {
         terminal_switch(7);
         true_buffer = kb_buffer7;
         term_buf_location = &term_buf_7;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F8_PRESS){
-        terminal_switch(8);
-        true_buffer = kb_buffer8;
-        term_buf_location = &term_buf_8;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F9_PRESS){
-        terminal_switch(9);
-        true_buffer = kb_buffer9;
-        term_buf_location = &term_buf_9;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F10_PRESS){
-        terminal_switch(10);
-        true_buffer = kb_buffer10;
-        term_buf_location = &term_buf_10;
         return;
     }
     //dont print out garbage F# input
