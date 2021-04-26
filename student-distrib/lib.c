@@ -262,6 +262,13 @@ void putc(uint8_t c) {
     update_cursor(screen_x, screen_y);
 }
 
+void switch_screen(uint8_t oldDisplay, uint8_t newDisplay){
+    char* oldTermLoc = (char*)(VIDEO + oldDisplay*TERM_DISPLAY_SIZE);
+    char* newTermLoc = (char*)(VIDEO + newDisplay*TERM_DISPLAY_SIZE);
+    memcpy(oldTermLoc, video_mem, TERM_DISPLAY_SIZE);
+    memcpy(video_mem, newTermLoc, TERM_DISPLAY_SIZE);
+}
+
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert
  *            int8_t* buf = allocated buffer to place string in
