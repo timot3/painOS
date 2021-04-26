@@ -409,7 +409,7 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for read-only
-    if((file_item.flags & READ_WRITE_MASK) == O_RDONLY) return -1;
+    // if((file_item.flags & READ_WRITE_MASK) == O_RDONLY) return -1;
 
     return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
