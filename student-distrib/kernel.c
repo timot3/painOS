@@ -180,7 +180,13 @@ void entry(unsigned long magic, unsigned long addr)
     
     /* Execute the first program ("shell") ... */
     uint8_t progName[32] = "shell";
-    execute(progName);
+    int i;
+    for (i=2; i < 8; i++){
+        execute(progName);
+        terminal_switch(i);
+
+    }
+    terminal_switch(1);
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile(".1: hlt; jmp .1;");
