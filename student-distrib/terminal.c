@@ -2,6 +2,8 @@
 #include "lib.h"
 #include "keyboard.h"
 
+uint8_t termDisplay = 1;
+
 /*
  * terminal_open
  *   INPUTS: filename
@@ -104,14 +106,18 @@ int32_t std_bad_call(){
  * terminal_switch
  *   DESCRIPTION: sets up the terminal switching
  */
-void terminal_switch(int fNumber){
+void terminal_switch(uint8_t fNumber){
     printf("\n");
     printf("Switching to terminal ");
-    if (fNumber == 10){
-        putc(fNumber + NUM_TO_ASCII - 9);
-        putc(fNumber + NUM_TO_ASCII - 10);
-    }
-    else
-        putc(fNumber + NUM_TO_ASCII);
+    putc(fNumber + NUM_TO_ASCII);
     printf("\n");
+    display_switch(fNumber);
+}
+
+void display_switch(uint8_t newDisplay){
+    if (termDisplay == newDisplay)
+        return;
+    uint8_t oldDisplay = termDisplay;
+    termDisplay = newDisplay;
+    switch_screen(oldDisplay, newDisplay);
 }
