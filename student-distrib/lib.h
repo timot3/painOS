@@ -11,6 +11,8 @@
 #define CRTCData 0x3D5
 #define CursorAddHigh 0x0E
 #define CursorAddLow 0x0F
+//term display is 80x25 = 4000
+#define TERM_DISPLAY_SIZE 4000
 
 int32_t printf(int8_t *format, ...);
 void delete();
@@ -36,6 +38,8 @@ int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);
+
+void switch_screen(uint8_t oldDisplay, uint8_t newDisplay);
 
 void test_interrupts(void);
 
