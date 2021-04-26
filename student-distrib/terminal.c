@@ -104,16 +104,16 @@ int32_t std_bad_call(){
 
 /*
  * terminal_switch
- *   DESCRIPTION: sets up the terminal switching
+ *   DESCRIPTION: goes to display switch lol
  */
 void terminal_switch(uint8_t fNumber){
-    printf("\n");
-    printf("Switching to terminal ");
-    putc(fNumber + NUM_TO_ASCII);
-    printf("\n");
     display_switch(fNumber);
 }
 
+/*
+ * display_switch
+ *   DESCRIPTION: sets up for switch_screen
+ */
 void display_switch(uint8_t newDisplay){
     if (termDisplay == newDisplay)
         return;
