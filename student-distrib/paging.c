@@ -55,10 +55,13 @@ void paging_init()
   page_dir[1].rw = 1;
   page_dir[1].size = 1; // 4 MB
 
-  // connect video memory
-  page_table[VID_MEM].aligned_address = 0xB8;
-  page_table[VID_MEM].present = 1;
-  page_table[VID_MEM].cache_disable = 1;
+  // connect video memory 32kb
+  int j;
+  for(j=0; j<8; j++){
+    page_table[VID_MEM+j].aligned_address = 0xB8 + j;
+    page_table[VID_MEM+j].present = 1;
+    page_table[VID_MEM+j].cache_disable = 1;
+  }
 
   edit_paging_flags((int)page_dir);
 }
