@@ -19,5 +19,6 @@ void terminal_switch(uint8_t fNumber);
 void display_switch(uint8_t newDisplay);
 
 unsigned char terminal_buf[128];
+extern volatile uint8_t current_terminal;
 
 #endif /* TERMINAL_H */

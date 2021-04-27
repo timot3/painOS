@@ -200,6 +200,7 @@ char alt_flag = 0;
  *   RETURN VALUE: none
  */
 void keyboard_init() {
+    // set the current terminal
     enable_irq(KB_IRQ);
 }
 

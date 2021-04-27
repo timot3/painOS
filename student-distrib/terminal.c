@@ -2,8 +2,7 @@
 #include "lib.h"
 #include "keyboard.h"
 
-uint8_t termDisplay = 1;
-
+volatile uint8_t current_terminal = 1;
 /*
  * terminal_open
  *   INPUTS: filename
@@ -115,9 +114,9 @@ void terminal_switch(uint8_t fNumber){
  *   DESCRIPTION: sets up for switch_screen
  */
 void display_switch(uint8_t newDisplay){
-    if (termDisplay == newDisplay)
+    if (current_terminal == newDisplay)
         return;
-    uint8_t oldDisplay = termDisplay;
-    termDisplay = newDisplay;
+    uint8_t oldDisplay = current_terminal;
+    current_terminal = newDisplay;
     switch_screen(oldDisplay, newDisplay);
 }

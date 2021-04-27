@@ -26,6 +26,8 @@
 #define KB_SPACE 57
 #define TERM_BUF_SIZE 128
 
+#define MAX_TERMINALS 3
+
 void reset_buffer();
 void keyboard_init();
 void keyboard_handler();
