@@ -120,3 +120,17 @@ void display_switch(uint8_t newDisplay){
     current_terminal = newDisplay;
     switch_screen(oldDisplay, newDisplay);
 }
+
+/*
+ * get_current_terminal_idx
+ *   DESCRIPTION: our terminal idx is 1-indexed but we need it to be 
+ *      0-indexed for array accesses
+ *   RETURNS: 0-indexed terminal idx, or 0 on fail
+ */
+uint8_t get_current_terminal_idx() {
+    if (current_terminal > 0 && current_terminal < MAX_TERMINALS + 1) {
+        return current_terminal - 1;
+    }
+    printf("\n\nError getting current terminal ID!! (id: %d) \n\n", current_terminal);
+    return 0;
+}
