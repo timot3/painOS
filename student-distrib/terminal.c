@@ -150,11 +150,21 @@ void terminal_switch(uint8_t fNumber){
  *   DESCRIPTION: sets up for switch_screen
  */
 void display_switch(uint8_t newDisplay){
+    printf("New display: %d\n", newDisplay);
     if (current_terminal == newDisplay)
         return;
-    uint8_t oldDisplay = current_terminal;
+
+    // get current terminal
+    // set it to not actiev
+    term_struct_t* old_term = get_active_terminal();
+    old_term->is_active = NOT_ACTIVE;
+
     current_terminal = newDisplay;
-    switch_screen(oldDisplay, newDisplay);
+
+    term_struct_t* new_term = get_active_terminal();
+    new_term->is_active = ACTIVE;
+
+    switch_screen(old_term, new_term);
 }
 
 /*
@@ -168,7 +178,7 @@ uint8_t get_current_terminal_idx() {
         return current_terminal - 1;
     }
     printf("\n\nError getting current terminal ID!! (id: %d) \n\n", current_terminal);
-    return 0;
+    return TERMINAL_ERROR;
 }
 
 /*
@@ -178,7 +188,7 @@ uint8_t get_current_terminal_idx() {
  */
 term_struct_t* get_active_terminal() {
     int term_idx = get_current_terminal_idx();
-    if (term_idx == 0) {
+    if (term_idx == TERMINAL_ERROR) {
         printf("\nFailed to get active terminal. Term idx = %d\n", term_idx);
         return (term_struct_t*)NULL;
     }

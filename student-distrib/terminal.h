@@ -11,6 +11,11 @@
 #define NOT_ACTIVE 0
 #define ACTIVE 1
 
+// error code for terminal-related stuff (used for debugging)
+// 19 is chosen arbitrarily because it is large enough to not be an issue
+// and also is a cool number
+#define TERMINAL_ERROR 19
+
 typedef struct term_struct {
     uint8_t base_pid; // 0, 1, or 2
     int8_t curr_pid; // pid of currently running process, -1 if none
@@ -19,6 +24,7 @@ typedef struct term_struct {
     int32_t cursor_x_pos;
     int32_t cursor_y_pos;
     uint8_t kb_buf[TERM_BUF_SIZE];
+    int8_t buf_location;
 } term_struct_t;
 
 int32_t terminals_init();
