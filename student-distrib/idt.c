@@ -371,13 +371,13 @@ void initialize_idt() {
     SET_IDT_ENTRY(idt[19],      SIMD_FLOATING_POINT_EXCEPTION);
 
 
-    // Enable keyboard, RTC, and system call by marking them present
+    // Enable PIT, keyboard, RTC, and system call by marking them present
     idt[PIT_NUM].present = 1;
     idt[KB_NUM].present  = 1;
     idt[RTC_NUM].present = 1;
     idt[SYSCALL_NUM].present = 1;
 
-    // Add RTC handler, keyboard, and system call to the IDT
+    // Add PIT, keyboard, RTC, and system call handler to the IDT
     SET_IDT_ENTRY(idt[PIT_NUM], pitASMWrap);
     SET_IDT_ENTRY(idt[KB_NUM], keyboardASMWrap);
     SET_IDT_ENTRY(idt[RTC_NUM], rtcASMWrap);
