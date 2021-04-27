@@ -258,6 +258,7 @@ void keyboard_handler() {
  */
 void keyboard_print(int byte) {
     unsigned char c;
+    term_struct_t* active_terminal = get_active_terminal();
     //ctrl+L = clear
     if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L){
         clear();

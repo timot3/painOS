@@ -175,6 +175,7 @@ void entry(unsigned long magic, unsigned long addr)
 
 
     keyboard_init();
+    terminals_init();
 
 #ifdef RUN_TESTS
     /* Run tests */

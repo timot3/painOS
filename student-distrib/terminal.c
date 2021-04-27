@@ -3,8 +3,44 @@
 #include "keyboard.h"
 
 volatile uint8_t current_terminal = 1;
+
+static term_struct_t terminals[MAX_TERMINALS];
+
+/*
+ * init_terminals
+ *   DESCRIPTION: Inits the terminal structs in the terminals array.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ */
+int32_t terminals_init() {
+    int term_idx, buf_idx;
+    term_struct_t* curr_term_struct;
+    for (term_idx = 0; term_idx < MAX_TERMINALS; term_idx++) {
+        curr_term_struct = &(terminals[term_idx]);
+        // set base pid to the idx in array
+        curr_term_struct->base_pid = term_idx;
+        // no processes are currently running and the terminal is not displayed
+        // by default
+        curr_term_struct->curr_pid = -1; 
+        curr_term_struct->is_active = NOT_ACTIVE;
+        // not yet initialized -- set later
+        curr_term_struct->cursor_x_pos = NULL;
+        curr_term_struct->cursor_y_pos = NULL;
+        curr_term_struct->vidmem_start = NULL;
+
+        // clear the buffer
+        for (buf_idx = 0; buf_idx < TERM_BUF_SIZE; buf_idx++) {
+            curr_term_struct->kb_buf[buf_idx] = 0;
+        }
+
+    }
+    printf("Finished initing %d terminals.\n", MAX_TERMINALS); 
+    return 0;
+}
 /*
  * terminal_open
+ *   Description: Unused for checkpoint 2.
  *   INPUTS: filename
  *   OUTPUTS: -1
  *   RETURN VALUE: nothing
@@ -133,4 +169,18 @@ uint8_t get_current_terminal_idx() {
     }
     printf("\n\nError getting current terminal ID!! (id: %d) \n\n", current_terminal);
     return 0;
+}
+
+/*
+ * get_active_terminal
+ *   DESCRIPTION: get pointer to currently active terminal struct
+ *   RETURNS: 0-indexed terminal idx, or 0 on fail
+ */
+term_struct_t* get_active_terminal() {
+    int term_idx = get_current_terminal_idx();
+    if (term_idx == 0) {
+        printf("\nFailed to get active terminal. Term idx = %d\n", term_idx);
+        return (term_struct_t*)NULL;
+    }
+    return &(terminals[term_idx]);
 }

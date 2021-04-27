@@ -47,7 +47,7 @@ static file_op_table_t bad_table = {
 };
 
 // arbitrary length for now
-char pid_arr[PROCESS_LIMIT] = {
+int8_t pid_arr[PROCESS_LIMIT] = {
     0, 0, 0, 0, 0, 0, 0
 };
 
