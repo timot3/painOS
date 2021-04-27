@@ -34,6 +34,8 @@ Makefile.dep: $(SRC)
 clean:
 	rm -f *.o */*.o Makefile.dep
 
+all: clean dep bootimg
+
 ifneq ($(MAKECMDGOALS),dep)
 ifneq ($(MAKECMDGOALS),clean)
 include Makefile.dep
