@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "keyboard.h"
 
+volatile uint8_t current_terminal = 1;
 /*
  * terminal_open
  *   INPUTS: filename
@@ -33,7 +34,7 @@ int32_t terminal_close(int32_t fd) {
 int32_t terminal_buf_save(unsigned char* buf) {
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
-        buf[i] = kb_buffer[i];
+        buf[i] = true_buffer[i];
     // buf[TERM_BUF_SIZE - 1] = '\n';
     return 0;
 }
@@ -47,6 +48,8 @@ int32_t terminal_buf_save(unsigned char* buf) {
  */
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     // set last char to newline
+    memset(terminal_buf, 0, TERM_BUF_SIZE);
+    memset(buf, 0, nbytes);
     term_read_flag = 0;
     sti();
 
@@ -96,4 +99,38 @@ int32_t terminal_write(int32_t fd, const void *buf, int32_t nbytes) {
  */
 int32_t std_bad_call(){
     return -1;
+}
+
+/*
+ * terminal_switch
+ *   DESCRIPTION: goes to display switch lol
+ */
+void terminal_switch(uint8_t fNumber){
+    display_switch(fNumber);
+}
+
+/*
+ * display_switch
+ *   DESCRIPTION: sets up for switch_screen
+ */
+void display_switch(uint8_t newDisplay){
+    if (current_terminal == newDisplay)
+        return;
+    uint8_t oldDisplay = current_terminal;
+    current_terminal = newDisplay;
+    switch_screen(oldDisplay, newDisplay);
+}
+
+/*
+ * get_current_terminal_idx
+ *   DESCRIPTION: our terminal idx is 1-indexed but we need it to be 
+ *      0-indexed for array accesses
+ *   RETURNS: 0-indexed terminal idx, or 0 on fail
+ */
+uint8_t get_current_terminal_idx() {
+    if (current_terminal > 0 && current_terminal < MAX_TERMINALS + 1) {
+        return current_terminal - 1;
+    }
+    printf("\n\nError getting current terminal ID!! (id: %d) \n\n", current_terminal);
+    return 0;
 }

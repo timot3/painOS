@@ -14,6 +14,7 @@
 #include "filesys.h"
 #include "keyboard.h"
 #include "syscall.h"
+#include "terminal.h"
 
 // #define RUN_TESTS
 
@@ -157,6 +158,7 @@ void entry(unsigned long magic, unsigned long addr)
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
+    printf("\n");
     printf("Enabling Interrupts\n");
     initialize_idt();
     printf("Finished enabling Interrupts\n");
@@ -169,6 +171,8 @@ void entry(unsigned long magic, unsigned long addr)
     filesys_init((void*)((module_t*)(mbi->mods_addr))->mod_start);
 
     paging_init();
+    printf("\n");
+
 
     keyboard_init();
 
@@ -180,7 +184,24 @@ void entry(unsigned long magic, unsigned long addr)
     
     /* Execute the first program ("shell") ... */
     uint8_t progName[32] = "shell";
+    int i;
+    // for (i=2; i <= MAX_TERMINALS; i++){
+    //     printf("Initializing terminal %d...\n", current_terminal);
+    //     execute(progName);
+    //     terminal_switch(i);
+
+    // }
+
+    terminal_switch(1);
     execute(progName);
+    terminal_switch(2);
+    execute(progName);
+     terminal_switch(3);
+    execute(progName);
+     terminal_switch(1);
+
+    // terminal_switch(1);
+
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile(".1: hlt; jmp .1;");

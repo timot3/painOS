@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "filesys.h"
+#include "terminal.h"
 volatile uint32_t ret_status = 0;
 
 // file ops jump tables
@@ -50,8 +51,8 @@ char pid_arr[PROCESS_LIMIT] = {
     0, 0, 0, 0, 0, 0, 0
 };
 
-// global var to keep track of current pid
-int32_t curr_pid = 0;
+// global var to keep track of current pids
+int8_t curr_pids[MAX_TERMINALS] = {0,0,0};
 
 /*
  * halt
@@ -64,6 +65,7 @@ int32_t halt(uint8_t status) {
 
     // get current pcb
     pcb_t *pcb = get_pcb_addr(get_latest_pid());
+    printf("\nHalting program. pid = %d, parent pid = %d\n", pcb->pid, pcb->parent.pid);
 
     if(pcb == NULL) return -1;
 
@@ -79,7 +81,9 @@ int32_t halt(uint8_t status) {
     }
 
     // 1.  if base shell, re-execute base shell
-    if(pcb->pid == 0) execute((uint8_t *)"shell");
+    if(pcb->pid == pcb->parent.pid) {
+        execute((uint8_t *)"shell");
+    }
 
     // 3.  set up file state for return to parent
 
@@ -117,7 +121,7 @@ int32_t halt(uint8_t status) {
 
 /*
  * execute
- *   DESCRIPTION: executs the command, lots of helper functions see them for
+ *   DESCRIPTION: executes the command, lots of helper functions see them for
  *more details
  *   INPUTS: command
  *   RETURN VALUE:
@@ -131,6 +135,14 @@ int32_t execute(const uint8_t *command) {
     // get pcb and initialize
     dentry_t dentry;
     pcb_t *pcb = allocate_pcb(pid);
+
+    // Base shells have PIDs 0,1,2
+    if (pid < MAX_TERMINALS) {
+        printf("Setting parent PID to current PID\n");
+        pcb->parent.pid = pcb->pid;
+    }
+
+
     int parse  = parse_command(command, pcb, pid, &dentry);
 
     // parse command, if bad fail
@@ -203,11 +215,10 @@ int32_t execute(const uint8_t *command) {
  */
 int assign_pid(void) {
     int i;
-
     for(i = 0; i < PROCESS_LIMIT; i++) {
         if(pid_arr[i] == 0) {
             pid_arr[i] = 1;
-            curr_pid   = i;
+            printf("Assigning PID value %d\n", i);
             return i;
         }
     }
@@ -223,7 +234,7 @@ int assign_pid(void) {
 int unassign_pid(int pid, int parent_pid) {
     if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
-        curr_pid = parent_pid;
+        curr_pids[get_current_terminal_idx()] = parent_pid;
         return 1;
     }
 
@@ -237,7 +248,7 @@ int unassign_pid(int pid, int parent_pid) {
  *   RETURN VALUE: idx of most recently used pid or -1 if none
  */
 int get_latest_pid() {
-    return curr_pid;
+    return curr_pids[get_current_terminal_idx()];
 }
 
 /*
@@ -286,7 +297,9 @@ pcb_t* allocate_pcb(int pid) {
     // set parent to initial values
     pcb->parent.ksp = 0;
     pcb->parent.kbp = 0;
-    pcb->parent.pid = (pid > 0) ? pid - 1 : 0;
+    pcb->parent.pid = curr_pids[get_current_terminal_idx()];
+    curr_pids[get_current_terminal_idx()] = pid;
+
 
     pcb->fd_items[pid].file_position = 0;
 
@@ -409,7 +422,7 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes) {
     fd_items_t file_item = pcb->fd_items[fd];
 
     // check for read-only
-    if((file_item.flags & READ_WRITE_MASK) == O_RDONLY) return -1;
+    // if((file_item.flags & READ_WRITE_MASK) == O_RDONLY) return -1;
 
     return file_item.file_op_jmp.write(fd, buf, nbytes);
 }
@@ -445,7 +458,7 @@ void setup_TSS(int pid) {
  * * returns fd
  */
 int32_t open(const uint8_t *filename) {
-    pcb_t *pcb = (pcb_t *)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+    pcb_t *pcb = (pcb_t *)(KERNEL_PAGE_BOT - (get_latest_pid() + 1) * KERNEL_STACK_SIZE);
     dentry_t tmp_dentry;
     file_op_table_t *tmp_f_ops;
     int i = 0;

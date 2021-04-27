@@ -3,28 +3,21 @@
 #include "i8259.h"
 #include "terminal.h"
 
-/* 0's in order stand in for nothing, escape, enter
-capslock, F1 - F10, numberlock, scrolllock
-200's in order stand for left-shift pressed, right-shift pressed
-201 stands for caps-lock pressed
-202 stands for left-ctrl pressed
-203's in order stand for left-shift released, right-shift released
-204 stands for left-ctrl released
-205 stands for left-alt pressed
-https://wiki.osdev.org/PS/2_Keyboard */
+/*https://wiki.osdev.org/PS/2_Keyboard */
 unsigned char scan_code_1[256] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', CTRL_PRESS,
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
     '\'', '`', SHIFT_PRESS, '\\', 'z', 'x', 'c', 'v', 'b', 'n',
-    'm', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'm', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -37,13 +30,14 @@ unsigned char scan_code_shift[256] = {
     'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', CTRL_PRESS,
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
     '"', '~', SHIFT_PRESS, '|', 'Z', 'X', 'C', 'V', 'B', 'N',
-    'M', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'M', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -56,13 +50,14 @@ unsigned char scan_code_caps[256] = {
     'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n', CTRL_PRESS,
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';',
     '\'', '`', SHIFT_PRESS, '\\', 'Z', 'X', 'C', 'V', 'B', 'N',
-    'M', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'M', ',', '.', '/', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -74,13 +69,14 @@ unsigned char scan_code_shift_caps[256] = {
     't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\n', CTRL_PRESS,
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':',
     '"', '~', SHIFT_PRESS, '|', 'z', 'x', 'c', 'v', 'b', 'n',
-    'm', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    'm', '<', '>', '?', SHIFT_PRESS, '*', ALT_PRESS, ' ', CAP_PRESS, F1_PRESS,
+    F2_PRESS, F3_PRESS, F4_PRESS, F5_PRESS, F6_PRESS, F7_PRESS, F8_PRESS, F9_PRESS, F10_PRESS, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    CTRL_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, SHIFT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     SHIFT_RELEASE, 0, ALT_RELEASE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -98,9 +94,83 @@ unsigned char kb_buffer[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
+unsigned char kb_buffer2[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+unsigned char kb_buffer3[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+// unsigned char kb_buffer4[128] = {
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+//     };
+
+// unsigned char kb_buffer5[128] = {
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+//     };
+
+// unsigned char kb_buffer6[128] = {
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+//     };
+
+// unsigned char kb_buffer7[128] = {
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+//     };
+
+unsigned char *true_buffer = kb_buffer;
 
 // current location in the terminal buffer
-int term_buf_location = 0;
+int term_buf_1 = 0;
+int term_buf_2 = 0;
+int term_buf_3 = 0;
+// int term_buf_4 = 0;
+// int term_buf_5 = 0;
+// int term_buf_6 = 0;
+// int term_buf_7 = 0;
+int *term_buf_location = &term_buf_1;
 
 /*
  * reset_buffer
@@ -112,7 +182,7 @@ int term_buf_location = 0;
 void reset_buffer(){
     int i;
     for (i=0; i<127; i++){
-        kb_buffer[i] = 0;
+        true_buffer[i] = 0;
     }
 }
 
@@ -122,8 +192,6 @@ char cap_flag = 0;
 char ctrl_flag = 0;
 char alt_flag = 0;
 
-
-
 /*
  * keyboard_init
  *   DESCRIPTION: Initialize the keyboard
@@ -132,6 +200,7 @@ char alt_flag = 0;
  *   RETURN VALUE: none
  */
 void keyboard_init() {
+    // set the current terminal
     enable_irq(KB_IRQ);
 }
 
@@ -192,9 +261,55 @@ void keyboard_print(int byte) {
     //ctrl+L = clear
     if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L){
         clear();
-        terminal_write(0, kb_buffer, 128);
+        terminal_write(0, true_buffer, 128);
         return;
     }
+    //switch to correct terminal given alt + F#
+    else if (alt_flag == 1 && scan_code_1[byte] == F1_PRESS){
+        terminal_switch(1);
+        true_buffer = kb_buffer;
+        term_buf_location = &term_buf_1;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F2_PRESS){
+        terminal_switch(2);
+        true_buffer = kb_buffer2;
+        term_buf_location = &term_buf_2;
+        return;
+    }
+    else if (alt_flag == 1 && scan_code_1[byte] == F3_PRESS){
+        terminal_switch(3);
+        true_buffer = kb_buffer3;
+        term_buf_location = &term_buf_3;
+        return;
+    }
+    // else if (alt_flag == 1 && scan_code_1[byte] == F4_PRESS){
+    //     terminal_switch(4);
+    //     true_buffer = kb_buffer4;
+    //     term_buf_location = &term_buf_4;
+    //     return;
+    // }
+    // else if (alt_flag == 1 && scan_code_1[byte] == F5_PRESS){
+    //     terminal_switch(5);
+    //     true_buffer = kb_buffer5;
+    //     term_buf_location = &term_buf_5;
+    //     return;
+    // }
+    // else if (alt_flag == 1 && scan_code_1[byte] == F6_PRESS){
+    //     terminal_switch(6);
+    //     true_buffer = kb_buffer6;
+    //     term_buf_location = &term_buf_6;
+    //     return;
+    // }
+    // else if (alt_flag == 1 && scan_code_1[byte] == F7_PRESS){
+    //     terminal_switch(7);
+    //     true_buffer = kb_buffer7;
+    //     term_buf_location = &term_buf_7;
+    //     return;
+    // }
+    //dont print out garbage F# input
+    else if (scan_code_1[byte] >= F1_PRESS && scan_code_1[byte] <= F10_PRESS)
+        return;
     //correct correct scancode table depending on shift/tab
     else if (cap_flag == 1 && shift_flag == 1)
         c = scan_code_shift_caps[byte];
@@ -207,30 +322,30 @@ void keyboard_print(int byte) {
 
     //get correct backspace behavior
     if (scan_code_1[byte] == '\b'){
-        if(term_buf_location > 0){
+        if(*term_buf_location > 0){
             delete();
             // reset current char in keyboard buffer
             // decrement current buffer location
-            term_buf_location--;
-            kb_buffer[term_buf_location] = 0;
+            (*term_buf_location)--;
+            true_buffer[*term_buf_location] = 0;
         }
         return;
     }
 
     //get correct newline behavior
     if (c == '\n' || c == '\r'){
-        kb_buffer[term_buf_location] = c;
+        true_buffer[*term_buf_location] = c;
         terminal_buf_save(terminal_buf);
-        term_buf_location = 0;
+        *term_buf_location = 0;
         term_read_flag = 1;
         reset_buffer();
         putc(c);
         return;
     }
-    if (term_buf_location >= TERM_BUF_SIZE - 1)
+    if (*term_buf_location >= TERM_BUF_SIZE - 1)
         return;
 
     putc(c);
-    kb_buffer[term_buf_location] = c;
-    term_buf_location++;
+    true_buffer[*term_buf_location] = c;
+    (*term_buf_location)++;
 }
