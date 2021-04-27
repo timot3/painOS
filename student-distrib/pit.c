@@ -1,5 +1,6 @@
 #include "pit.h"
 #include "lib.h"
+#include "scheduling.h"
 
 /*
  * initialize_pit
@@ -38,9 +39,8 @@ void initialize_pit() {
  *   RETURN VALUE: none
  */
 void pit_handler() {
-    // printf("PIT HANDLER CALLED\n");
-
-    // Probably need to call some scheduling thing here
+    // Call scheduling switch task function every time PIT sends interrupt
+    switch_task();
 
     // Send EOI so device knows we're done
     send_eoi(PIT_IRQ);
