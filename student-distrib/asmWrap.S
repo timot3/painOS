@@ -28,5 +28,6 @@
         popfl ;\
         iret ;\
 
-generalWrap(rtcASMWrap, rtc_handler);
+generalWrap(pitASMWrap, pit_handler);
 generalWrap(keyboardASMWrap, keyboard_handler);
+generalWrap(rtcASMWrap, rtc_handler);

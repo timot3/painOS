@@ -3,6 +3,7 @@
 #include "x86_desc.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "pit.h"
 #include "asmWrap.h"
 #include "syscall.h"
 #include "syscall_helper.h"
@@ -371,14 +372,16 @@ void initialize_idt() {
 
 
     // Enable keyboard, RTC, and system call by marking them present
-    idt[RTC_NUM].present = 1;
+    idt[PIT_NUM].present = 1;
     idt[KB_NUM].present  = 1;
+    idt[RTC_NUM].present = 1;
     idt[SYSCALL_NUM].present = 1;
 
     // Add RTC handler, keyboard, and system call to the IDT
-    SET_IDT_ENTRY(idt[RTC_NUM], rtcASMWrap);
+    SET_IDT_ENTRY(idt[PIT_NUM], pitASMWrap);
     SET_IDT_ENTRY(idt[KB_NUM], keyboardASMWrap);
-    SET_IDT_ENTRY(idt[SYSCALL_NUM],  syscall_help);
+    SET_IDT_ENTRY(idt[RTC_NUM], rtcASMWrap);
+    SET_IDT_ENTRY(idt[SYSCALL_NUM], syscall_help);
 
 
     // Load IDT after initialization

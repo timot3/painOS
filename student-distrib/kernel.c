@@ -10,6 +10,7 @@
 #include "tests.h"
 #include "idt.h"
 #include "rtc.h"
+#include "pit.h"
 #include "paging.h"
 #include "filesys.h"
 #include "keyboard.h"
@@ -167,6 +168,7 @@ void entry(unsigned long magic, unsigned long addr)
     i8259_init();
     // Initialize RTC
     initialize_rtc();
+    initialize_pit();
 
     filesys_init((void*)((module_t*)(mbi->mods_addr))->mod_start);
 
@@ -181,7 +183,7 @@ void entry(unsigned long magic, unsigned long addr)
     // test_interrupts();
     launch_tests();
 #endif
-    
+
     /* Execute the first program ("shell") ... */
     uint8_t progName[32] = "shell";
     int i;
