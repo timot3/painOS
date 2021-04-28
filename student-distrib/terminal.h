@@ -24,7 +24,7 @@ typedef struct term_struct {
     int32_t cursor_x_pos;
     int32_t cursor_y_pos;
     uint8_t kb_buf[TERM_BUF_SIZE];
-    int8_t buf_location;
+    int buf_location;
 } term_struct_t;
 
 int32_t terminals_init();
