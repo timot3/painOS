@@ -4,6 +4,7 @@
 #include "paging.h"
 #include "lib.h"
 
+int nextProcess = 0;
 
 /*
  * switch_task
@@ -17,7 +18,9 @@ void switch_task() {
     // Using https://wiki.osdev.org/Scheduling_Algorithms and
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
 
-    printf("SWITCHING TASK...\n");
+    printf("SWITCHING TASK... (process %d)\n", nextProcess);
 
-    // Switch between current and next task using the round-robin method
+
+    // Update next process
+    nextProcess = (nextProcess + 1) % 3;
 }
