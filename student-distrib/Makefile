@@ -20,6 +20,8 @@ OBJS=boot.o
 OBJS+=$(filter-out boot.o,$(patsubst %.S,%.o,$(filter %.S,$(SRC))))
 OBJS+=$(patsubst %.c,%.o,$(filter %.c,$(SRC)))
 
+all: clean dep bootimg
+
 bootimg: Makefile $(OBJS)
 	rm -f bootimg
 	$(CC) $(LDFLAGS) $(OBJS) -Ttext=0x400000 -o bootimg
@@ -34,7 +36,6 @@ Makefile.dep: $(SRC)
 clean:
 	rm -f *.o */*.o Makefile.dep
 
-all: clean dep bootimg
 
 ifneq ($(MAKECMDGOALS),dep)
 ifneq ($(MAKECMDGOALS),clean)
