@@ -268,13 +268,19 @@ void putc(uint8_t c) {
     update_cursor(screen_x, screen_y);
 }
 
-void switch_screen(uint8_t oldDisplay, uint8_t newDisplay){
-    cursor_arrayx[oldDisplay] = screen_x;
-    cursor_arrayy[oldDisplay] = screen_y;
-    screen_x = cursor_arrayx[newDisplay];
-    screen_y = cursor_arrayy[newDisplay];
-    char* oldTermLoc = (char*)(VIDEO + oldDisplay*TERM_DISPLAY_SIZE);
-    char* newTermLoc = (char*)(VIDEO + newDisplay*TERM_DISPLAY_SIZE);
+void switch_screen(term_struct_t* oldTerm, term_struct_t* newTerm){
+    // cursor_arrayx[oldTerm] = screen_x;
+    // cursor_arrayy[oldTerm] = screen_y;
+    oldTerm->cursor_x_pos = screen_x;
+    oldTerm->cursor_y_pos = screen_y;
+
+    // screen_x = cursor_arrayx[newTerm];
+    // screen_y = cursor_arrayy[newTerm];
+    screen_x = newTerm->cursor_x_pos;
+    screen_y = newTerm->cursor_y_pos;
+
+    char* oldTermLoc = (char*)(VIDEO + (oldTerm->base_pid + 1)*TERM_DISPLAY_SIZE);
+    char* newTermLoc = (char*)(VIDEO + (newTerm->base_pid + 1)*TERM_DISPLAY_SIZE);
     memcpy(oldTermLoc, video_mem, TERM_DISPLAY_SIZE);
     memcpy(video_mem, newTermLoc, TERM_DISPLAY_SIZE);
     update_cursor(screen_x, screen_y);

@@ -2,9 +2,47 @@
 #include "lib.h"
 #include "keyboard.h"
 
+#include "syscall.h"
+
 volatile uint8_t current_terminal = 1;
+
+term_struct_t terminals[MAX_TERMINALS];
+
+/*
+ * init_terminals
+ *   DESCRIPTION: Inits the terminal structs in the terminals array.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ */
+int32_t terminals_init() {
+    int term_idx, buf_idx;
+    term_struct_t* curr_term_struct;
+    for (term_idx = 0; term_idx < MAX_TERMINALS; term_idx++) {
+        curr_term_struct = &(terminals[term_idx]);
+        // set base pid to the idx in array
+        curr_term_struct->base_pid = term_idx;
+        // no processes are currently running and the terminal is not displayed
+        // by default
+        curr_term_struct->curr_pid = -1; 
+        curr_term_struct->is_active = NOT_ACTIVE;
+        // not yet initialized -- set later
+        curr_term_struct->cursor_x_pos = NULL;
+        curr_term_struct->cursor_y_pos = NULL;
+        curr_term_struct->vidmem_start = NULL;
+
+        // clear the buffer
+        for (buf_idx = 0; buf_idx < TERM_BUF_SIZE; buf_idx++) {
+            curr_term_struct->kb_buf[buf_idx] = 0;
+        }
+
+    }
+    printf("Finished initing %d terminals.\n", MAX_TERMINALS); 
+    return 0;
+}
 /*
  * terminal_open
+ *   Description: Unused for checkpoint 2.
  *   INPUTS: filename
  *   OUTPUTS: -1
  *   RETURN VALUE: nothing
@@ -116,9 +154,22 @@ void terminal_switch(uint8_t fNumber){
 void display_switch(uint8_t newDisplay){
     if (current_terminal == newDisplay)
         return;
-    uint8_t oldDisplay = current_terminal;
+
+    // get current terminal
+    // set it to not actiev
+    term_struct_t* old_term = get_active_terminal();
+    old_term->is_active = NOT_ACTIVE;
+
     current_terminal = newDisplay;
-    switch_screen(oldDisplay, newDisplay);
+
+    term_struct_t* new_term = get_active_terminal();
+    new_term->is_active = ACTIVE;
+
+    switch_screen(old_term, new_term);
+    printf("New display: %d\n", newDisplay);
+    int pid = get_latest_pcb()->pid;
+    printf("pid: %d\n", pid);
+
 }
 
 /*
@@ -132,5 +183,19 @@ uint8_t get_current_terminal_idx() {
         return current_terminal - 1;
     }
     printf("\n\nError getting current terminal ID!! (id: %d) \n\n", current_terminal);
-    return 0;
+    return TERMINAL_ERROR;
+}
+
+/*
+ * get_active_terminal
+ *   DESCRIPTION: get pointer to currently active terminal struct
+ *   RETURNS: 0-indexed terminal idx, or 0 on fail
+ */
+term_struct_t* get_active_terminal() {
+    int term_idx = get_current_terminal_idx();
+    if (term_idx == TERMINAL_ERROR) {
+        printf("\nFailed to get active terminal. Term idx = %d\n", term_idx);
+        return (term_struct_t*)NULL;
+    }
+    return &(terminals[term_idx]);
 }
