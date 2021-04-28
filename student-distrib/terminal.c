@@ -103,11 +103,11 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     for(i=0; i<smallBuf; i++) {
         ((uint8_t*)buf)[i] = terminal_buf[i];
         if (((uint8_t*)buf)[i] == '\n') {
-            break;
+            return i+1;
         }
     }
 
-    return i;
+    return -1;
 }
 
 /*
