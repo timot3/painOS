@@ -187,7 +187,7 @@ void entry(unsigned long magic, unsigned long addr)
 
     /* Execute the first program ("shell") ... */
     uint8_t progName[32] = "shell";
-    int i;
+    // int i;
     // for (i=2; i <= MAX_TERMINALS; i++){
     //     printf("Initializing terminal %d...\n", current_terminal);
     //     execute(progName);
