@@ -199,9 +199,9 @@ void entry(unsigned long magic, unsigned long addr)
     execute(progName);
     terminal_switch(2);
     execute(progName);
-     terminal_switch(3);
+    terminal_switch(3);
     execute(progName);
-     terminal_switch(1);
+    terminal_switch(1);
 
     // terminal_switch(1);
 

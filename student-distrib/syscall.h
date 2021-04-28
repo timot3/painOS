@@ -21,8 +21,6 @@
 #define USER_PAGE_TOP 0x7FFFFFC
 #define USER_PAGE_BOT 0x83FFFFC
 #define VIDMAP_LOC 0x19
-#define VIDMAP_TOP 0x0 // placeholder so it compiles
-#define VIDMAP_BOT // placeholder so it compiles
 
 #define ACTIVE_FLAG_MASK 4
 #define ACTIVE_FLAG 1
@@ -51,10 +49,14 @@ typedef struct parent_pcb {
 typedef struct pcb {
     fd_items_t fd_items[MAX_OPEN_FILES];
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
-    uint32_t pid;
     parent_pcb_t parent;
-    uint32_t esp0;
+    uint32_t pid;
     uint8_t** vidmap_addr;
+
+    // for scheduling
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esp0; 
 } pcb_t;
 
 
@@ -79,6 +81,8 @@ pcb_t* get_latest_pcb();
 pcb_t* allocate_pcb(int pid);
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry);
 void setup_TSS(int pid);
+
+extern int8_t curr_pids[MAX_TERMINALS];
 
 #define O_RDONLY         00
 #define O_WRONLY         01

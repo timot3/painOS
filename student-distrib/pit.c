@@ -1,4 +1,5 @@
 #include "pit.h"
+#include "i8259.h"
 #include "lib.h"
 #include "scheduling.h"
 
@@ -16,7 +17,7 @@ void initialize_pit() {
     cli();
 
     // Get divisor rate based on desired frequency
-    uint32_t divisor = INPUT_CLK / 40; // every 25ms (40 Hz)
+    uint32_t divisor = INPUT_CLK / DESIRED_FREQUENCY; // every 25ms (40 Hz)
 
     // Send command byte (repeat mode)
     outb(REPEAT_MODE, MODE_REGISTER);

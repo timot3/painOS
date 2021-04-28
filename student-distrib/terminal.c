@@ -174,7 +174,8 @@ void display_switch(uint8_t newDisplay){
 
 /*
  * get_current_terminal_idx
- *   DESCRIPTION: our terminal idx is 1-indexed but we need it to be 
+ *   DESCRIPTION: Returns the currently active terminal.
+ *      Our terminal idx is 1-indexed but we need it to be 
  *      0-indexed for array accesses
  *   RETURNS: 0-indexed terminal idx, or 0 on fail
  */

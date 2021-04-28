@@ -1,4 +1,5 @@
 #include "paging.h"
+#include "scheduling.h"
 
 // Assembly functions from enable_paging.S
 extern void edit_paging_flags(int page_dir_addr);
@@ -139,4 +140,3 @@ void map_page_vid(int virt_addr) {
 
   tlb_flush();
 }
-
