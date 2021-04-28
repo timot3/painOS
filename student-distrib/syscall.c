@@ -217,6 +217,8 @@ int assign_pid(void) {
     int i;
     for(i = 0; i < PROCESS_LIMIT; i++) {
         if(pid_arr[i] == 0) {
+            term_struct_t* curr_term = get_active_terminal();
+            curr_term->curr_pid = i;
             pid_arr[i] = 1;
             printf("Assigning PID value %d\n", i);
             return i;
@@ -234,6 +236,9 @@ int assign_pid(void) {
 int unassign_pid(int pid, int parent_pid) {
     if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
+        term_struct_t* curr_term = get_active_terminal();
+        curr_term->curr_pid = -1;
+
         curr_pids[get_current_terminal_idx()] = parent_pid;
         return 1;
     }
@@ -329,6 +334,9 @@ int parse_command(const uint8_t *command, pcb_t *pcb, int pid, dentry_t *dentry)
 
     // parse the executable name until null terminator or newline
     while(command[com_loc] != '\0' && command[com_loc] != '\n') {
+        // bounds check to stop too many characters from page faulting
+        if(com_loc > TERM_BUF_SIZE || exec_loc > CMD_MAX_LEN)
+            return -1;
         // search for the space after the command
         if((command[com_loc] == ' ') && (char_seen_flag == 1)) break;
         // ignore leading spaces

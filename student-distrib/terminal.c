@@ -2,9 +2,11 @@
 #include "lib.h"
 #include "keyboard.h"
 
+#include "syscall.h"
+
 volatile uint8_t current_terminal = 1;
 
-static term_struct_t terminals[MAX_TERMINALS];
+term_struct_t terminals[MAX_TERMINALS];
 
 /*
  * init_terminals
@@ -150,7 +152,6 @@ void terminal_switch(uint8_t fNumber){
  *   DESCRIPTION: sets up for switch_screen
  */
 void display_switch(uint8_t newDisplay){
-    printf("New display: %d\n", newDisplay);
     if (current_terminal == newDisplay)
         return;
 
@@ -165,6 +166,10 @@ void display_switch(uint8_t newDisplay){
     new_term->is_active = ACTIVE;
 
     switch_screen(old_term, new_term);
+    printf("New display: %d\n", newDisplay);
+    int pid = get_latest_pcb()->pid;
+    printf("pid: %d\n", pid);
+
 }
 
 /*
