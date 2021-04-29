@@ -223,6 +223,13 @@ void GENERAL_PROTECTION() {
  */
 void PAGE_FAULT() {
     PAIN_HEADER;
+    uint32_t cr2;
+    uint32_t eip;
+    asm volatile (
+        "movl %%cr2, %0;"
+        : "=r" (cr2)
+    );
+    printf("CR2 = %x", cr2);
     printf("-----------PAGE_FAULT--------------\n");
     while(1);
 }

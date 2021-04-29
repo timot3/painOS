@@ -202,6 +202,7 @@ void keyboard_handler() {
         default:
             keyboard_print(byte);
     }
+    printf("EOI sent\n");
     send_eoi(KB_IRQ);
 }
 
@@ -231,18 +232,7 @@ void keyboard_print(int byte) {
         term_buf_location = &(active_terminal->buf_location);
         return;
     }
-    // else if (alt_flag == 1 && scan_code_1[byte] == F2_PRESS){
-    //     terminal_switch(2);
-    //     true_buffer = kb_buffer2;
-    //     term_buf_location = &term_buf_2;
-    //     return;
-    // }
-    // else if (alt_flag == 1 && scan_code_1[byte] == F3_PRESS){
-    //     terminal_switch(3);
-    //     true_buffer = kb_buffer3;
-    //     term_buf_location = &term_buf_3;
-    //     return;
-    // }
+
     
     //dont print out garbage F# input
     else if (scan_code_1[byte] >= F1_PRESS && scan_code_1[byte] <= F10_PRESS)

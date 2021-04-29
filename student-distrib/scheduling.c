@@ -3,6 +3,7 @@
 #include "rtc.h"
 #include "paging.h"
 #include "lib.h"
+#define PROGRAM_NAME "testprint"
 
 volatile uint8_t curr_process = 2;
 
@@ -17,34 +18,32 @@ volatile uint8_t curr_process = 2;
 void switch_task() {
     // Using https://wiki.osdev.org/Scheduling_Algorithms and
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
-    volatile uint32_t i;
     // for (i = 0; i < 0xFFFFFFE; i++);
     if(pid_arr[0] == 0) {
-        printf("\nSCEDUULING 0\n");
+        printf("SCEDUULING 0\n");
         // while(1);
         terminal_switch(1);
-        execute((uint8_t*)"pingpong");
+        execute((uint8_t*)PROGRAM_NAME);
         return;
     }
 
     if(pid_arr[1] == 0) {
-        printf("\n\n\n\n\n\n\nSCEDUULING 1\n");
+        printf("SCEDUULING 1\n");
 
         terminal_switch(2);
         
-        execute((uint8_t*)"pingpong");
+        execute((uint8_t*)PROGRAM_NAME);
         return;
     }
 
     if(pid_arr[2] == 0) {
-        printf("\n\n\n\n\n\n\nSCEDUULING 2\n");
+        printf("SCEDUULING 2\n");
         terminal_switch(3);
-        execute((uint8_t*)"pingpong");
+        execute((uint8_t*)PROGRAM_NAME);
         return;
     }
-    terminal_switch(1);
 
-    printf("\n\n\n\n\nSWITCHING TASK... (process %d)\n", curr_process);
+    printf("nSWITCHING TASK... (process %d)\n", curr_process);
 
     // get the current PID that we will switch from
     // it is stored in the terminal struct array at the idx of current process
