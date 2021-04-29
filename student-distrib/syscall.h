@@ -83,6 +83,8 @@ int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry)
 void setup_TSS(int pid);
 
 extern int8_t curr_pids[MAX_TERMINALS];
+extern int8_t pid_arr[PROCESS_LIMIT];
+
 
 #define O_RDONLY         00
 #define O_WRONLY         01

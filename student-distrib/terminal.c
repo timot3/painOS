@@ -90,9 +90,13 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     memset(buf, 0, nbytes);
     term_read_flag = 0;
     sti();
-
+// 1001000110
+    int flag;
+    asm volatile(
+        "pushfl;"
+        "popl %0" : "=r"(flag));
+    printf("Flag: %x, Term flag: %d\n", flag, term_read_flag);
     while(term_read_flag == 0);
-    cli();
 
     int i;
     int smallBuf;

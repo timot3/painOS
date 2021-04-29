@@ -13,7 +13,7 @@ volatile int interruptFlag = 0;
 void initialize_rtc() {
     // Using https://wiki.osdev.org/RTC as reference
 
-    cli();
+    // cli();
     // Disable NMI
     outb(RTC_B, RTC_PORT);
     // Read value of register B
@@ -36,7 +36,7 @@ void initialize_rtc() {
  *   RETURN VALUE: none
  */
 void rtc_handler() {
-    cli();
+    // cli();
 
     // Set interrupt flag
     interruptFlag = 1;
@@ -90,9 +90,9 @@ int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     interruptFlag = 0;
 
     // Spin until new interrupt occurs
-    sti();
-    while(interruptFlag == 0);
-    cli();
+    // sti();
+    // while(interruptFlag == 0);
+    // cli();
     return 0;
 }
 
@@ -137,7 +137,7 @@ int32_t set_frequency(uint16_t freq) {
 
     // Set frequency of RTC
     // Using https://wiki.osdev.org/RTC as reference
-    cli();
+    // cli();
     outb(RTC_A, RTC_PORT);
     char prev = inb(CMOS_PORT);
     outb(RTC_A, RTC_PORT);

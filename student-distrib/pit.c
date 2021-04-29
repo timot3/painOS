@@ -14,8 +14,6 @@ void initialize_pit() {
     // Using http://www.jamesmolloy.co.uk/tutorial_html/5.-IRQs%20and%20the%20PIT.html
     // and https://wiki.osdev.org/Programmable_Interval_Timer as reference
 
-    cli();
-
     // Get divisor rate based on desired frequency
     uint32_t divisor = INPUT_CLK / DESIRED_FREQUENCY; // every 25ms (40 Hz)
 
@@ -41,8 +39,8 @@ void initialize_pit() {
  */
 void pit_handler() {
     // Call scheduling switch task function every time PIT sends interrupt
+    send_eoi(PIT_IRQ);
     switch_task();
 
     // Send EOI so device knows we're done
-    send_eoi(PIT_IRQ);
 }

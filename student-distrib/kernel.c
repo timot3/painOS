@@ -163,12 +163,12 @@ void entry(unsigned long magic, unsigned long addr)
     printf("Enabling Interrupts\n");
     initialize_idt();
     printf("Finished enabling Interrupts\n");
+    sti();
 
     /* Init the PIC */
     i8259_init();
     // Initialize RTC
     initialize_rtc();
-    initialize_pit();
 
     filesys_init((void*)((module_t*)(mbi->mods_addr))->mod_start);
 
@@ -179,6 +179,9 @@ void entry(unsigned long magic, unsigned long addr)
     keyboard_init();
     terminals_init();
 
+    initialize_pit();
+    sti();
+
 #ifdef RUN_TESTS
     /* Run tests */
     // test_interrupts();
@@ -186,7 +189,7 @@ void entry(unsigned long magic, unsigned long addr)
 #endif
 
     /* Execute the first program ("shell") ... */
-    uint8_t progName[32] = "shell";
+    uint8_t progName[32] = "testprint";
     // int i;
     // for (i=2; i <= MAX_TERMINALS; i++){
     //     printf("Initializing terminal %d...\n", current_terminal);
@@ -196,12 +199,12 @@ void entry(unsigned long magic, unsigned long addr)
     // }
 
     terminal_switch(1);
-    execute(progName);
-    terminal_switch(2);
-    execute(progName);
-    terminal_switch(3);
-    execute(progName);
-    terminal_switch(1);
+    // execute(progName);
+    // terminal_switch(2);
+    // execute(progName);
+    // terminal_switch(3);
+    // execute(progName);
+    // terminal_switch(1);
 
     // terminal_switch(1);
 

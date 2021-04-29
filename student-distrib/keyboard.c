@@ -169,7 +169,7 @@ void keyboard_init() {
  *   RETURN VALUE: none
  */
 void keyboard_handler() {
-    cli();
+    // cli();
     unsigned int byte = inb(KB_PORT);
     unsigned char c = scan_code_1[byte];
     int i;
@@ -213,6 +213,7 @@ void keyboard_handler() {
  *   RETURN VALUE: none
  */
 void keyboard_print(int byte) {
+    // printf("Called with byte %c", byte);
     unsigned char c;
     term_struct_t* active_terminal = get_active_terminal();
     //ctrl+L = clear
