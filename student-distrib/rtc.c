@@ -90,9 +90,11 @@ int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     interruptFlag = 0;
 
     // Spin until new interrupt occurs
-    // sti();
+   sti();
+   volatile uint32_t i;
+   for (i = 0; i < 0xFFFFFF; i++);
     // while(interruptFlag == 0);
-    // cli();
+    // cli(); 
     return 0;
 }
 

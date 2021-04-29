@@ -4,7 +4,7 @@
 #include "paging.h"
 #include "lib.h"
 
-uint8_t curr_process = 0;
+volatile uint8_t curr_process = 2;
 
 /*
  * switch_task
@@ -30,7 +30,7 @@ void switch_task() {
     if(pid_arr[1] == 0) {
         printf("\n\n\n\n\n\n\nSCEDUULING 1\n");
 
-        terminal_switch(1);
+        terminal_switch(2);
         
         execute((uint8_t*)"pingpong");
         return;
@@ -38,12 +38,13 @@ void switch_task() {
 
     if(pid_arr[2] == 0) {
         printf("\n\n\n\n\n\n\nSCEDUULING 2\n");
-        terminal_switch(1);
+        terminal_switch(3);
         execute((uint8_t*)"pingpong");
         return;
     }
+    terminal_switch(1);
 
-    // printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nSWITCHING TASK... (process %d)\n", curr_process);
+    printf("\n\n\n\n\nSWITCHING TASK... (process %d)\n", curr_process);
 
     // get the current PID that we will switch from
     // it is stored in the terminal struct array at the idx of current process
@@ -66,13 +67,12 @@ void switch_task() {
    
     // switch current process to next
     pcb_t *new_pcb = get_pcb_addr(new_pid);
-
     // store ESP0, ESP, EBP into the current PCB
     curr_pcb->esp0 = tss.esp0;
     asm volatile (
         "movl %%esp, %0;"
         "movl %%ebp, %1;"
-        : "=g"(curr_pcb->esp), "=g"(curr_pcb->ebp)
+        : "=g"(curr_pcb->parent.ksp), "=g"(curr_pcb->parent.kbp)
     );
 
     // set esp0, ss0 in the tss
@@ -84,7 +84,7 @@ void switch_task() {
         "movl %0, %%esp;"
         "movl %1, %%ebp;"
         :
-        : "g" (new_pcb->esp), "g" (new_pcb->ebp)
+        : "g" (new_pcb->parent.ksp), "g" (new_pcb->parent.kbp)
     );
 
     // remap virtual page table of new task to the 
