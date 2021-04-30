@@ -46,10 +46,22 @@ typedef struct parent_pcb {
     uint32_t pid;
 } parent_pcb_t;
 
+typedef struct register_str {
+    uint32_t fl;
+    uint32_t esi;
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t edi;
+    uint32_t ecx;
+    uint32_t eax;
+    uint32_t eip;
+} register_str_t;
+
 typedef struct pcb {
     fd_items_t fd_items[MAX_OPEN_FILES];
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     parent_pcb_t parent;
+    register_str_t registers;
     uint32_t pid;
     uint8_t** vidmap_addr;
 
