@@ -188,27 +188,6 @@ void entry(unsigned long magic, unsigned long addr)
     launch_tests();
 #endif
 
-    /* Execute the first program ("shell") ... */
-    uint8_t progName[32] = "testprint";
-    // int i;
-    // for (i=2; i <= MAX_TERMINALS; i++){
-    //     printf("Initializing terminal %d...\n", current_terminal);
-    //     execute(progName);
-    //     terminal_switch(i);
-
-    // }
-
-    terminal_switch(1);
-    // execute(progName);
-    // terminal_switch(2);
-    // execute(progName);
-    // terminal_switch(3);
-    // execute(progName);
-    // terminal_switch(1);
-
-    // terminal_switch(1);
-
-
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile(".1: hlt; jmp .1;");
 }
