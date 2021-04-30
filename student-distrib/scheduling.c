@@ -19,6 +19,7 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
     // Using https://wiki.osdev.org/Scheduling_Algorithms and
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
     // for (i = 0; i < 0xFFFFFFE; i++);
+
     if(curr_pids[2] == 0) {
         printf("SCEDUULING 2\n");
         terminal_switch(3);
@@ -39,6 +40,7 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
+
 
     printf("SWITCHING TASK... (process %d)\n", curr_process);
 
@@ -64,6 +66,9 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
     // get the next process ID and next PCB
     uint8_t new_process = (curr_process + 1) % 3;
     uint8_t new_pid = curr_pids[new_process];
+
+    terminal_switch_not_visual(new_process + 1);
+    curr_process = new_process;
 
     // if (new_pid == 0) {
     //     terminal_switch(2);
@@ -100,7 +105,6 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
     map_page_pid(new_pid);
 
     // Update next process
-    curr_process = new_process;
 
     // Set register values based on new PCB saved values
     asm volatile (
@@ -110,6 +114,8 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
         "movl %3, %%edi;"
         "movl %4, %%ecx;"
 
+        "pushl %11;"
+        "pushl %12;"
         "pushl %6;"
         "popl %%eax;"
         "orl $0x200, %%eax;"
@@ -125,6 +131,7 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
         :
         : "g" (new_pcb->registers.esi), "g" (new_pcb->registers.ebx), "g" (new_pcb->registers.edx),
           "g" (new_pcb->registers.edi), "g" (new_pcb->registers.ecx), "g" (new_pcb->registers.eip),
-          "g" (new_pcb->registers.fl),"g" (new_pcb->registers.eax), "g" (USER_CS), "g" (new_pcb->registers.esp), "g" (new_pcb->registers.ebp)
+          "g" (new_pcb->registers.fl),"g" (new_pcb->registers.eax), "g" (USER_CS), "g" (new_pcb->registers.esp), "g" (new_pcb->registers.ebp),
+          "g" (USER_DS), "g" (USER_PAGE_BOT)
     );
 }
