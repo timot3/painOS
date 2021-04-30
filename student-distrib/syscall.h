@@ -43,7 +43,7 @@ typedef struct fd_items {
 typedef struct parent_pcb {
     uint32_t ksp;
     uint32_t kbp;
-    uint32_t pid;
+    int8_t pid;
 } parent_pcb_t;
 
 typedef struct register_str {
@@ -64,7 +64,7 @@ typedef struct pcb {
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
     parent_pcb_t parent;
     register_str_t registers;
-    uint32_t pid;
+    int8_t pid;
     uint8_t** vidmap_addr;
 
     // for scheduling

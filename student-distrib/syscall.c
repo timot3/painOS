@@ -52,7 +52,7 @@ int8_t pid_arr[PROCESS_LIMIT] = {
 };
 
 // global var to keep track of current pids
-int8_t curr_pids[MAX_TERMINALS] = {0,0,0};
+int8_t curr_pids[MAX_TERMINALS] = {-1,-1,-1};
 
 /*
  * halt
@@ -314,7 +314,14 @@ pcb_t* allocate_pcb(int pid) {
     // set parent to initial values
     pcb->parent.ksp = 0;
     pcb->parent.kbp = 0;
-    pcb->parent.pid = curr_pids[get_current_terminal_idx()];
+
+    int8_t parent_pid;
+    if (curr_pids[get_current_terminal_idx()] == -1) {
+        parent_pid = 0;
+    } else {
+        parent_pid = curr_pids[get_current_terminal_idx()];
+    }
+    pcb->parent.pid = parent_pid;
     curr_pids[get_current_terminal_idx()] = pid;
 
     // init registers

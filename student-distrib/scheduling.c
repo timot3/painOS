@@ -20,33 +20,33 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
     // for (i = 0; i < 0xFFFFFFE; i++);
 
-    if(curr_pids[2] == 0) {
-        printf("SCEDUULING 2\n");
+    if(curr_pids[2] == -1) {
         terminal_switch(3);
+        printf("SCEDUULING 2\n");
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
 
-    if(curr_pids[1] == 0) {
-        printf("SCEDUULING 1\n");
+    if(curr_pids[1] == -1) {
         terminal_switch(2);
+        printf("SCEDUULING 1\n");
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
 
-    if(curr_pids[0] == 0) {
-        printf("SCEDUULING 0\n");
+    if(curr_pids[0] == -1) {
         terminal_switch(1);
+        printf("SCEDUULING 0\n");
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
 
 
-    printf("SWITCHING TASK... (process %d)\n", curr_process);
+    // printf("SWITCHING TASK... (process %d)\n", curr_process);
 
     // get the current PID that we will switch from
     // it is stored in the terminal struct array at the idx of current process
-    uint8_t curr_pid = curr_pids[curr_process];
+    int8_t curr_pid = curr_pids[curr_process];
     // get the PCB of the current pid
     pcb_t *curr_pcb = get_pcb_addr(curr_pid);
 
@@ -65,9 +65,9 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
 
     // get the next process ID and next PCB
     uint8_t new_process = (curr_process + 1) % 3;
-    uint8_t new_pid = curr_pids[new_process];
+    int8_t new_pid = curr_pids[new_process];
 
-    terminal_switch_not_visual(new_process + 1);
+    // terminal_switch_not_visual(new_process + 1);
     curr_process = new_process;
 
     // if (new_pid == 0) {
@@ -118,7 +118,7 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
         "pushl %12;"
         "pushl %6;"
         "popl %%eax;"
-        "orl $0x200, %%eax;"
+        "orl $0x200, %%eax;" // enable interrupts
         "pushl %%eax;"
         "pushl %8;"
         "pushl %5;"

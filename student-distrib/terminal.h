@@ -17,7 +17,7 @@
 #define TERMINAL_ERROR 19
 
 typedef struct term_struct {
-    uint8_t base_pid; // 0, 1, or 2
+    int8_t base_pid; // 0, 1, or 2
     int8_t curr_pid; // pid of currently running process, -1 if none
     uint8_t is_active; // if it's the current terminal, either 0 or 1
     uint8_t** vidmem_start; // address of vidmem

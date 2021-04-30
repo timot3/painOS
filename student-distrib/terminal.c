@@ -180,8 +180,8 @@ void display_switch(uint8_t newDisplay){
 
     switch_screen(old_term, new_term);
     printf("New display: %d\n", newDisplay);
-    int pid = get_latest_pcb()->pid;
-    printf("pid: %d\n", pid);
+    // int pid = get_latest_pcb()->pid;
+    // printf("pid: %d\n", pid);
 
 }
 
