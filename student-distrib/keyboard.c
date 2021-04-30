@@ -202,7 +202,6 @@ void keyboard_handler() {
         default:
             keyboard_print(byte);
     }
-    printf("EOI sent\n");
     send_eoi(KB_IRQ);
 }
 
