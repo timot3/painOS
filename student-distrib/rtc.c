@@ -1,7 +1,7 @@
 #include "rtc.h"
 
 // Flag for interrupt
-volatile int interruptFlag = 0;
+volatile int interruptFlags[MAX_TERMINALS] = {};
 
 /*
  * initialize_rtc
@@ -39,7 +39,7 @@ void rtc_handler() {
     // cli();
 
     // Set interrupt flag
-    interruptFlag = 1;
+    interruptFlags[current_terminal] = 1;
 
     #ifdef RTC_TEST
         test_interrupts();
@@ -87,13 +87,13 @@ int32_t rtc_close(int32_t fd) {
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
 int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
-    interruptFlag = 0;
+    interruptFlags[current_terminal] = 0;
 
     // Spin until new interrupt occurs
    sti();
    volatile uint32_t i;
 //    for (i = 0; i < 0xFFFFFF; i++);
-    while(interruptFlag == 0);
+    while(interruptFlags[current_terminal] == 0);
     cli(); 
     return 0;
 }
