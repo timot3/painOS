@@ -41,13 +41,24 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
     }
 
     printf("SWITCHING TASK... (process %d)\n", curr_process);
-
+cx
     // get the current PID that we will switch from
     // it is stored in the terminal struct array at the idx of current process
     uint8_t curr_pid = curr_pids[curr_process];
     // get the PCB of the current pid
     pcb_t *curr_pcb = get_pcb_addr(curr_pid);
 
+
+    // save the registers of the pcb
+    curr_pcb->registers.fl = fl;
+    curr_pcb->registers.esi = esi;
+    curr_pcb->registers.ebx = ebx;
+    curr_pcb->registers.ebx = ebx;
+    curr_pcb->registers.edx = edx;
+    curr_pcb->registers.edi = edi;
+    curr_pcb->registers.ecx = ecx;
+    curr_pcb->registers.eax = eax;
+    curr_pcb->registers.eip = eip;
 
 
     // get the next process ID and next PCB
