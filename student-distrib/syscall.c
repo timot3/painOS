@@ -196,7 +196,7 @@ int32_t execute(const uint8_t *command) {
         "movl %%eax, %0" : "=r" (flags)
     );
     
-    pcb->registers.fl;
+    pcb->registers.fl = flags;
 
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
