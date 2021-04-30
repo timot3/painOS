@@ -7,25 +7,25 @@
 #define generalWrap(name, functionCalled) \
     .global name ;\
     name: ;\
-        pushfl ;\
-        pushl %ebp ;\
         pushl %esp ;\
+        pushl %ebp ;\
         pushl %eax ;\
         pushl %ecx ;\
         pushl %edi ;\
         pushl %edx ;\
         pushl %ebx ;\
         pushl %esi ;\
+        pushfl ;\
         call functionCalled ;\
+        popfl ;\
         popl %esi ;\
         popl %ebx ;\
         popl %edx ;\
         popl %edi ;\
         popl %ecx ;\
         popl %eax ;\
-        popl %esp ;\
         popl %ebp ;\
-        popfl ;\
+        popl %esp ;\
         iret ;\
 
 generalWrap(pitASMWrap, pit_handler);

@@ -37,11 +37,11 @@ void initialize_pit() {
  *   OUTPUTS: none
  *   RETURN VALUE: none
  */
-void pit_handler() {
-    // Call scheduling switch task function every time PIT sends interrupt
+void pit_handler(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi,uint32_t ecx,uint32_t eax,uint32_t ebp,uint32_t esp,uint32_t eip) {
+    // Send EOI so device knows we're done
     send_eoi(PIT_IRQ);
     
-    switch_task();
+    // Call scheduling switch task function every time PIT sends interrupt
+    switch_task(fl,esi,ebx,edx,edi,ecx,eax,ebp,esp,eip);
 
-    // Send EOI so device knows we're done
 }

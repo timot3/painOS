@@ -3,7 +3,7 @@
 #include "rtc.h"
 #include "paging.h"
 #include "lib.h"
-#define PROGRAM_NAME "testprint"
+#define PROGRAM_NAME "shell"
 
 volatile uint8_t curr_process = 2;
 
@@ -15,7 +15,7 @@ volatile uint8_t curr_process = 2;
  *   OUTPUTS: none
  *   RETURN VALUE: none
  */
-void switch_task() {
+void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi,uint32_t ecx,uint32_t eax,uint32_t ebp,uint32_t esp,uint32_t eip) {
     // Using https://wiki.osdev.org/Scheduling_Algorithms and
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
     // for (i = 0; i < 0xFFFFFFE; i++);
@@ -43,7 +43,7 @@ void switch_task() {
         return;
     }
 
-    printf("nSWITCHING TASK... (process %d)\n", curr_process);
+    printf("SWITCHING TASK... (process %d)\n", curr_process);
 
     // get the current PID that we will switch from
     // it is stored in the terminal struct array at the idx of current process
