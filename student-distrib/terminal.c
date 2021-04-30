@@ -153,6 +153,13 @@ void terminal_switch(uint8_t fNumber){
     display_switch(fNumber);
 }
 
+void terminal_switch_not_visual(uint8_t newTerm){
+    if (current_terminal == newTerm)
+        return;
+
+    current_terminal = newTerm;
+}
+
 /*
  * display_switch
  *   DESCRIPTION: sets up for switch_screen
