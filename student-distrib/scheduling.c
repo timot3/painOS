@@ -58,6 +58,8 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
     curr_pcb->registers.ecx = ecx;
     curr_pcb->registers.eax = eax;
     curr_pcb->registers.eip = eip;
+    curr_pcb->registers.ebp = ebp;
+    curr_pcb->registers.esp = esp;
 
     // get the next process ID and next PCB
     uint8_t new_process = (curr_process + 1) % 3;
@@ -112,14 +114,17 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
         "popl %%eax;"
         "orl $0x200, %%eax;"
         "pushl %%eax;"
-        "movl %7, %%eax;"
         "pushl %8;"
         "pushl %5;"
+
+        "movl %9, %%esp;"
+        "movl %10, %%ebp;"
+        "movl %7, %%eax;"
 
         "iret;"
         :
         : "g" (new_pcb->registers.esi), "g" (new_pcb->registers.ebx), "g" (new_pcb->registers.edx),
           "g" (new_pcb->registers.edi), "g" (new_pcb->registers.ecx), "g" (new_pcb->registers.eip),
-          "g" (new_pcb->registers.fl),"g" (new_pcb->registers.eax), "g" (USER_CS)
+          "g" (new_pcb->registers.fl),"g" (new_pcb->registers.eax), "g" (USER_CS), "g" (new_pcb->registers.esp), "g" (new_pcb->registers.ebp)
     );
 }

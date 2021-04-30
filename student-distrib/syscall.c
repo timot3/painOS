@@ -195,8 +195,10 @@ int32_t execute(const uint8_t *command) {
         "popl %%eax;"
         "movl %%eax, %0" : "=r" (flags)
     );
-    
+
     pcb->registers.fl = flags;
+    pcb->registers.esp = ksp;
+    pcb->registers.ebp = kbp;
 
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
@@ -322,6 +324,8 @@ pcb_t* allocate_pcb(int pid) {
     pcb->registers.edx = 0;
     pcb->registers.edi = 0;
     pcb->registers.esi = 0;
+    pcb->registers.ebp = 0;
+    pcb->registers.esp = 0;
 
     pcb->fd_items[pid].file_position = 0;
 

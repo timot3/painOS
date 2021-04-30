@@ -55,6 +55,8 @@ typedef struct register_str {
     uint32_t ecx;
     uint32_t eax;
     uint32_t eip;
+    uint32_t esp;
+    uint32_t ebp;
 } register_str_t;
 
 typedef struct pcb {
@@ -68,7 +70,7 @@ typedef struct pcb {
     // for scheduling
     uint32_t esp;
     uint32_t ebp;
-    uint32_t esp0; 
+    uint32_t esp0;
 } pcb_t;
 
 
