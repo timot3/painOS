@@ -81,9 +81,9 @@ int32_t halt(uint8_t status) {
     }
 
     // 1.  if base shell, re-execute base shell
-    // if(pcb->pid == pcb->parent.pid) {
-    //     execute((uint8_t *)"shell");
-    // }
+    if(pcb->pid == pcb->parent.pid) {
+        execute((uint8_t *)"shell");
+    }
 
     // 3.  set up file state for return to parent
 
