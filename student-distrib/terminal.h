@@ -37,6 +37,7 @@ int32_t terminal_write(int32_t fd, const void *buf, int32_t nbytes);
 int32_t std_bad_call();
 
 void terminal_switch(uint8_t fNumber);
+void terminal_switch_not_visual(uint8_t newTerm);
 void display_switch(uint8_t newDisplay);
 
 term_struct_t* get_active_terminal();
