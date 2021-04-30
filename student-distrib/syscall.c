@@ -187,6 +187,16 @@ int32_t execute(const uint8_t *command) {
 
     read_data(dentry.inode, 24, EIPbuf, 4);
     uint32_t EIP = *((uint32_t *)EIPbuf);
+    pcb->registers.eip = EIP;
+
+    int flags;
+    asm volatile (
+        "pushfl;"
+        "popl %%eax;"
+        "movl %%eax, %0" : "=r" (flags)
+    );
+    
+    pcb->registers.fl;
 
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
@@ -305,6 +315,13 @@ pcb_t* allocate_pcb(int pid) {
     pcb->parent.pid = curr_pids[get_current_terminal_idx()];
     curr_pids[get_current_terminal_idx()] = pid;
 
+    // init registers
+    pcb->registers.eax = 0;
+    pcb->registers.ebx = 0;
+    pcb->registers.ecx = 0;
+    pcb->registers.edx = 0;
+    pcb->registers.edi = 0;
+    pcb->registers.esi = 0;
 
     pcb->fd_items[pid].file_position = 0;
 
