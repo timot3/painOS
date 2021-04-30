@@ -12,6 +12,6 @@
 #define DESIRED_FREQUENCY 40
 
 void initialize_pit();
-void pit_handler(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi,uint32_t ecx,uint32_t eax,uint32_t ebp,uint32_t esp,uint32_t eip);
+void pit_handler(int fl, int esi, int ebx, int edx, int edi, int ecx, int eax, int ebp, int esp, int eip);
 
 #endif // PIT_H
