@@ -19,26 +19,23 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
     // Using https://wiki.osdev.org/Scheduling_Algorithms and
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
     // for (i = 0; i < 0xFFFFFFE; i++);
-    if(pid_arr[0] == 0) {
-        printf("SCEDUULING 0\n");
-        // while(1);
-        terminal_switch(1);
-        execute((uint8_t*)PROGRAM_NAME);
-        return;
-    }
-
-    if(pid_arr[1] == 0) {
-        printf("SCEDUULING 1\n");
-
-        terminal_switch(2);
-        
-        execute((uint8_t*)PROGRAM_NAME);
-        return;
-    }
-
-    if(pid_arr[2] == 0) {
+    if(curr_pids[2] == 0) {
         printf("SCEDUULING 2\n");
         terminal_switch(3);
+        execute((uint8_t*)PROGRAM_NAME);
+        return;
+    }
+
+    if(curr_pids[1] == 0) {
+        printf("SCEDUULING 1\n");
+        terminal_switch(2);
+        execute((uint8_t*)PROGRAM_NAME);
+        return;
+    }
+
+    if(curr_pids[0] == 0) {
+        printf("SCEDUULING 0\n");
+        terminal_switch(1);
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
