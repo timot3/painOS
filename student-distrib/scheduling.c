@@ -18,7 +18,6 @@ volatile uint8_t curr_process = 2;
 void switch_task() {
     // Using https://wiki.osdev.org/Scheduling_Algorithms and
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
-    // for (i = 0; i < 0xFFFFFFE; i++);
 
     if(curr_pids[2] == -1) {
         terminal_switch(3);
