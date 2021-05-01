@@ -73,7 +73,6 @@ int32_t terminal_buf_save(unsigned char* buf) {
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
         buf[i] = true_buffer[i];
-    // buf[TERM_BUF_SIZE - 1] = '\n';
     return 0;
 }
 
@@ -90,15 +89,9 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     memset(buf, 0, nbytes);
     term_read_flag = 0;
     sti();
-// 1001000110
-    // int flag;
-    // asm volatile(
-    //     "pushfl;"
-    //     "popl %0" : "=r"(flag));
-    // printf("Flag: %x, Term flag: %d\n", flag, term_read_flag);
-
     send_eoi(KB_IRQ);
     while(term_read_flag == 0);
+    cli();
 
     int i;
     int smallBuf;
@@ -179,10 +172,6 @@ void display_switch(uint8_t newDisplay){
     new_term->is_active = ACTIVE;
 
     switch_screen(old_term, new_term);
-    // printf("New display: %d\n", newDisplay);
-    // int pid = get_latest_pcb()->pid;
-    // printf("pid: %d\n", pid);
-
 }
 
 /*
