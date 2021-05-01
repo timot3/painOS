@@ -179,7 +179,7 @@ void display_switch(uint8_t newDisplay){
     new_term->is_active = ACTIVE;
 
     switch_screen(old_term, new_term);
-    printf("New display: %d\n", newDisplay);
+    // printf("New display: %d\n", newDisplay);
     // int pid = get_latest_pcb()->pid;
     // printf("pid: %d\n", pid);
 

@@ -52,16 +52,16 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
 
 
     // save the registers of the pcb
-    curr_pcb->registers.fl = fl;
-    curr_pcb->registers.esi = esi;
-    curr_pcb->registers.ebx = ebx;
-    curr_pcb->registers.edx = edx;
-    curr_pcb->registers.edi = edi;
-    curr_pcb->registers.ecx = ecx;
-    curr_pcb->registers.eax = eax;
-    curr_pcb->registers.eip = eip;
-    curr_pcb->registers.ebp = ebp;
-    curr_pcb->registers.esp = esp;
+    // curr_pcb->registers.fl = fl;
+    // curr_pcb->registers.esi = esi;
+    // curr_pcb->registers.ebx = ebx;
+    // curr_pcb->registers.edx = edx;
+    // curr_pcb->registers.edi = edi;
+    // curr_pcb->registers.ecx = ecx;
+    // curr_pcb->registers.eax = eax;
+    // curr_pcb->registers.eip = eip;
+    // curr_pcb->registers.ebp = ebp;
+    // curr_pcb->registers.esp = esp;
 
     // get the next process ID and next PCB
     uint8_t new_process = (curr_process + 1) % 3;

@@ -199,7 +199,7 @@ int32_t execute(const uint8_t *command) {
     pcb->registers.fl = flags;
     pcb->registers.esp = ksp;
     pcb->registers.ebp = kbp;
-
+    pcb->esp0 = tss.esp0;
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
     asm volatile (
