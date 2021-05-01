@@ -251,10 +251,8 @@ void putc(uint8_t c) {
             screen_y--;
         }
     } else {
-        *(uint8_t *)((char*)(VIDEO + (current_terminal)*TERM_DISPLAY_SIZE) + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)((char*)(VIDEO + (current_terminal)*TERM_DISPLAY_SIZE) + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        char* newTermLoc = (char*)(VIDEO + (current_terminal)*TERM_DISPLAY_SIZE);
-        //memcpy(video_mem, newTermLoc, TERM_DISPLAY_SIZE);
+        *(uint8_t *)(get_active_terminal()->vidmem_start + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(get_active_terminal()->vidmem_start + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
         //vertical scroll if at last character of line
         if (screen_x >= NUM_COLS){
@@ -276,9 +274,12 @@ void switch_screen(term_struct_t* oldTerm, term_struct_t* newTerm){
     oldTerm->cursor_y_pos = screen_y;
     screen_x = newTerm->cursor_x_pos;
     screen_y = newTerm->cursor_y_pos;
+    
 
     char* oldTermLoc = (char*)(VIDEO + (oldTerm->base_pid + 1)*TERM_DISPLAY_SIZE);
     char* newTermLoc = (char*)(VIDEO + (newTerm->base_pid + 1)*TERM_DISPLAY_SIZE);
+    oldTerm->vidmem_start = oldTermLoc;
+    newTerm->vidmem_start = video_mem;
     memcpy(oldTermLoc, video_mem, TERM_DISPLAY_SIZE);
     memcpy(video_mem, newTermLoc, TERM_DISPLAY_SIZE);
     update_cursor(screen_x, screen_y);
