@@ -2,6 +2,7 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "syscall.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -284,6 +285,8 @@ void switch_screen(term_struct_t* oldTerm, term_struct_t* newTerm){
     memcpy(oldTermLoc, video_mem, TERM_DISPLAY_SIZE);
     memcpy(video_mem, newTermLoc, TERM_DISPLAY_SIZE);
     update_cursor(screen_x, screen_y);
+    pcb_t *pcb = get_pcb_addr(get_latest_pid());
+    map_page_pid(pcb->pid);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
