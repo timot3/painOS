@@ -15,7 +15,7 @@ void initialize_pit() {
     // and https://wiki.osdev.org/Programmable_Interval_Timer as reference
 
     // Get divisor rate based on desired frequency
-    uint32_t divisor = INPUT_CLK / DESIRED_FREQUENCY; // every 25ms (40 Hz)
+    uint32_t divisor = INPUT_CLK / 100; // every 25ms (40 Hz)
 
     // Send command byte (repeat mode)
     outb(REPEAT_MODE, MODE_REGISTER);
@@ -29,7 +29,6 @@ void initialize_pit() {
     // Enable interrupt requests for PIT on PIC
     enable_irq(PIT_IRQ);
 }
-
 /*
  * pit_handler
  *   DESCRIPTION: Called every time PIT sends interrupt command
@@ -37,11 +36,11 @@ void initialize_pit() {
  *   OUTPUTS: none
  *   RETURN VALUE: none
  */
-void pit_handler(int fl, int esi, int ebx, int edx, int edi, int ecx, int eax, int ebp, int esp, int eip) {
+void pit_handler() {
     // Send EOI so device knows we're done
     send_eoi(PIT_IRQ);
 
     // Call scheduling switch task function every time PIT sends interrupt
-    switch_task(fl,esi,ebx,edx,edi,ecx,eax,ebp,esp,eip);
+    switch_task();
 
 }
