@@ -222,7 +222,7 @@ void GENERAL_PROTECTION() {
  *   RETURN VALUE: none
  */
 void PAGE_FAULT() {
-    // PAIN_HEADER;
+    PAIN_HEADER;
     printf("-----------PAGE_FAULT--------------\n");
     while(1);
 }
