@@ -90,7 +90,7 @@ int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     interruptFlags[current_terminal] = 0;
 
     // Spin until new interrupt occurs
-   sti();
+    sti();
     while(interruptFlags[current_terminal] == 0);
     cli(); 
     return 0;
