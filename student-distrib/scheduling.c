@@ -15,7 +15,7 @@ volatile uint8_t curr_process = 2;
  *   OUTPUTS: none
  *   RETURN VALUE: none
  */
-void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi,uint32_t ecx,uint32_t eax,uint32_t ebp,uint32_t esp,uint32_t eip) {
+void switch_task() {
     // Using https://wiki.osdev.org/Scheduling_Algorithms and
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
     // for (i = 0; i < 0xFFFFFFE; i++);
@@ -40,98 +40,43 @@ void switch_task(uint32_t fl,uint32_t esi,uint32_t ebx,uint32_t edx,uint32_t edi
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
+    // // get the current PID that we will switch from
+    // // it is stored in the terminal struct array at the idx of current process
+    // int8_t curr_pid = curr_pids[curr_process];
+    // // get the PCB of the current pid
+    // pcb_t *curr_pcb = get_pcb_addr(curr_pid);
 
+    // // get the next process ID and next PCB
+    // uint8_t new_process = (curr_process + 1) % 3;
+    // int8_t new_pid = curr_pids[new_process];
 
-    // printf("SWITCHING TASK... (process %d)\n", curr_process);
+    // // terminal_switch(new_process + 1);
+    // curr_process = new_process;
 
-    // get the current PID that we will switch from
-    // it is stored in the terminal struct array at the idx of current process
-    int8_t curr_pid = curr_pids[curr_process];
-    // get the PCB of the current pid
-    pcb_t *curr_pcb = get_pcb_addr(curr_pid);
-
-
-    // save the registers of the pcb
-    // curr_pcb->registers.fl = fl;
-    // curr_pcb->registers.esi = esi;
-    // curr_pcb->registers.ebx = ebx;
-    // curr_pcb->registers.edx = edx;
-    // curr_pcb->registers.edi = edi;
-    // curr_pcb->registers.ecx = ecx;
-    // curr_pcb->registers.eax = eax;
-    // curr_pcb->registers.eip = eip;
-    // curr_pcb->registers.ebp = ebp;
-    // curr_pcb->registers.esp = esp;
-
-    // get the next process ID and next PCB
-    uint8_t new_process = (curr_process + 1) % 3;
-    int8_t new_pid = curr_pids[new_process];
-
-    terminal_switch(new_process + 1);
-    curr_process = new_process;
-
-    // if (new_pid == 0) {
-    //     terminal_switch(2);
-    //     execute((uint8_t*)"shell");
-    //     // terminal_switch(curr_pid);
-
-    // }
-
-    // switch current process to next
-    pcb_t *new_pcb = get_pcb_addr(new_pid);
-    // store ESP0, ESP, EBP into the current PCB
-    curr_pcb->esp0 = tss.esp0;
-    asm volatile (
-        "movl %%esp, %0;"
-        "movl %%ebp, %1;"
-        : "=g"(curr_pcb->parent.ksp), "=g"(curr_pcb->parent.kbp)
-    );
-
-    // set esp0, ss0 in the tss
-    tss.esp0 = new_pcb->esp0;
-    tss.ss0 = KERNEL_DS;
-
-    // esp, ebp <-- new PCB esp, ebp
-    asm volatile (
-        "movl %0, %%esp;"
-        "movl %1, %%ebp;"
-        :
-        : "g" (new_pcb->parent.ksp), "g" (new_pcb->parent.kbp)
-    );
-
-    // remap virtual page table of new task to the
-    // physical memory of currently executing process
-    // also flush tlb (inside the function)
-    map_page_pid(new_pid);
-
-    // Update next process
-
-    // // Set register values based on new PCB saved values
+    // // switch current process to next
+    // pcb_t *new_pcb = get_pcb_addr(new_pid);
+    // // store ESP0, ESP, EBP into the current PCB
+    // curr_pcb->esp0 = tss.esp0;
     // asm volatile (
-    //     "movl %0, %%esi;"
-    //     "movl %1, %%ebx;"
-    //     "movl %2, %%edx;"
-    //     "movl %3, %%edi;"
-    //     "movl %4, %%ecx;"
-
-    //     "pushl %11;"
-    //     "pushl %12;"
-    //     "pushl %6;"
-    //     "popl %%eax;"
-    //     "orl $0x200, %%eax;" // enable interrupts
-    //     "pushl %%eax;"
-    //     "pushl %8;"
-    //     "pushl %5;"
-
-    //     "movl %9, %%esp;"
-    //     "movl %10, %%ebp;"
-    //     "movl %7, %%eax;"
-
-    //     "iret;"
-    //     :
-    //     : "g" (new_pcb->registers.esi), "g" (new_pcb->registers.ebx), "g" (new_pcb->registers.edx),
-    //       "g" (new_pcb->registers.edi), "g" (new_pcb->registers.ecx), "g" (new_pcb->registers.eip),
-    //       "g" (new_pcb->registers.fl),"g" (new_pcb->registers.eax), "g" (USER_CS), "g" (new_pcb->registers.esp), "g" (new_pcb->registers.ebp),
-    //       "g" (USER_DS), "g" (USER_PAGE_BOT)
+    //     "movl %%esp, %0;"
+    //     "movl %%ebp, %1;"
+    //     : "=g"(curr_pcb->parent.ksp), "=g"(curr_pcb->parent.kbp)
     // );
+
+    // // set esp0, ss0 in the tss
+    // tss.esp0 = new_pcb->esp0;
+    // tss.ss0 = KERNEL_DS;
+
+    // // esp, ebp <-- new PCB esp, ebp
+    // asm volatile (
+    //     "movl %0, %%esp;"
+    //     "movl %1, %%ebp;"
+    //     :
+    //     : "g" (new_pcb->parent.ksp), "g" (new_pcb->parent.kbp)
+    // );
+
+    // // remap virtual page table of new task to the
+    // // physical memory of currently executing process
+    // // also flush tlb (inside the function)
+    // map_page_pid(new_pid);
 }
