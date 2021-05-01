@@ -249,7 +249,7 @@ int unassign_pid(int pid, int parent_pid) {
     if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
         term_struct_t* curr_term = get_active_terminal();
-        curr_term->curr_pid = -1;
+        curr_term->curr_pid = parent_pid;
 
         curr_pids[get_current_terminal_idx()] = parent_pid;
         return 1;
