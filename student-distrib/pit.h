@@ -9,9 +9,9 @@
 #define REPEAT_MODE 0x36
 #define INPUT_CLK 1193180
 // use default as 40
-#define DESIRED_FREQUENCY 100
+#define DESIRED_FREQUENCY 40
 
 void initialize_pit();
-void pit_handler(int fl, int esi, int ebx, int edx, int edi, int ecx, int eax, int ebp, int esp, int eip);
+void pit_handler();
 
 #endif // PIT_H
