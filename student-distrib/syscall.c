@@ -200,6 +200,7 @@ int32_t execute(const uint8_t *command) {
     pcb->registers.esp = ksp;
     pcb->registers.ebp = kbp;
     pcb->esp0 = tss.esp0;
+
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
     asm volatile (
@@ -265,6 +266,8 @@ int unassign_pid(int pid, int parent_pid) {
  *   RETURN VALUE: idx of most recently used pid or -1 if none
  */
 int get_latest_pid() {
+    if (curr_pids[get_current_terminal_idx()] == -1)
+        return 0;
     return curr_pids[get_current_terminal_idx()];
 }
 
