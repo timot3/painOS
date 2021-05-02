@@ -1,8 +1,11 @@
 #ifndef IDT_H
 #define IDT_H
 
-#define RTC_NUM 0x28
+// Based on values given in table from coursenotes
+#define PIT_NUM 0x20
 #define KB_NUM 0x21
+#define RTC_NUM 0x28
+
 #define SYSCALL_NUM 0x80
 #define NUM_SYSTEM_INTERRUPTS 32
 #define EXIT_STATUS ((uint8_t)256)

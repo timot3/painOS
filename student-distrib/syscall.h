@@ -21,12 +21,21 @@
 #define USER_PAGE_TOP 0x7FFFFFC
 #define USER_PAGE_BOT 0x83FFFFC
 #define VIDMAP_LOC 0x19
-#define VIDMAP_TOP 0x0 // placeholder so it compiles
-#define VIDMAP_BOT // placeholder so it compiles
 
 #define ACTIVE_FLAG_MASK 4
 #define ACTIVE_FLAG 1
 #define INACTIVE_FLAG 0
+
+#define O_RDONLY         00
+#define O_WRONLY         01
+#define O_RDWR           02
+
+
+#define READ_WRITE_MASK 3 // 11 in binary
+
+#define STDIN_IDX 0
+#define STDOUT_IDX 1
+
 
 typedef struct file_op_table {
     int32_t (*open)(const uint8_t *filename);
@@ -45,16 +54,34 @@ typedef struct fd_items {
 typedef struct parent_pcb {
     uint32_t ksp;
     uint32_t kbp;
-    uint32_t pid;
+    int8_t pid;
 } parent_pcb_t;
+
+typedef struct register_str {
+    uint32_t fl;
+    uint32_t esi;
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t edi;
+    uint32_t ecx;
+    uint32_t eax;
+    uint32_t eip;
+    uint32_t esp;
+    uint32_t ebp;
+} register_str_t;
 
 typedef struct pcb {
     fd_items_t fd_items[MAX_OPEN_FILES];
     uint8_t argument_buf[TERM_BUF_SIZE - CMD_MAX_LEN - 1];
-    uint32_t pid;
     parent_pcb_t parent;
-    uint32_t esp0;
+    register_str_t registers;
+    int8_t pid;
     uint8_t** vidmap_addr;
+
+    // for scheduling
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esp0;
 } pcb_t;
 
 
@@ -80,14 +107,7 @@ pcb_t* allocate_pcb(int pid);
 int parse_command(const uint8_t* command, pcb_t* pcb, int pid, dentry_t *dentry);
 void setup_TSS(int pid);
 
-#define O_RDONLY         00
-#define O_WRONLY         01
-#define O_RDWR           02
-
-
-#define READ_WRITE_MASK 3 // 11 in binary
-
-#define STDIN_IDX 0
-#define STDOUT_IDX 1
+extern int8_t curr_pids[MAX_TERMINALS];
+extern int8_t pid_arr[PROCESS_LIMIT];
 
 #endif /* SYSCALL_H */

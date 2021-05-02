@@ -669,7 +669,7 @@ void launch_tests() {
 	// CHECKPOINT 3
 	// execute((uint8_t*)"shell");
 	// execute((uint8_t*)"testprint");
-	execute((uint8_t*)"ls");
+	// execute((uint8_t*)"ls");
 	// TEST_OUTPUT("Test bad input read", test_bad_input_read());
 	// TEST_OUTPUT("Test bad input write", test_bad_input_write());
 	// TEST_OUTPUT("Test bad input open", test_bad_input_open());

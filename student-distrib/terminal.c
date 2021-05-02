@@ -2,10 +2,47 @@
 #include "lib.h"
 #include "keyboard.h"
 
-uint8_t termDisplay = 1;
+#include "syscall.h"
+
+volatile uint8_t current_terminal = 1;
+
+term_struct_t terminals[MAX_TERMINALS];
 
 /*
+ * init_terminals
+ *   DESCRIPTION: Inits the terminal structs in the terminals array.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ */
+int32_t terminals_init() {
+    int term_idx, buf_idx;
+    term_struct_t* curr_term_struct;
+    for (term_idx = 0; term_idx < MAX_TERMINALS; term_idx++) {
+        curr_term_struct = &(terminals[term_idx]);
+        // set base pid to the idx in array
+        curr_term_struct->base_pid = term_idx;
+        // no processes are currently running and the terminal is not displayed
+        // by default
+        curr_term_struct->curr_pid = -1; 
+        curr_term_struct->is_active = NOT_ACTIVE;
+        // not yet initialized -- set later
+        curr_term_struct->cursor_x_pos = NULL;
+        curr_term_struct->cursor_y_pos = NULL;
+        curr_term_struct->vidmem_start = NULL;
+
+        // clear the buffer
+        for (buf_idx = 0; buf_idx < TERM_BUF_SIZE; buf_idx++) {
+            curr_term_struct->kb_buf[buf_idx] = 0;
+        }
+
+    }
+    printf("Finished initing %d terminals.\n", MAX_TERMINALS); 
+    return 0;
+}
+/*
  * terminal_open
+ *   Description: Unused for checkpoint 2.
  *   INPUTS: filename
  *   OUTPUTS: -1
  *   RETURN VALUE: nothing
@@ -36,7 +73,6 @@ int32_t terminal_buf_save(unsigned char* buf) {
     int i;
     for(i=0; i<TERM_BUF_SIZE; i++)
         buf[i] = true_buffer[i];
-    // buf[TERM_BUF_SIZE - 1] = '\n';
     return 0;
 }
 
@@ -53,7 +89,7 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     memset(buf, 0, nbytes);
     term_read_flag = 0;
     sti();
-
+    send_eoi(KB_IRQ);
     while(term_read_flag == 0);
     cli();
 
@@ -66,11 +102,11 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes) {
     for(i=0; i<smallBuf; i++) {
         ((uint8_t*)buf)[i] = terminal_buf[i];
         if (((uint8_t*)buf)[i] == '\n') {
-            break;
+            return i+1;
         }
     }
 
-    return i;
+    return -1;
 }
 
 /*
@@ -110,14 +146,59 @@ void terminal_switch(uint8_t fNumber){
     display_switch(fNumber);
 }
 
+void terminal_switch_not_visual(uint8_t newTerm){
+    if (current_terminal == newTerm)
+        return;
+
+    current_terminal = newTerm;
+}
+
 /*
  * display_switch
  *   DESCRIPTION: sets up for switch_screen
  */
 void display_switch(uint8_t newDisplay){
-    if (termDisplay == newDisplay)
+    if (current_terminal == newDisplay)
         return;
-    uint8_t oldDisplay = termDisplay;
-    termDisplay = newDisplay;
-    switch_screen(oldDisplay, newDisplay);
+
+    // get current terminal
+    // set it to not actiev
+    term_struct_t* old_term = get_active_terminal();
+    old_term->is_active = NOT_ACTIVE;
+
+    current_terminal = newDisplay;
+
+    term_struct_t* new_term = get_active_terminal();
+    new_term->is_active = ACTIVE;
+
+    switch_screen(old_term, new_term);
+}
+
+/*
+ * get_current_terminal_idx
+ *   DESCRIPTION: Returns the currently active terminal.
+ *      Our terminal idx is 1-indexed but we need it to be 
+ *      0-indexed for array accesses
+ *   RETURNS: 0-indexed terminal idx, or 0 on fail
+ */
+uint8_t get_current_terminal_idx() {
+    if (current_terminal > 0 && current_terminal < MAX_TERMINALS + 1) {
+        return current_terminal - 1;
+    }
+    printf("\n\nError getting current terminal ID!! (id: %d) \n\n", current_terminal);
+    return TERMINAL_ERROR;
+}
+
+/*
+ * get_active_terminal
+ *   DESCRIPTION: get pointer to currently active terminal struct
+ *   RETURNS: 0-indexed terminal idx, or 0 on fail
+ */
+term_struct_t* get_active_terminal() {
+    int term_idx = get_current_terminal_idx();
+    if (term_idx == TERMINAL_ERROR) {
+        printf("\nFailed to get active terminal. Term idx = %d\n", term_idx);
+        return (term_struct_t*)NULL;
+    }
+    return &(terminals[term_idx]);
 }

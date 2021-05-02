@@ -10,10 +10,12 @@
 #include "tests.h"
 #include "idt.h"
 #include "rtc.h"
+#include "pit.h"
 #include "paging.h"
 #include "filesys.h"
 #include "keyboard.h"
 #include "syscall.h"
+#include "terminal.h"
 
 // #define RUN_TESTS
 
@@ -157,36 +159,34 @@ void entry(unsigned long magic, unsigned long addr)
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
+    printf("\n");
     printf("Enabling Interrupts\n");
     initialize_idt();
     printf("Finished enabling Interrupts\n");
+    sti();
 
     /* Init the PIC */
     i8259_init();
-    // Initialize RTC
+    // Initialize RTC, filesys, paging, keyboard, terminals, and PIT
     initialize_rtc();
 
     filesys_init((void*)((module_t*)(mbi->mods_addr))->mod_start);
 
     paging_init();
+    printf("\n");
+
 
     keyboard_init();
+    terminals_init();
+
+    initialize_pit();
+    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
     // test_interrupts();
     launch_tests();
 #endif
-    
-    /* Execute the first program ("shell") ... */
-    uint8_t progName[32] = "shell";
-    int i;
-    for (i=2; i < 8; i++){
-        execute(progName);
-        terminal_switch(i);
-
-    }
-    terminal_switch(1);
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile(".1: hlt; jmp .1;");

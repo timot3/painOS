@@ -5,6 +5,8 @@
 #include "i8259.h"
 #include "x86_desc.h"
 #include "tests.h"
+#include "syscall.h"
+#include "terminal.h"
 
 // From https://wiki.osdev.org/RTC
 #define RTC_PORT 0x70

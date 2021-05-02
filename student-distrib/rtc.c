@@ -1,7 +1,7 @@
 #include "rtc.h"
 
 // Flag for interrupt
-volatile int interruptFlag = 0;
+volatile int interruptFlags[MAX_TERMINALS] = {};
 
 /*
  * initialize_rtc
@@ -13,7 +13,7 @@ volatile int interruptFlag = 0;
 void initialize_rtc() {
     // Using https://wiki.osdev.org/RTC as reference
 
-    cli();
+    // cli();
     // Disable NMI
     outb(RTC_B, RTC_PORT);
     // Read value of register B
@@ -36,10 +36,10 @@ void initialize_rtc() {
  *   RETURN VALUE: none
  */
 void rtc_handler() {
-    cli();
+    // cli();
 
     // Set interrupt flag
-    interruptFlag = 1;
+    interruptFlags[current_terminal] = 1;
 
     #ifdef RTC_TEST
         test_interrupts();
@@ -87,12 +87,12 @@ int32_t rtc_close(int32_t fd) {
  *   RETURN VALUE: Always returns 0 (based on discussion slides)
  */
 int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
-    interruptFlag = 0;
+    interruptFlags[current_terminal] = 0;
 
     // Spin until new interrupt occurs
     sti();
-    while(interruptFlag == 0);
-    cli();
+    while(interruptFlags[current_terminal] == 0);
+    cli(); 
     return 0;
 }
 
@@ -137,7 +137,7 @@ int32_t set_frequency(uint16_t freq) {
 
     // Set frequency of RTC
     // Using https://wiki.osdev.org/RTC as reference
-    cli();
+    // cli();
     outb(RTC_A, RTC_PORT);
     char prev = inb(CMOS_PORT);
     outb(RTC_A, RTC_PORT);

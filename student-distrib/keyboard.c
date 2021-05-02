@@ -4,6 +4,7 @@
 #include "terminal.h"
 
 /*https://wiki.osdev.org/PS/2_Keyboard */
+// Scan codes for keyboard - different arrays for if certain keys (shift, caps) enabled/disabled
 unsigned char scan_code_1[256] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
@@ -82,7 +83,7 @@ unsigned char scan_code_shift_caps[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-//keyboard buffer to store values for terminal_read
+//keyboard buffer to store values for terminal_read - 1 for each terminal window
 unsigned char kb_buffer[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -116,61 +117,19 @@ unsigned char kb_buffer3[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-unsigned char kb_buffer4[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-unsigned char kb_buffer5[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-unsigned char kb_buffer6[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
-unsigned char kb_buffer7[128] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
-
 unsigned char *true_buffer = kb_buffer;
 
 // current location in the terminal buffer
 int term_buf_1 = 0;
 int term_buf_2 = 0;
 int term_buf_3 = 0;
-int term_buf_4 = 0;
-int term_buf_5 = 0;
-int term_buf_6 = 0;
-int term_buf_7 = 0;
 int *term_buf_location = &term_buf_1;
+
+//flag if button is in use
+char shift_flag = 0;
+char cap_flag = 0;
+char ctrl_flag = 0;
+char alt_flag = 0;
 
 /*
  * reset_buffer
@@ -186,12 +145,6 @@ void reset_buffer(){
     }
 }
 
-//flag if button is in use
-char shift_flag = 0;
-char cap_flag = 0;
-char ctrl_flag = 0;
-char alt_flag = 0;
-
 /*
  * keyboard_init
  *   DESCRIPTION: Initialize the keyboard
@@ -200,6 +153,7 @@ char alt_flag = 0;
  *   RETURN VALUE: none
  */
 void keyboard_init() {
+    // set the current terminal
     enable_irq(KB_IRQ);
 }
 
@@ -212,7 +166,7 @@ void keyboard_init() {
  *   RETURN VALUE: none
  */
 void keyboard_handler() {
-    cli();
+    // cli();
     unsigned int byte = inb(KB_PORT);
     unsigned char c = scan_code_1[byte];
     int i;
@@ -256,56 +210,26 @@ void keyboard_handler() {
  *   RETURN VALUE: none
  */
 void keyboard_print(int byte) {
+    // printf("Called with byte %c", byte);
     unsigned char c;
+    term_struct_t* active_terminal = get_active_terminal();
     //ctrl+L = clear
     if (ctrl_flag == 1 && scan_code_1[byte] == ASCII_L){
         clear();
-        terminal_write(0, true_buffer, 128);
+        terminal_write(0, true_buffer, TERM_BUF_SIZE);
         return;
     }
     //switch to correct terminal given alt + F#
-    else if (alt_flag == 1 && scan_code_1[byte] == F1_PRESS){
-        terminal_switch(1);
-        true_buffer = kb_buffer;
-        term_buf_location = &term_buf_1;
+    else if (alt_flag == 1 && scan_code_1[byte] >= F1_PRESS && scan_code_1[byte] <= F3_PRESS){
+        // do ascii math to get proper term loc
+        // add 1, because 1-indexed
+        terminal_switch(scan_code_1[byte] - F1_PRESS + 1);
+        true_buffer = active_terminal->kb_buf;
+        term_buf_location = &(active_terminal->buf_location);
         return;
     }
-    else if (alt_flag == 1 && scan_code_1[byte] == F2_PRESS){
-        terminal_switch(2);
-        true_buffer = kb_buffer2;
-        term_buf_location = &term_buf_2;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F3_PRESS){
-        terminal_switch(3);
-        true_buffer = kb_buffer3;
-        term_buf_location = &term_buf_3;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F4_PRESS){
-        terminal_switch(4);
-        true_buffer = kb_buffer4;
-        term_buf_location = &term_buf_4;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F5_PRESS){
-        terminal_switch(5);
-        true_buffer = kb_buffer5;
-        term_buf_location = &term_buf_5;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F6_PRESS){
-        terminal_switch(6);
-        true_buffer = kb_buffer6;
-        term_buf_location = &term_buf_6;
-        return;
-    }
-    else if (alt_flag == 1 && scan_code_1[byte] == F7_PRESS){
-        terminal_switch(7);
-        true_buffer = kb_buffer7;
-        term_buf_location = &term_buf_7;
-        return;
-    }
+
+    
     //dont print out garbage F# input
     else if (scan_code_1[byte] >= F1_PRESS && scan_code_1[byte] <= F10_PRESS)
         return;

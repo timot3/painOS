@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "filesys.h"
+#include "terminal.h"
 volatile uint32_t ret_status = 0;
 
 // file ops jump tables
@@ -45,13 +46,13 @@ static file_op_table_t bad_table = {
     .close = std_bad_call
 };
 
-// arbitrary length for now
-char pid_arr[PROCESS_LIMIT] = {
+// used to keep track of how many pids are in use
+int8_t pid_arr[PROCESS_LIMIT] = {
     0, 0, 0, 0, 0, 0, 0
 };
 
-// global var to keep track of current pid
-int32_t curr_pid = 0;
+// global var to keep track of current pids
+int8_t curr_pids[MAX_TERMINALS] = {-1,-1,-1};
 
 /*
  * halt
@@ -64,6 +65,7 @@ int32_t halt(uint8_t status) {
 
     // get current pcb
     pcb_t *pcb = get_pcb_addr(get_latest_pid());
+    // printf("\nHalting program. pid = %d, parent pid = %d\n", pcb->pid, pcb->parent.pid);
 
     if(pcb == NULL) return -1;
 
@@ -79,7 +81,9 @@ int32_t halt(uint8_t status) {
     }
 
     // 1.  if base shell, re-execute base shell
-    if(pcb->pid == 0) execute((uint8_t *)"shell");
+    if(pcb->pid == pcb->parent.pid) {
+        execute((uint8_t *)"shell");
+    }
 
     // 3.  set up file state for return to parent
 
@@ -106,6 +110,7 @@ int32_t halt(uint8_t status) {
     asm volatile ("movl %0, %%esp;"
                   "popl %%ebp;"
                   "movl %1, %%eax;"
+                  "sti;"
                   "ret"
                   :
                   : "g" (pcb->parent.kbp), "g" (status)
@@ -117,13 +122,15 @@ int32_t halt(uint8_t status) {
 
 /*
  * execute
- *   DESCRIPTION: executs the command, lots of helper functions see them for
+ *   DESCRIPTION: executes the command, lots of helper functions see them for
  *more details
  *   INPUTS: command
  *   RETURN VALUE:
  */
 int32_t execute(const uint8_t *command) {
+    cli();
     // get pid if none avaialbe fail
+    cli();
     int pid = assign_pid(), i;
 
     if(pid == -1) return -1;
@@ -131,6 +138,14 @@ int32_t execute(const uint8_t *command) {
     // get pcb and initialize
     dentry_t dentry;
     pcb_t *pcb = allocate_pcb(pid);
+
+    // Base shells have PIDs 0,1,2
+    if (pid < MAX_TERMINALS) {
+        printf("Setting parent PID to current PID\n");
+        pcb->parent.pid = pcb->pid;
+    }
+
+
     int parse  = parse_command(command, pcb, pid, &dentry);
 
     // parse command, if bad fail
@@ -175,6 +190,20 @@ int32_t execute(const uint8_t *command) {
 
     read_data(dentry.inode, 24, EIPbuf, 4);
     uint32_t EIP = *((uint32_t *)EIPbuf);
+    pcb->registers.eip = EIP;
+
+    // Save flags
+    int flags;
+    asm volatile (
+        "pushfl;"
+        "popl %%eax;"
+        "movl %%eax, %0" : "=r" (flags)
+    );
+
+    pcb->registers.fl = flags;
+    pcb->registers.esp = ksp;
+    pcb->registers.ebp = kbp;
+    pcb->esp0 = tss.esp0;
 
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
@@ -187,6 +216,7 @@ int32_t execute(const uint8_t *command) {
         "pushl %%eax;"
         "pushl %2;"
         "pushl %3;"
+        "sti;"
         "iret;"
         :
         : "g" (USER_DS), "g" (USER_PAGE_BOT), "g" (USER_CS), "g" (EIP)
@@ -203,11 +233,14 @@ int32_t execute(const uint8_t *command) {
  */
 int assign_pid(void) {
     int i;
-
+    // Loop until first free PID spot found
     for(i = 0; i < PROCESS_LIMIT; i++) {
         if(pid_arr[i] == 0) {
+            // Set PID value iin pid_arr and terminal struct
+            term_struct_t* curr_term = get_active_terminal();
+            curr_term->curr_pid = i;
             pid_arr[i] = 1;
-            curr_pid   = i;
+            printf("Assigning PID value %d\n", i);
             return i;
         }
     }
@@ -223,7 +256,11 @@ int assign_pid(void) {
 int unassign_pid(int pid, int parent_pid) {
     if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
-        curr_pid = parent_pid;
+        // When child unassigned, set pid to parent val
+        term_struct_t* curr_term = get_active_terminal();
+        curr_term->curr_pid = parent_pid;
+
+        curr_pids[get_current_terminal_idx()] = parent_pid;
         return 1;
     }
 
@@ -237,7 +274,9 @@ int unassign_pid(int pid, int parent_pid) {
  *   RETURN VALUE: idx of most recently used pid or -1 if none
  */
 int get_latest_pid() {
-    return curr_pid;
+    if (curr_pids[get_current_terminal_idx()] == -1)
+        return 0;
+    return curr_pids[get_current_terminal_idx()];
 }
 
 /*
@@ -286,7 +325,25 @@ pcb_t* allocate_pcb(int pid) {
     // set parent to initial values
     pcb->parent.ksp = 0;
     pcb->parent.kbp = 0;
-    pcb->parent.pid = (pid > 0) ? pid - 1 : 0;
+
+    int8_t parent_pid;
+    if (curr_pids[get_current_terminal_idx()] == -1) {
+        parent_pid = 0;
+    } else {
+        parent_pid = curr_pids[get_current_terminal_idx()];
+    }
+    pcb->parent.pid = parent_pid;
+    curr_pids[get_current_terminal_idx()] = pid;
+
+    // init registers
+    pcb->registers.eax = 0;
+    pcb->registers.ebx = 0;
+    pcb->registers.ecx = 0;
+    pcb->registers.edx = 0;
+    pcb->registers.edi = 0;
+    pcb->registers.esi = 0;
+    pcb->registers.ebp = 0;
+    pcb->registers.esp = 0;
 
     pcb->fd_items[pid].file_position = 0;
 
@@ -316,6 +373,9 @@ int parse_command(const uint8_t *command, pcb_t *pcb, int pid, dentry_t *dentry)
 
     // parse the executable name until null terminator or newline
     while(command[com_loc] != '\0' && command[com_loc] != '\n') {
+        // bounds check to stop too many characters from page faulting
+        if(com_loc > TERM_BUF_SIZE || exec_loc > CMD_MAX_LEN)
+            return -1;
         // search for the space after the command
         if((command[com_loc] == ' ') && (char_seen_flag == 1)) break;
         // ignore leading spaces
@@ -445,7 +505,7 @@ void setup_TSS(int pid) {
  * * returns fd
  */
 int32_t open(const uint8_t *filename) {
-    pcb_t *pcb = (pcb_t *)(KERNEL_PAGE_BOT - (curr_pid + 1) * KERNEL_STACK_SIZE);
+    pcb_t *pcb = (pcb_t *)(KERNEL_PAGE_BOT - (get_latest_pid() + 1) * KERNEL_STACK_SIZE);
     dentry_t tmp_dentry;
     file_op_table_t *tmp_f_ops;
     int i = 0;
@@ -624,7 +684,7 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
  * OUTPUTS: 0 if success, -1 if failed
  */
 int32_t vidmap(uint8_t **screen_start) {
-    // bound testing
+    // bounds testing
     if(((int)screen_start > USER_PAGE_BOT) ||
        ((int)screen_start < USER_PAGE_TOP)) return -1;
 

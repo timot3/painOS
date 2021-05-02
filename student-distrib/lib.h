@@ -6,6 +6,7 @@
 #define _LIB_H
 
 #include "types.h"
+#include "terminal.h"
 
 #define CRTCIndex 0x3D4
 #define CRTCData 0x3D5
@@ -40,7 +41,7 @@ int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);
 
-void switch_screen(uint8_t oldDisplay, uint8_t newDisplay);
+void switch_screen(term_struct_t* oldTerm, term_struct_t* newTerm);
 
 void test_interrupts(void);
 
