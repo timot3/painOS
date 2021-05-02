@@ -61,6 +61,7 @@ int8_t curr_pids[MAX_TERMINALS] = {-1,-1,-1};
  *   RETURN VALUE: status or -1
  */
 int32_t halt(uint8_t status) {
+    cli();
     int i, process_status;
 
     // get current pcb
@@ -106,10 +107,13 @@ int32_t halt(uint8_t status) {
     // 6.  swap to saved parent's stack state and return from execute
     ret_status = status;
 
+    // sti();
+
     printf("Process %d exited with code = %d\n", process_status, status);
     asm volatile ("movl %0, %%esp;"
                   "popl %%ebp;"
                   "movl %1, %%eax;"
+                  "sti;"
                   "ret"
                   :
                   : "g" (pcb->parent.kbp), "g" (status)
@@ -127,6 +131,7 @@ int32_t halt(uint8_t status) {
  *   RETURN VALUE:
  */
 int32_t execute(const uint8_t *command) {
+    cli();
     // get pid if none avaialbe fail
     int pid = assign_pid(), i;
 
@@ -201,6 +206,8 @@ int32_t execute(const uint8_t *command) {
     pcb->registers.ebp = kbp;
     pcb->esp0 = tss.esp0;
 
+    // sti();
+
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
     asm volatile (
@@ -212,6 +219,7 @@ int32_t execute(const uint8_t *command) {
         "pushl %%eax;"
         "pushl %2;"
         "pushl %3;"
+        "sti;"
         "iret;"
         :
         : "g" (USER_DS), "g" (USER_PAGE_BOT), "g" (USER_CS), "g" (EIP)

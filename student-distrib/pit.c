@@ -38,9 +38,11 @@ void initialize_pit() {
  */
 void pit_handler() {
     // Send EOI so device knows we're done
+    cli();
     send_eoi(PIT_IRQ);
 
     // Call scheduling switch task function every time PIT sends interrupt
     switch_task();
+    sti();
 
 }

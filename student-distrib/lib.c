@@ -217,7 +217,7 @@ void delete(){
 void update_cursor(int x, int y)
 {
 	int pos = y * NUM_COLS + x;
- 
+
 	outb(CursorAddLow, CRTCIndex);
     outb(pos, CRTCData);
     outb(CursorAddHigh, CRTCIndex);
@@ -251,8 +251,8 @@ void putc(uint8_t c) {
             screen_y--;
         }
     } else {
-        *(uint8_t *)(get_active_terminal()->vidmem_start + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(get_active_terminal()->vidmem_start + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
         //vertical scroll if at last character of line
         if (screen_x >= NUM_COLS){
@@ -270,19 +270,23 @@ void putc(uint8_t c) {
 }
 
 void switch_screen(term_struct_t* oldTerm, term_struct_t* newTerm){
+    // cursor_arrayx[oldTerm] = screen_x;
+    // cursor_arrayy[oldTerm] = screen_y;
     oldTerm->cursor_x_pos = screen_x;
     oldTerm->cursor_y_pos = screen_y;
+
+    // screen_x = cursor_arrayx[newTerm];
+    // screen_y = cursor_arrayy[newTerm];
     screen_x = newTerm->cursor_x_pos;
     screen_y = newTerm->cursor_y_pos;
-    
 
     char* oldTermLoc = (char*)(VIDEO + (oldTerm->base_pid + 1)*TERM_DISPLAY_SIZE);
     char* newTermLoc = (char*)(VIDEO + (newTerm->base_pid + 1)*TERM_DISPLAY_SIZE);
-    oldTerm->vidmem_start = oldTermLoc;
-    newTerm->vidmem_start = video_mem;
     memcpy(oldTermLoc, video_mem, TERM_DISPLAY_SIZE);
     memcpy(video_mem, newTermLoc, TERM_DISPLAY_SIZE);
     update_cursor(screen_x, screen_y);
+    pcb_t *pcb = get_pcb_addr(get_latest_pid());
+    map_page_pid(pcb->pid);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
