@@ -46,7 +46,7 @@ static file_op_table_t bad_table = {
     .close = std_bad_call
 };
 
-// arbitrary length for now
+// used to keep track of how many pids are in use
 int8_t pid_arr[PROCESS_LIMIT] = {
     0, 0, 0, 0, 0, 0, 0
 };
@@ -61,12 +61,11 @@ int8_t curr_pids[MAX_TERMINALS] = {-1,-1,-1};
  *   RETURN VALUE: status or -1
  */
 int32_t halt(uint8_t status) {
-    cli();
     int i, process_status;
 
     // get current pcb
     pcb_t *pcb = get_pcb_addr(get_latest_pid());
-    printf("\nHalting program. pid = %d, parent pid = %d\n", pcb->pid, pcb->parent.pid);
+    // printf("\nHalting program. pid = %d, parent pid = %d\n", pcb->pid, pcb->parent.pid);
 
     if(pcb == NULL) return -1;
 
@@ -107,9 +106,7 @@ int32_t halt(uint8_t status) {
     // 6.  swap to saved parent's stack state and return from execute
     ret_status = status;
 
-    // sti();
-
-    printf("Process %d exited with code = %d\n", process_status, status);
+    // printf("Process %d exited with code = %d\n", process_status, status);
     asm volatile ("movl %0, %%esp;"
                   "popl %%ebp;"
                   "movl %1, %%eax;"
@@ -195,6 +192,7 @@ int32_t execute(const uint8_t *command) {
     uint32_t EIP = *((uint32_t *)EIPbuf);
     pcb->registers.eip = EIP;
 
+    // Save flags
     int flags;
     asm volatile (
         "pushfl;"
@@ -206,8 +204,6 @@ int32_t execute(const uint8_t *command) {
     pcb->registers.esp = ksp;
     pcb->registers.ebp = kbp;
     pcb->esp0 = tss.esp0;
-
-    // sti();
 
     // iret context switch, set EIP, CS, flags (set interrupt flag manually),
     // user stack address, ss
@@ -237,8 +233,10 @@ int32_t execute(const uint8_t *command) {
  */
 int assign_pid(void) {
     int i;
+    // Loop until first free PID spot found
     for(i = 0; i < PROCESS_LIMIT; i++) {
         if(pid_arr[i] == 0) {
+            // Set PID value iin pid_arr and terminal struct
             term_struct_t* curr_term = get_active_terminal();
             curr_term->curr_pid = i;
             pid_arr[i] = 1;
@@ -258,6 +256,7 @@ int assign_pid(void) {
 int unassign_pid(int pid, int parent_pid) {
     if(pid_arr[pid] == 1) {
         pid_arr[pid] = 0;
+        // When child unassigned, set pid to parent val
         term_struct_t* curr_term = get_active_terminal();
         curr_term->curr_pid = parent_pid;
 
@@ -685,7 +684,7 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
  * OUTPUTS: 0 if success, -1 if failed
  */
 int32_t vidmap(uint8_t **screen_start) {
-    // bound testing
+    // bounds testing
     if(((int)screen_start > USER_PAGE_BOT) ||
        ((int)screen_start < USER_PAGE_TOP)) return -1;
 

@@ -15,6 +15,9 @@
 #define ONE_KB 1024
 #define FOUR_KB 4096
 #define MAX_OPEN_FILES 8
+#define FILE_NAME_LEN_STR 11
+#define FILE_TYPE_STR 13
+#define FILE_SIZE_STR 13
 
 // data entry
 typedef struct dentry{
@@ -70,9 +73,5 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t nbytes
 
 // Init the filesystem
 void filesys_init(void *fs);
-
-#define FILE_NAME_LEN_STR 11
-#define FILE_TYPE_STR 13
-#define FILE_SIZE_STR 13
 
 #endif /* filesys.h */

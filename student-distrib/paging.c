@@ -9,6 +9,7 @@ extern void tlb_flush();
 page_dir_entry_t page_dir[PAGE_DIRECTORY_LENGTH] __attribute__((aligned(PAGE_DIRECTORY_LENGTH * 4)));
 page_table_entry_t page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
 page_table_entry_t vid_page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE_TABLE_LENGTH * 4)));
+
 /*
  * paging_init
  *   DESCRIPTION: Initializes the paging
@@ -22,8 +23,7 @@ page_table_entry_t vid_page_table[PAGE_TABLE_LENGTH] __attribute__((aligned(PAGE
  * * Implements paging for kernel space
  * * Implements paging for Video memory
  */
-void paging_init()
-{
+void paging_init() {
   int i;
 
   for (i = 0; i < PAGE_DIRECTORY_LENGTH; i++)
@@ -75,7 +75,7 @@ void paging_init()
  *   OUTPUTS: copies data of page_dir
  *   RETURN VALUE: none
  */
-extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len){
+extern void get_paging_directory(page_dir_entry_t *page_dir_alt, int len) {
   int i;
   for(i = 0; i<len; i++)
    {
@@ -107,6 +107,7 @@ extern void get_paging_table(page_table_entry_t *page_table_alt, int len) {
 *   RETURN VALUE: none
 */
 void map_page_pid(int pid) {
+  // Set page_dir attributes based on PID
   int phys_addr = KERNEL_PAGE + pid * TASK_SIZE;
   int page_idx = CORRECT_PAGE;
   page_dir[page_idx].val = phys_addr;
@@ -129,6 +130,7 @@ void map_page_pid(int pid) {
 *   RETURN VALUE: none
 */
 void map_page_vid(int virt_addr) {
+  // Set page_dir attributes based on virtual address
   page_dir[virt_addr].present = 1;
   page_dir[virt_addr].rw = 1;
   page_dir[virt_addr].us = 1;

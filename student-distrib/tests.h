@@ -36,6 +36,4 @@ int test_bad_input_close();
 
 void launch_tests();
 
-
-
 #endif /* TESTS_H */

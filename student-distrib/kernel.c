@@ -167,7 +167,7 @@ void entry(unsigned long magic, unsigned long addr)
 
     /* Init the PIC */
     i8259_init();
-    // Initialize RTC
+    // Initialize RTC, filesys, paging, keyboard, terminals, and PIT
     initialize_rtc();
 
     filesys_init((void*)((module_t*)(mbi->mods_addr))->mod_start);

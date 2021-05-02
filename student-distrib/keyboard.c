@@ -4,6 +4,7 @@
 #include "terminal.h"
 
 /*https://wiki.osdev.org/PS/2_Keyboard */
+// Scan codes for keyboard - different arrays for if certain keys (shift, caps) enabled/disabled
 unsigned char scan_code_1[256] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
@@ -82,7 +83,7 @@ unsigned char scan_code_shift_caps[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-//keyboard buffer to store values for terminal_read
+//keyboard buffer to store values for terminal_read - 1 for each terminal window
 unsigned char kb_buffer[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -122,11 +123,13 @@ unsigned char *true_buffer = kb_buffer;
 int term_buf_1 = 0;
 int term_buf_2 = 0;
 int term_buf_3 = 0;
-// int term_buf_4 = 0;
-// int term_buf_5 = 0;
-// int term_buf_6 = 0;
-// int term_buf_7 = 0;
 int *term_buf_location = &term_buf_1;
+
+//flag if button is in use
+char shift_flag = 0;
+char cap_flag = 0;
+char ctrl_flag = 0;
+char alt_flag = 0;
 
 /*
  * reset_buffer
@@ -141,12 +144,6 @@ void reset_buffer(){
         true_buffer[i] = 0;
     }
 }
-
-//flag if button is in use
-char shift_flag = 0;
-char cap_flag = 0;
-char ctrl_flag = 0;
-char alt_flag = 0;
 
 /*
  * keyboard_init

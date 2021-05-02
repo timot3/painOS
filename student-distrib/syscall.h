@@ -26,6 +26,17 @@
 #define ACTIVE_FLAG 1
 #define INACTIVE_FLAG 0
 
+#define O_RDONLY         00
+#define O_WRONLY         01
+#define O_RDWR           02
+
+
+#define READ_WRITE_MASK 3 // 11 in binary
+
+#define STDIN_IDX 0
+#define STDOUT_IDX 1
+
+
 typedef struct file_op_table {
     int32_t (*open)(const uint8_t *filename);
     int32_t (*read)(int32_t fd, void *buf, int32_t nbytes);
@@ -98,16 +109,5 @@ void setup_TSS(int pid);
 
 extern int8_t curr_pids[MAX_TERMINALS];
 extern int8_t pid_arr[PROCESS_LIMIT];
-
-
-#define O_RDONLY         00
-#define O_WRONLY         01
-#define O_RDWR           02
-
-
-#define READ_WRITE_MASK 3 // 11 in binary
-
-#define STDIN_IDX 0
-#define STDOUT_IDX 1
 
 #endif /* SYSCALL_H */

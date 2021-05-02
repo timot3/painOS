@@ -22,78 +22,76 @@ void switch_task() {
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
 
 
+    // Start the 3 base shells
     if(curr_pids[2] == -1) {
         terminal_switch(3);
-        // terminal_switch_not_visual(3);
-        // curr_pids[2] = 2;
         printf("SCEDUULING 2\n");
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
     if(curr_pids[1] == -1) {
         terminal_switch(2);
-        // terminal_switch_not_visual(2);
-        // curr_pids[1] = 1;
         printf("SCEDUULING 1\n");
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
     if(curr_pids[0] == -1) {
         terminal_switch(1);
-        // terminal_switch_not_visual(1);
-        // curr_pids[0] = 0;
         printf("SCEDUULING 0\n");
         execute((uint8_t*)PROGRAM_NAME);
         return;
     } 
 
+    // Scheduling code - doesn't work, we weren't able to figure out why.
+    // It pagefaults somewhat randomly. It seems like it happens when a 
+    // task is running, but gets interrupted by another PIT interrupt before
+    // it has halted.
+
     // get the current PID that we will switch from
     // it is stored in the terminal struct array at the idx of current process
-    int8_t curr_pid = curr_pids[curr_process];
-    // printf("CURR_PROC:%d\n", curr_process);
-    // int i;
-    // printf("arr-");
-    // for(i = 0; i < 7; i++)
-    //     printf("%x | ", pid_arr[i]);
-    // printf(" | -arr2-");
-    // for(i = 0; i < 3; i++)
-    //     printf("%x | ", curr_pids[i]);
-    // printf("\n");
-    // get the PCB of the current pid
-    pcb_t *curr_pcb = get_pcb_addr(curr_pid);
+    // int8_t curr_pid = curr_pids[curr_process];
+    // // printf("CURR_PROC:%d\n", curr_process);
+    // // int i;
+    // // printf("arr-");
+    // // for(i = 0; i < 7; i++)
+    // //     printf("%x | ", pid_arr[i]);
+    // // printf(" | -arr2-");
+    // // for(i = 0; i < 3; i++)
+    // //     printf("%x | ", curr_pids[i]);
+    // // printf("\n");
+    // // get the PCB of the current pid
+    // pcb_t *curr_pcb = get_pcb_addr(curr_pid);
 
-    // get the next process ID and next PCB
-    uint8_t new_process = (curr_process + 1) % 3;
-    int8_t new_pid = curr_pids[new_process];
+    // // get the next process ID and next PCB
+    // uint8_t new_process = (curr_process + 1) % 3;
+    // int8_t new_pid = curr_pids[new_process];
 
-    // terminal_switch(new_process + 1);
-    curr_process = new_process;
+    // curr_process = new_process;
 
-    // switch current process to next
-    pcb_t *new_pcb = get_pcb_addr(new_pid);
-    // store ESP0, ESP, EBP into the current PCB
-    curr_pcb->esp0 = tss.esp0;
-    asm volatile (
-        "movl %%esp, %0;"
-        "movl %%ebp, %1;"
-        : "=g"(curr_pcb->parent.ksp), "=g"(curr_pcb->parent.kbp)
-    );
+    // // switch current process to next
+    // pcb_t *new_pcb = get_pcb_addr(new_pid);
+    // // store ESP0, ESP, EBP into the current PCB
+    // curr_pcb->esp0 = tss.esp0;
+    // asm volatile (
+    //     "movl %%esp, %0;"
+    //     "movl %%ebp, %1;"
+    //     : "=g"(curr_pcb->parent.ksp), "=g"(curr_pcb->parent.kbp)
+    // );
 
-    // map_page_pid(new_pid);
+    // // remap virtual page table of new task to the
+    // // physical memory of currently executing process
+    // // also flush tlb (inside the function)
+    // // map_page_pid(new_pid);
 
-    // set esp0, ss0 in the tss
-    tss.esp0 = new_pcb->esp0;
-    tss.ss0 = KERNEL_DS;
+    // // set esp0, ss0 in the tss
+    // tss.esp0 = new_pcb->esp0;
+    // tss.ss0 = KERNEL_DS;
 
-    // esp, ebp <-- new PCB esp, ebp
-    asm volatile (
-        "movl %0, %%esp;"
-        "movl %1, %%ebp;"
-        :
-        : "g" (new_pcb->parent.ksp), "g" (new_pcb->parent.kbp)
-    );
-
-    // remap virtual page table of new task to the
-    // physical memory of currently executing process
-    // also flush tlb (inside the function)
+    // // esp, ebp <-- new PCB esp, ebp
+    // asm volatile (
+    //     "movl %0, %%esp;"
+    //     "movl %1, %%ebp;"
+    //     :
+    //     : "g" (new_pcb->parent.ksp), "g" (new_pcb->parent.kbp)
+    // );
 }
