@@ -133,6 +133,7 @@ int32_t halt(uint8_t status) {
 int32_t execute(const uint8_t *command) {
     cli();
     // get pid if none avaialbe fail
+    cli();
     int pid = assign_pid(), i;
 
     if(pid == -1) return -1;

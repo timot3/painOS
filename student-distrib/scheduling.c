@@ -7,6 +7,8 @@
 
 volatile uint8_t curr_process = 2;
 
+uint8_t terms_initted[3] = {0,0,0};
+
 /*
  * switch_task
  *   DESCRIPTION: Switches from the currently running task to the next task.
@@ -20,36 +22,30 @@ void switch_task() {
     // https://wiki.osdev.org/User:Mariuszp/Scheduler_Tutorial as reference
 
 
-    if(curr_pids[0] == -1) {
-        terminal_switch(1);
-        // terminal_switch_not_visual(1);
-        curr_pids[0] = 0;
-        printf("SCEDUULING 0\n");
-        sti();
-        execute((uint8_t*)PROGRAM_NAME);
-        return;
-    }
-
-
-    if(curr_pids[1] == -1) {
-        terminal_switch(2);
-        // terminal_switch_not_visual(2);
-        curr_pids[1] = 1;
-        printf("SCEDUULING 1\n");
-        sti();
-        execute((uint8_t*)PROGRAM_NAME);
-        return;
-    }
-
     if(curr_pids[2] == -1) {
         terminal_switch(3);
         // terminal_switch_not_visual(3);
-        curr_pids[2] = 2;
+        // curr_pids[2] = 2;
         printf("SCEDUULING 2\n");
-        sti();
         execute((uint8_t*)PROGRAM_NAME);
         return;
     }
+    if(curr_pids[1] == -1) {
+        terminal_switch(2);
+        // terminal_switch_not_visual(2);
+        // curr_pids[1] = 1;
+        printf("SCEDUULING 1\n");
+        execute((uint8_t*)PROGRAM_NAME);
+        return;
+    }
+    if(curr_pids[0] == -1) {
+        terminal_switch(1);
+        // terminal_switch_not_visual(1);
+        // curr_pids[0] = 0;
+        printf("SCEDUULING 0\n");
+        execute((uint8_t*)PROGRAM_NAME);
+        return;
+    } 
 
     // get the current PID that we will switch from
     // it is stored in the terminal struct array at the idx of current process
