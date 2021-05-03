@@ -240,7 +240,7 @@ int assign_pid(void) {
             term_struct_t* curr_term = get_active_terminal();
             curr_term->curr_pid = i;
             pid_arr[i] = 1;
-            printf("Assigning PID value %d\n", i);
+           // printf("Assigning PID value %d\n", i);
             return i;
         }
     }
@@ -523,7 +523,6 @@ int32_t open(const uint8_t *filename) {
 
     // Copy filename to buffer we can edit
     int startOffset = 0;
-
     uint8_t fname[CMD_MAX_LEN];
 
     for(i = 0; i < CMD_MAX_LEN; i++) fname[i] = filename[i];

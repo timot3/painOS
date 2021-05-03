@@ -50,19 +50,19 @@ void enable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
     // Ensure input parameter is within bounds
-    if(irq_num < 0 || irq_num > 15)
+    if(irq_num < 0 || irq_num > MAX_DEVICES)
         return;
 
     uint16_t port;
     uint8_t value;
 
-    if(irq_num < 8) {
+    if(irq_num < MAX_MASTER_DEVICES) {
         // Set port as master
         port = MASTER_DATA_PORT;
     } else {
         // Set port as slave, change irq_num to get correct location
         port = SLAVE_DATA_PORT;
-        irq_num -= 8;
+        irq_num -= MAX_MASTER_DEVICES;
     }
 
     // Send desired command
@@ -81,19 +81,19 @@ void disable_irq(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
     // Ensure input parameter is within bounds
-    if(irq_num < 0 || irq_num > 15)
+    if(irq_num < 0 || irq_num > MAX_DEVICES)
         return;
 
     uint16_t port;
     uint8_t value;
 
-    if(irq_num < 8) {
+    if(irq_num < MAX_MASTER_DEVICES) {
         // Set port as master
         port = MASTER_DATA_PORT;
     } else {
         // Set port as slave, change irq_num to get correct location
         port = SLAVE_DATA_PORT;
-        irq_num -= 8;
+        irq_num -= MAX_MASTER_DEVICES;
     }
 
     // Send desired command
@@ -112,15 +112,15 @@ void send_eoi(uint32_t irq_num) {
     // Using https://wiki.osdev.org/8259_PIC as reference
 
     // Ensure input parameter is within bounds
-    if(irq_num < 0 || irq_num > 15)
+    if(irq_num < 0 || irq_num > MAX_DEVICES)
         return;
 
-    if(irq_num < 8) {
+    if(irq_num < MAX_MASTER_DEVICES) {
         // Send EOI to master
         outb(EOI | irq_num, MASTER_8259_PORT);
     } else {
         // Send EOI to slave (and master)
-        irq_num -= 8;
+        irq_num -= MAX_MASTER_DEVICES;
         outb(EOI | irq_num, SLAVE_8259_PORT);
         outb(EOI | ICW3_SLAVE, MASTER_8259_PORT);
     }

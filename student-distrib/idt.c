@@ -331,11 +331,10 @@ void initialize_idt() {
         idt[i].present      = 0;
 
         if(i >= NUM_SYSTEM_INTERRUPTS) {
-            idt[i].dpl = 3; // Greater than 32 has user-level priority
+            idt[i].dpl = USER_PRIORITY; // Greater than 32 has user-level priority
         }
     }
-    idt[32].dpl = 3; // Office hours TA said to do this
-
+    
     // Change values for first 32 items in IDT
     for(i = 0; i < NUM_SYSTEM_INTERRUPTS; i++) {
         // idt[i].reserved3 = 1; // Enable for first 32, use trap gate

@@ -4,16 +4,19 @@
 .globl tlb_flush
 .align 4
 edit_paging_flags:
+
   pushl %ebp
   movl  %esp, %ebp
   movl  8(%ebp), %eax    
-    
+  // load cr3 with page directory address & flush tlb 
   movl %eax, %cr3
 
+  // set wp bit in cr4
   movl %cr4, %eax
   orl  $0x00000010, %eax 
   movl %eax, %cr4
 
+  // set protection bits in cr3
   movl %cr0, %eax
   orl  $0x80000001, %eax  
   movl %eax, %cr0

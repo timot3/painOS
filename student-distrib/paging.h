@@ -9,6 +9,8 @@
 #define KERNEL_LOCATION 0x400000 // for the kernel block
 #define VID_MEM 0xB8 // for vid mem block
 
+
+#define MAX_TERMINALS 3 
 #define VIRT_PAGE_NUM 32
 #define TASK_SIZE 0x400000
 #define KERNEL_PAGE 0x800000

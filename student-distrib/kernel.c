@@ -170,16 +170,23 @@ void entry(unsigned long magic, unsigned long addr)
     // Initialize RTC, filesys, paging, keyboard, terminals, and PIT
     initialize_rtc();
 
+    // initialize the filesystem
     filesys_init((void*)((module_t*)(mbi->mods_addr))->mod_start);
 
+
+    // intialize paging
     paging_init();
-    printf("\n");
 
-
+    // intialize the keyboard driver
     keyboard_init();
+
+    // initialize the multiple terminals
     terminals_init();
 
+    // initialize the PIT 
     initialize_pit();
+
+    // allow interrrupts
     sti();
 
 #ifdef RUN_TESTS

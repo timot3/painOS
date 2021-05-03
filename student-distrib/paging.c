@@ -58,8 +58,8 @@ void paging_init() {
 
   // connect video memory 32kb
   int j;
-  for(j=0; j<8; j++){
-    page_table[VID_MEM+j].aligned_address = 0xB8 + j;
+  for(j=0; j<MAX_TERMINALS+1; j++){
+    page_table[VID_MEM+j].aligned_address = VID_MEM + j;
     page_table[VID_MEM+j].present = 1;
     page_table[VID_MEM+j].cache_disable = 1;
   }
@@ -135,7 +135,7 @@ void map_page_vid(int virt_addr) {
   page_dir[virt_addr].rw = 1;
   page_dir[virt_addr].us = 1;
   // page_dir[page_idx].size = 1;
-  page_dir[virt_addr].aligned_address =  ((int) &vid_page_table) >> 12;
+  page_dir[virt_addr].aligned_address =  ((int) &vid_page_table) >> ADDRESS_SHIFT;
 
   vid_page_table[0].present = 1;
   vid_page_table[0].rw = 1;

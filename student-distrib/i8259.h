@@ -16,7 +16,8 @@
 #define SLAVE_DATA_PORT 0xA1
 
 #define PORT_MASK 0xFF
-
+#define MAX_DEVICES 15
+#define MAX_MASTER_DEVICES 8
 
 /* Initialization control words to init each PIC.
  * See the Intel manuals for details on the meaning

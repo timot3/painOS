@@ -5,9 +5,9 @@
 #include "lib.h"
 #define PROGRAM_NAME "shell"
 
-volatile uint8_t curr_process = 2;
+// total of two current
+// volatile uint8_t curr_process = 2;
 
-uint8_t terms_initted[MAX_TERMINALS] = {0,0,0};
 
 /*
  * switch_task
