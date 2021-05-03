@@ -7,7 +7,7 @@
 
 volatile uint8_t curr_process = 2;
 
-uint8_t terms_initted[3] = {0,0,0};
+uint8_t terms_initted[MAX_TERMINALS] = {0,0,0};
 
 /*
  * switch_task
@@ -23,6 +23,9 @@ void switch_task() {
 
 
     // Start the 3 base shells
+    // start shell 3 first, then 2, then 1. 
+    // curr_pids is an array that maintains the current pids of processes running in
+    // the terminal at that index.
     if(curr_pids[2] == -1) {
         terminal_switch(3);
         printf("SCEDUULING 2\n");

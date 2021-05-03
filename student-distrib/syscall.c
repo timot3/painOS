@@ -415,13 +415,17 @@ int parse_command(const uint8_t *command, pcb_t *pcb, int pid, dentry_t *dentry)
     // check that first four characters are Delete, E, L, F
     uint8_t first_4_char[4];
 
+    // read the first 4 characters
     file_read(get_latest_pid(), first_4_char, 4);
 
+    // check file is executable (first four characters are Delete, E, L, F)
+    // if not executable, return -1
     if((first_4_char[0] != DELETE) || (first_4_char[1] != E) ||
        (first_4_char[2] != L) || (first_4_char[3] != F)) return -1;
 
+    // read the file in.
     read_dentry_by_name(exec_buf, dentry);
-
+    // success
     return 1;
 }
 
@@ -519,14 +523,15 @@ int32_t open(const uint8_t *filename) {
 
     // Copy filename to buffer we can edit
     int startOffset = 0;
-    uint8_t fname[32];
 
-    for(i = 0; i < 32; i++) fname[i] = filename[i];
+    uint8_t fname[CMD_MAX_LEN];
+
+    for(i = 0; i < CMD_MAX_LEN; i++) fname[i] = filename[i];
 
     while(fname[startOffset] != '\0') startOffset++;
 
     // Clear all values after \0 in filename
-    for(i = startOffset; i < 32; i++) fname[i] = 0;
+    for(i = startOffset; i < CMD_MAX_LEN; i++) fname[i] = 0;
 
     // handle stdin
     // stdin is index0, 5 = len of "stdin"

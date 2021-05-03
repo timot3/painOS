@@ -8,7 +8,7 @@
 #define TWO_BYTE_MASK 0xFF
 #define REPEAT_MODE 0x36
 #define INPUT_CLK 1193180
-// use default as 40
+// use default as 20
 #define DESIRED_FREQUENCY 40
 
 void initialize_pit();

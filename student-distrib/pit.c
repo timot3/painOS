@@ -15,7 +15,7 @@ void initialize_pit() {
     // and https://wiki.osdev.org/Programmable_Interval_Timer as reference
 
     // Get divisor rate based on desired frequency
-    uint32_t divisor = INPUT_CLK / 20; // every 25ms (40 Hz)
+    uint32_t divisor = INPUT_CLK / DESIRED_FREQUENCY; // 40 Hz
 
     // Send command byte (repeat mode)
     outb(REPEAT_MODE, MODE_REGISTER);

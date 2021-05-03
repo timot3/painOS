@@ -5,7 +5,7 @@
 
 /*https://wiki.osdev.org/PS/2_Keyboard */
 // Scan codes for keyboard - different arrays for if certain keys (shift, caps) enabled/disabled
-unsigned char scan_code_1[256] = {
+unsigned char scan_code_1[NUM_ASCII_CHARS] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', CTRL_PRESS,
@@ -25,7 +25,7 @@ unsigned char scan_code_1[256] = {
     };
 
 //same order as scan_code_1 but all keys are their shifted values
-unsigned char scan_code_shift[256] = {
+unsigned char scan_code_shift[NUM_ASCII_CHARS] = {
     0, 0, '!', '@', '#', '$', '%', '^', '&', '*',
     '(', ')', '_', '+', '\b', '\t', 'Q', 'W', 'E', 'R',
     'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', CTRL_PRESS,
@@ -45,7 +45,7 @@ unsigned char scan_code_shift[256] = {
     };
 
 //same order as scan_code_1 but all keys are their caps lock values
-unsigned char scan_code_caps[256] = {
+unsigned char scan_code_caps[NUM_ASCII_CHARS] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=', '\b', '\t', 'Q', 'W', 'E', 'R',
     'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n', CTRL_PRESS,
@@ -64,7 +64,7 @@ unsigned char scan_code_caps[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 //same order as scan_code_1 but all keys are their shifted caps lock values
-unsigned char scan_code_shift_caps[256] = {
+unsigned char scan_code_shift_caps[NUM_ASCII_CHARS] = {
     0, 0, '!', '@', '#', '$', '%', '^', '&', '*',
     '(', ')', '_', '+', '\b', '\t', 'q', 'w', 'e', 'r',
     't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\n', CTRL_PRESS,
@@ -84,7 +84,7 @@ unsigned char scan_code_shift_caps[256] = {
     };
 
 //keyboard buffer to store values for terminal_read - 1 for each terminal window
-unsigned char kb_buffer[128] = {
+unsigned char kb_buffer[TERM_BUF_SIZE] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -95,7 +95,7 @@ unsigned char kb_buffer[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-unsigned char kb_buffer2[128] = {
+unsigned char kb_buffer2[TERM_BUF_SIZE] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -106,7 +106,7 @@ unsigned char kb_buffer2[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-unsigned char kb_buffer3[128] = {
+unsigned char kb_buffer3[TERM_BUF_SIZE] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -140,7 +140,7 @@ char alt_flag = 0;
  */
 void reset_buffer(){
     int i;
-    for (i=0; i<127; i++){
+    for (i=0; i<TERM_BUF_SIZE-1; i++){
         true_buffer[i] = 0;
     }
 }

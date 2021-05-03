@@ -26,12 +26,14 @@
 #define KB_SPACE 57
 #define TERM_BUF_SIZE 128
 
+#define NUM_ASCII_CHARS 256
+
 void reset_buffer();
 void keyboard_init();
 void keyboard_handler();
 void keyboard_print(int byte);
 
-unsigned char kb_buffer[128];
+unsigned char kb_buffer[TERM_BUF_SIZE];
 unsigned char *true_buffer;
 volatile int term_read_flag;
 
